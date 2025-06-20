@@ -14,13 +14,13 @@ const Offer = () => {
           sem.
         </p>
       </div>
-      <div className="bg-black h-[30rem] py-6 w-[60%] flex items-center  rounded-tl-[6rem]">  
+      <div className="bg-black relative h-[30rem] py-6 w-[60%] flex items-center  rounded-tl-[6rem]">  
         <Slider />
         <Image
-          className=""
+          className="absolute z-0 top-[1rem] right-[14.5rem]"
           src={"/static/landing/eclip.svg"}
           alt="ai-image"
-          width={150}
+          width={200}
           height={120}
         />
       </div>

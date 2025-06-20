@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import { Onest } from 'next/font/google'
+import SignUp from "../auth/SignUpPop";
 
 
 
@@ -50,8 +51,7 @@ const Navbar = () => {
         })}
       </ul>
       <div>
-        {/* <Image /> */}
-        <Button className="font-bold rounded-3xl px-9 bg-green-400"  >Login</Button>
+        <SignUp/>
       </div>
       
     </div>

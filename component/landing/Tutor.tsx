@@ -43,7 +43,7 @@ const Tutor = () => {
             and extra reading resources to get you exam-ready fast.{" "}
           </p>
           <div className="flex mt-5 items-center justify-center gap-8">
-            <Button className=" min-w-[15rem] py-6 border-1 border-black hover:bg-green-200 hover:border-green-200 rounded-full text-black ">
+            <Button className=" min-w-[15rem] bg-transparent py-6 border-1 border-black hover:bg-green-200 hover:border-green-200 rounded-full text-black ">
               Watch Video
               <PlayCircle size={15} />
             </Button>

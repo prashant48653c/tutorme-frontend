@@ -34,7 +34,7 @@ const Hero = () => {
           {" "}
           Explore our Courses
         </Button>
-        <Button className=" min-w-[15rem] py-6 border-1 border-black hover:bg-green-200 hover:border-green-200 rounded-full text-black ">
+        <Button className=" min-w-[15rem] bg-transparent py-6 border-1 border-black hover:bg-green-200 hover:border-green-200 rounded-full text-black ">
           Visit Shop
         </Button>
       </div>

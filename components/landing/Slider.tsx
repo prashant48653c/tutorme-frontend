@@ -26,7 +26,7 @@ export default function Slider() {
   }, [api]);
 
   return (
-    <div className="mx-[3rem] w-full">
+    <div className="mx-[3rem] z-10 w-full">
       <Carousel setApi={setApi} className="w-full ">
         <CarouselContent>
           {Array.from({ length: 5 }).map((_, index) => (

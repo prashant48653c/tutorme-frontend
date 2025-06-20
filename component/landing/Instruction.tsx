@@ -5,17 +5,17 @@ import React from "react";
 
 const Instruction = () => {
   return (
-    <div className="flex gap-4 my-[5rem] items-center justify-around">
-      <div className="flex items-center justify-center">
+    <div className="flex gap-4 my-[5rem] items-center justify-evenly">
+      <div className="flex    items-center justify-end">
         <Image
-          className=""
-          src={"/static/landing/instructor.svg"}
-          alt="ai-image"
-          width={400}
-          height={420}
-        />
+                          className="w-[25rem] rounded-t-2xl"
+                          src={"/static/landing/instructor.svg"}
+                          alt="ai-image"
+                          width={400}
+                          height={420}
+                        />
       </div>
-      <div className="w-[40%]">
+      <div className="w-[40%]  ">
         <h2 className={`text-5xl leading-13 font-[800]  ${HoveFont.className}`}>
           Want to become an 
           <br />
