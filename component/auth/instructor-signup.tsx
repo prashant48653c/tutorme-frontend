@@ -47,7 +47,7 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToLogin }: SignUp
       name: `${data.firstName} ${data.lastName}`,
       email: data.email,
       password: data.password,
-      role: "STUDENT",
+      role: "TUTOR",
       phoneNumber: data.phoneNumber,
     }
 
@@ -104,7 +104,7 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToLogin }: SignUp
           {/* Right side - Form */}
           <div className="p-8 flex flex-col max-h-[90vh]">
             <div className="max-w-sm mx-auto w-full text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign Up</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Become an Instructor</h2>
               <p className="text-cyan-500 font-medium">{"Let's get your setup ready."}</p>
             </div>
 
@@ -285,7 +285,7 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToLogin }: SignUp
 
                 {/* Login Link */}
                 <p className="text-center text-sm text-gray-600 mt-6">
-                  Already a student?{" "}
+                  Already a tutor?{" "}
                   <button type="button" onClick={onSwitchToLogin} className="text-cyan-500 hover:underline font-medium">
                     Login
                   </button>
