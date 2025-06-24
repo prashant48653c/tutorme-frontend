@@ -10,6 +10,7 @@ import Shop from "@/component/landing/Shop";
 import SignUpPopup from "@/component/auth/SignUpPop";
 import Footer from "@/component/reusable/Footer";
 import Blog from "@/component/landing/Blog";
+import KYCVerificationModal from "@/component/auth/KycPop";
  
 
 const OnestFont=Onest({
@@ -29,7 +30,9 @@ export default function Home() {
       <Forum/>
       <Shop/>
       <Blog/>
-
+ <div>
+      <KYCVerificationModal />
+    </div>
 <Footer/>
 
 {/* <SignUpPopup/> */}
