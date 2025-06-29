@@ -1,11 +1,15 @@
 // components/AuthSuccessContent.tsx
 "use client";
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { authService } from "@/services/authServices";
+
+
+export const dynamic = "force-dynamic";
+
 
 export default function AuthSuccessContent() {
   const { data: session, status } = useSession();
@@ -17,7 +21,9 @@ export default function AuthSuccessContent() {
   useEffect(() => {
     const processGoogleAuth = async () => {
       if (status === "loading") return;
-
+if(!session){
+  return;
+}
       if (!session?.user) {
         setError("No user session found");
         setIsProcessing(false);
@@ -51,6 +57,7 @@ export default function AuthSuccessContent() {
 
   if (status === "loading" || isProcessing) {
     return (
+     
       <div className="text-center">
         <div className="animate-spin inline-block w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full mb-6"></div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Setting up your account</h2>
@@ -64,6 +71,7 @@ export default function AuthSuccessContent() {
           </div>
         </div>
       </div>
+     
     );
   }
 
