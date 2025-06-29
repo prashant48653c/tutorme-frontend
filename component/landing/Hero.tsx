@@ -1,13 +1,17 @@
+"use client";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/useAuthStore";
 import { Trash } from "lucide-react";
 import localFont from "next/font/local";
 import Image from "next/image";
-import React from "react";
+import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
 
- const HoveFont = localFont({
+const HoveFont = localFont({
   src: "../../public/fonts/hove.ttf",
 });
 const Hero = () => {
+ 
   return (
     <div className="w-full mt-7 flex flex-col items-center">
       <div className="flex text-gray-600 rounded-4xl border px-6 py-2 border-blue-400 items-center justify-between gap-x-3 w-fit">
@@ -48,23 +52,6 @@ const Hero = () => {
           height={300}
         />
       </div>
-      {/* <div className="relative w-full">
-    <div className='absolute  rounded-l-4xl  left-1 top-[-6rem] '>
-<Image src={'/static/landing/hero1.svg'} alt='ai-image'width={300} height={100}/>
-<div className='flex justify-center mt-4 items-start gap-2'>
-<Trash/>
-<div>
-    <p>Course Completion</p>
-    <h6 className='font-bold text-2xl'>98%</h6>
-</div>
-</div>
-    </div>
-
-<Image className='absolute top-1 rounded-tr-4xl  left-[20rem]' src={'/static/landing/hero2.svg'} alt='ai-image'width={300} height={300}/>
-<Image className='absolute rounded-tl-4xl right-[20rem]' src={'/static/landing/hero3.svg'} alt='ai-image'width={300} height={300}/>
-<Image className='absolute rounded-r-4xl right-1 top-[-6rem]' src={'/static/landing/hero4.svg'} alt='ai-image'width={300} height={300}/>
-
-</div> */}
     </div>
   );
 };

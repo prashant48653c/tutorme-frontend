@@ -13,6 +13,7 @@ import { signUpSchema, SignUpFormData } from "@/lib/validations/auth"
 import { useRegister } from "@/hooks/useAuth"
 import { useAuthStore } from "@/store/useAuthStore"
 import { RegisterRequest } from "@/types/auth"
+import Image from "next/image"
 
 interface SignUpModalProps {
   isOpen: boolean
@@ -62,47 +63,28 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToLogin }: SignUp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="min-w-[60rem] p-0 bg-white rounded-3xl">
-        <div className="grid md:grid-cols-2">
+      <DialogContent className="p-5 min-w-[46rem] bg-white rounded-3xl">
+        <div className="grid w-full  md:grid-cols-[40%_60%] ">
           {/* Left side - Illustration */}
-          <div className="bg-gradient-to-br from-blue-100 to-blue-200 p-8 flex items-center justify-center">
-            <div className="relative w-full max-w-sm">
-              <div className="relative">
+          <div className="bg-gradient-to-br rounded-3xl from-blue-100 to-blue-200  flex items-center justify-center">
+           
+              
                 {/* 3D Browser Window */}
-                <div className="bg-white rounded-2xl p-4 shadow-lg transform rotate-3 mb-4">
-                  <div className="flex gap-2 mb-3">
-                    <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                    <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                    <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                  </div>
-                  <div className="bg-blue-500 h-8 rounded mb-2"></div>
-                  <div className="bg-gray-200 h-2 rounded mb-1"></div>
-                  <div className="bg-gray-200 h-2 rounded w-3/4"></div>
-                </div>
+               <Image
+                  src="/static/landing/signup.svg"
+                  alt="Signup Illustration"
+                  width={500}
+                  height={500}
+                  className=" "
+                  />
 
-                {/* Profile Card */}
-                <div className="bg-gradient-to-r from-purple-400 to-pink-400 rounded-2xl p-4 shadow-lg transform -rotate-6 absolute top-16 right-0">
-                  <div className="w-8 h-8 bg-white rounded-full mb-2"></div>
-                  <div className="bg-white/80 h-2 rounded mb-1"></div>
-                  <div className="bg-white/80 h-2 rounded w-2/3"></div>
-                </div>
-
-                {/* Settings Card */}
-                <div className="bg-gradient-to-r from-orange-400 to-yellow-400 rounded-2xl p-4 shadow-lg transform rotate-12 absolute bottom-0 left-4">
-                  <div className="w-6 h-6 bg-white rounded mb-2"></div>
-                  <div className="bg-white/80 h-2 rounded mb-1"></div>
-                  <div className="bg-white/80 h-2 rounded w-1/2"></div>
-                </div>
-
-                {/* Gear Icons */}
-                <div className="absolute -top-4 -right-4 w-8 h-8 bg-pink-400 rounded-full"></div>
-                <div className="absolute -bottom-8 -left-2 w-6 h-6 bg-purple-400 rounded-full"></div>
-              </div>
-            </div>
+         
+      
+            
           </div>
 
           {/* Right side - Form */}
-          <div className="p-8 flex flex-col max-h-[90vh]">
+          <div className=" pt-2 flex flex-col max-h-[90vh]">
             <div className="max-w-sm mx-auto w-full text-center mb-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign Up</h2>
               <p className="text-cyan-500 font-medium">{"Let's get your setup ready."}</p>

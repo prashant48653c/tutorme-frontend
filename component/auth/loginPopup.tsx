@@ -1,30 +1,35 @@
 // components/LoginModal.tsx
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Eye, EyeOff } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { loginSchema, LoginFormData } from "@/lib/validations/auth"
-import { useLogin } from "@/hooks/useAuth"
-import { useAuthStore } from "@/store/useAuthStore"
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema, LoginFormData } from "@/lib/validations/auth";
+import { useLogin } from "@/hooks/useAuth";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useRouter } from "next/navigation";
 
 interface LoginModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSwitchToSignUp: () => void
+  isOpen: boolean;
+  onClose: () => void;
+  onSwitchToSignUp: () => void;
 }
 
-export default function LoginModal({ isOpen, onClose, onSwitchToSignUp }: LoginModalProps) {
-  const [showPassword, setShowPassword] = useState(false)
-  
-  const isLoading = useAuthStore((state) => state.isLoading)
-  const loginMutation = useLogin()
-
+export default function LoginModal({
+  isOpen,
+  onClose,
+  onSwitchToSignUp,
+}: LoginModalProps) {
+  const [showPassword, setShowPassword] = useState(false);
+  const setUser = useAuthStore((state) => state.setUser);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const loginMutation = useLogin();
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -32,18 +37,22 @@ export default function LoginModal({ isOpen, onClose, onSwitchToSignUp }: LoginM
     reset,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-  })
+  });
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      await loginMutation.mutateAsync(data)
-      reset() 
-      onClose() 
+      const res = await loginMutation.mutateAsync(data);
+      console.log(res, "Login");
+      setUser(res.data.user);
+      if (res.data.user.role === "TUTOR") {
+        router.push("/tutor/profile");
+      }
+      reset();
+      onClose();
     } catch (error) {
-      
-      console.error('Login failed:', error)
+      console.error("Login failed:", error);
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -101,7 +110,9 @@ export default function LoginModal({ isOpen, onClose, onSwitchToSignUp }: LoginM
                     {...register("email")}
                   />
                   {errors.email && (
-                    <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.email.message}
+                    </p>
                   )}
                 </div>
 
@@ -121,10 +132,16 @@ export default function LoginModal({ isOpen, onClose, onSwitchToSignUp }: LoginM
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
                   </button>
                   {errors.password && (
-                    <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.password.message}
+                    </p>
                   )}
                 </div>
 
@@ -150,11 +167,17 @@ export default function LoginModal({ isOpen, onClose, onSwitchToSignUp }: LoginM
                     <div className="w-full border-t border-gray-200"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-white text-gray-500">Or Login with</span>
+                    <span className="px-4 bg-white text-gray-500">
+                      Or Login with
+                    </span>
                   </div>
                 </div>
 
-                <Button type="button" variant="outline" className="w-full h-12 border-gray-200 hover:bg-gray-50">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-12 border-gray-200 hover:bg-gray-50"
+                >
                   <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
@@ -192,5 +215,5 @@ export default function LoginModal({ isOpen, onClose, onSwitchToSignUp }: LoginM
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

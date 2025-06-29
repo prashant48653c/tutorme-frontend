@@ -1,3 +1,5 @@
+
+ 
 import CourseManagement from "@/component/profile/CourseManagement";
 import ProductManagement from "@/component/profile/ProductManagement";
 import Profile from "@/component/profile/Profile";
@@ -5,6 +7,7 @@ import QualificationView from "@/component/profile/QualificationView";
 import Topbar from "@/component/reusable/Topbar";
 import BioAccordion from "@/components/accordion-01";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/useAuthStore";
 import { Inbox } from "lucide-react";
 import { Onest } from "next/font/google";
 import Image from "next/image";

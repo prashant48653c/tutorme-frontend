@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useReducer, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -16,10 +16,91 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "react-hot-toast";
+import { ToastBar } from "react-hot-toast";
+import api from "@/hooks/axios";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface StepIndicatorProps {
   currentStep: number;
   totalSteps: number;
+}
+
+type FormState = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  location: string;
+  languages: string[];
+  bankName: string;
+  bankAccount: string;
+  confirmAccount: string;
+  chequeImage: File | null;
+  qualification: string;
+  graduationPlace: string;
+  designation: string;
+  experienceYears: string;
+  currentlyWorking: string;
+  workplace: string;
+  graduationYear:string;
+  gradesTaught: string;
+  identificationCert: File | null;
+  qualificationCert: File | null;
+  experienceLetter: File | null;
+  confirmCorrect: boolean;
+};
+
+const initialState: FormState = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  graduationYear:" ",
+  location: "",
+  languages: ["English", "Nepali"],
+  bankName: "",
+  bankAccount: "",
+  confirmAccount: "",
+  chequeImage: null,
+  qualification: "",
+  graduationPlace: "",
+  designation: "",
+  experienceYears: "",
+  currentlyWorking: "yes",
+  workplace: "",
+  gradesTaught: "",
+  identificationCert: null,
+  qualificationCert: null,
+  experienceLetter: null,
+  confirmCorrect: false,
+};
+
+type Action =
+  | { type: "SET_FIELD"; field: keyof FormState; value: any }
+  | { type: "ADD_LANGUAGE"; language: string }
+  | { type: "REMOVE_LANGUAGE"; index: number };
+
+function formReducer(state: FormState, action: Action): FormState {
+  switch (action.type) {
+    case "SET_FIELD":
+      return { ...state, [action.field]: action.value };
+    case "ADD_LANGUAGE":
+      if (
+        action.language.trim() &&
+        !state.languages.includes(action.language)
+      ) {
+        return { ...state, languages: [...state.languages, action.language] };
+      }
+      return state;
+    case "REMOVE_LANGUAGE":
+      return {
+        ...state,
+        languages: state.languages.filter((_, i) => i !== action.index),
+      };
+    default:
+      return state;
+  }
 }
 
 function StepIndicator({ currentStep, totalSteps }: StepIndicatorProps) {
@@ -69,22 +150,68 @@ function LanguageTag({ language, onRemove }: LanguageTagProps) {
 }
 
 export default function KYCVerificationModal() {
-  const [isOpen, setIsOpen] = useState(true);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [languages, setLanguages] = useState(["English", "Nepali"]);
-  const [chequeImage, setChequeImage] = useState(null);
+  const user = useAuthStore((state) => state.user);
 
-  const handleChequeUpload = (e: any) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith("image/")) {
-      setChequeImage(file);
-    } else {
-      alert("Please upload a valid image file.");
-    }
+  const [isOpen, setIsOpen] = useState(user?.tutorProfile ? false : true);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [languageInput, setLanguageInput] = useState("");
+  const [state, dispatch] = useReducer(formReducer, initialState);
+  const removeLanguage = (index: number) => {
+    dispatch({ type: "REMOVE_LANGUAGE", index });
   };
 
-  const removeLanguage = (index: number) => {
-    setLanguages(languages.filter((_, i) => i !== index));
+  const handleSubmit = async () => {
+    if (state.confirmAccount !== state.bankAccount) {
+      toast.error("Bank account numbers do not match.");
+      return;
+    }
+    const formData = new FormData();
+
+    // Basic Information
+    if(user){
+    formData.append("name", user.name);
+    formData.append("email", state.email);
+    formData.append("phoneNumber", state.phone);
+     }
+
+    formData.append("address", state.location);
+    formData.append("language", JSON.stringify(state.languages));
+
+    // Payment Details
+    formData.append("bankName", state.bankName);
+    formData.append("bankAccountNumber", state.bankAccount);
+
+    // Qualification Details
+    formData.append("qualifications", state.qualification);
+    formData.append("graduatedFrom", state.graduationPlace);
+    formData.append("jobTitle", state.designation);
+    formData.append("workingExperienceYear", state.experienceYears);
+    formData.append("currentlyWorking", state.currentlyWorking);
+    formData.append("currentOrganization", state.workplace);
+    formData.append("gradesTaught", state.gradesTaught);
+    formData.append("graduatedAt", state.graduationYear);
+
+    
+    // File uploads
+    if (state.chequeImage) {
+      formData.append("chequeImage", state.chequeImage);
+    }
+    if (state.identificationCert) {
+      formData.append("identificationCert", state.identificationCert);
+    }
+    if (state.qualificationCert) {
+      formData.append("qualificationCert", state.qualificationCert);
+    }
+    if (state.experienceLetter) {
+      formData.append("experienceLetter", state.experienceLetter);
+    }
+    const id = user?.id.toString();
+    if(id)
+    formData.append("userId",id);
+    const res = await api.post(`/auth/tutor/kyc`, formData);
+    console.log(res);
+    // Show success message
+    toast.success("Form submitted successfully! Check console for data.");
   };
 
   const nextStep = () => {
@@ -110,18 +237,74 @@ export default function KYCVerificationModal() {
             </h3>
 
             <div className="grid grid-cols-2 gap-4">
-              <Input placeholder="First Name" className="bg-gray-50 border-0" />
-              <Input placeholder="Last Name" className="bg-gray-50 border-0" />
+              <Input
+                placeholder="First Name"
+                readOnly
+                className="bg-gray-50 border-0 w-full"
+                value={user?.name.split(" ")[0]}
+                onChange={(e) =>
+                  dispatch({
+                    type: "SET_FIELD",
+                    field: "firstName",
+                    value: e.target.value,
+                  })
+                }
+              />
+
+              <Input
+                placeholder="Last Name"
+
+              value={user?.name.split(" ")[1]}
+                readOnly
+                className="bg-gray-50 border-0 w-full"
+                onChange={(e) =>
+                  dispatch({
+                    type: "SET_FIELD",
+                    field: "lastName",
+                    value: e.target.value,
+                  })
+                }
+              />
             </div>
 
-            <Input placeholder="Email" className="bg-gray-50 border-0 w-full" />
             <Input
-              placeholder="Phone Number"
+              placeholder="Email"
               className="bg-gray-50 border-0 w-full"
+              value={user?.email}
+              readOnly
+              onChange={(e) =>
+                
+                dispatch({
+                  type: "SET_FIELD",
+                  field: "email",
+                  value: e.target.value,
+                })
+              }
             />
             <Input
-              placeholder="Location"
+              placeholder="Phone number"
               className="bg-gray-50 border-0 w-full"
+              value={user?.phoneNumber}
+              readOnly
+              onChange={(e) =>
+                dispatch({
+                  type: "SET_FIELD",
+                  field: "phone",
+                  value: e.target.value,
+                })
+              }
+            />
+
+            <Input
+              placeholder="Location"
+              value={state.location}
+              onChange={(e) =>
+                dispatch({
+                  type: "SET_FIELD",
+                  field: "location",
+                  value: e.target.value,
+                })
+              }
             />
 
             <div className="space-y-2">
@@ -129,7 +312,7 @@ export default function KYCVerificationModal() {
                 Languages
               </label>
               <div className="border border-gray-300 rounded-lg p-2 flex flex-wrap gap-2">
-                {languages.map((lang, index) => (
+                {state.languages.map((lang, index) => (
                   <LanguageTag
                     key={index}
                     language={lang}
@@ -138,16 +321,20 @@ export default function KYCVerificationModal() {
                 ))}
                 <input
                   type="text"
-                  placeholder="Type language and press Enter"
-                  className="flex-grow min-w-[150px] p-1 outline-none text-sm"
                   value={languageInput}
                   onChange={(e) => setLanguageInput(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && languageInput.trim()) {
                       e.preventDefault();
-                      addLanguage();
+                      dispatch({
+                        type: "ADD_LANGUAGE",
+                        language: languageInput.trim(),
+                      });
+                      setLanguageInput("");
                     }
                   }}
+                  placeholder="Add language and press Enter"
+                  className="flex-1 border-none outline-none bg-transparent min-w-[120px]"
                 />
               </div>
             </div>
@@ -164,15 +351,38 @@ export default function KYCVerificationModal() {
 
             <Input
               placeholder="Bank Name"
-              className="bg-gray-50 border-0 w-full"
+              value={state.bankName}
+              onChange={(e) =>
+                dispatch({
+                  type: "SET_FIELD",
+                  field: "bankName",
+                  value: e.target.value,
+                })
+              }
             />
+
             <Input
               placeholder="Bank Account Number"
-              className="bg-gray-50 border-0 w-full"
+              value={state.bankAccount}
+              onChange={(e) =>
+                dispatch({
+                  type: "SET_FIELD",
+                  field: "bankAccount",
+                  value: e.target.value,
+                })
+              }
             />
+
             <Input
-              placeholder="Confirm Bank Account Number"
-              className="bg-gray-50 border-0 w-full"
+              placeholder="Confirm Bank Account"
+              value={state.confirmAccount}
+              onChange={(e) =>
+                dispatch({
+                  type: "SET_FIELD",
+                  field: "confirmAccount",
+                  value: e.target.value,
+                })
+              }
             />
 
             <div className="space-y-2">
@@ -183,10 +393,10 @@ export default function KYCVerificationModal() {
                 className="relative w-full border-2 border-dashed border-gray-300 rounded-lg h-48 flex flex-col items-center justify-center text-center text-gray-500 cursor-pointer hover:border-teal-400 transition-colors overflow-hidden"
                 onClick={() => document.getElementById("chequeInput")?.click()}
               >
-                {chequeImage ? (
+                {state.chequeImage ? (
                   <>
                     <img
-                      src={URL.createObjectURL(chequeImage)}
+                      src={URL.createObjectURL(state.chequeImage)}
                       alt="Cheque Preview"
                       className="object-contain h-full w-full"
                     />
@@ -194,7 +404,11 @@ export default function KYCVerificationModal() {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setChequeImage(null);
+                        dispatch({
+                          type: "SET_FIELD",
+                          field: "chequeImage",
+                          value: null,
+                        });
                       }}
                       className="absolute top-2 right-2 bg-white text-red-500 rounded-full shadow p-1 hover:bg-red-100"
                     >
@@ -213,7 +427,18 @@ export default function KYCVerificationModal() {
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={handleChequeUpload}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file && file.type.startsWith("image/")) {
+                      dispatch({
+                        type: "SET_FIELD",
+                        field: "chequeImage",
+                        value: file,
+                      });
+                    } else {
+                      toast.error("Please upload a valid image file.");
+                    }
+                  }}
                 />
               </div>
             </div>
@@ -232,37 +457,92 @@ export default function KYCVerificationModal() {
                 <Label className="text-sm mb-1 text-gray-700">
                   Qualification
                 </Label>
-                <Select>
+                <Select
+                  value={state.qualification}
+                  onValueChange={(value) =>
+                    dispatch({
+                      type: "SET_FIELD",
+                      field: "qualification",
+                      value,
+                    })
+                  }
+                >
                   <SelectTrigger className="bg-gray-50  w-full border-0">
                     <SelectValue placeholder="Select Qualification" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="bachelors">Bachelor’s Degree</SelectItem>
-                    <SelectItem value="masters">Master’s Degree</SelectItem>
+                    <SelectItem value="bachelors">Bachelor's Degree</SelectItem>
+                    <SelectItem value="masters">Master's Degree</SelectItem>
                     <SelectItem value="phd">PhD</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
+
+             <div>
+  <Label className="text-sm mb-1 text-gray-700">
+    Graduation Year
+  </Label>
+  <Select
+    value={state.graduationYear}
+    onValueChange={(value) =>
+      dispatch({
+        type: "SET_FIELD",
+        field: "graduationYear",
+        value,
+      })
+    }
+  >
+    <SelectTrigger className="bg-gray-50 border-0">
+      <SelectValue placeholder="Select Year" />
+    </SelectTrigger>
+    <SelectContent>
+      {Array.from({ length: 2025 - 2000 + 1 }, (_, i) => 2000 + i).map((year) => (
+        <SelectItem key={year} value={year.toString()}>
+          {year}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+</div>
+
+
               <div>
                 <Label className="text-sm mb-1 text-gray-700">
                   Where did you Graduate From?
                 </Label>
-
                 <Input
                   placeholder="Your institution's name"
                   className="bg-gray-50 border-0"
+                  value={state.graduationPlace}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "SET_FIELD",
+                      field: "graduationPlace",
+                      value: e.target.value,
+                    })
+                  }
                 />
               </div>
+
+              
 
               <div>
                 <Label className="text-sm mb-1 text-gray-700">
                   What do you do?
                 </Label>
-
                 <Input
                   placeholder="Your Designation"
                   className="bg-gray-50 border-0"
+                  value={state.designation}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "SET_FIELD",
+                      field: "designation",
+                      value: e.target.value,
+                    })
+                  }
                 />
               </div>
 
@@ -270,7 +550,16 @@ export default function KYCVerificationModal() {
                 <Label className="text-sm mb-1 text-gray-700">
                   Work Experience?
                 </Label>
-                <Select>
+                <Select
+                  value={state.experienceYears}
+                  onValueChange={(value) =>
+                    dispatch({
+                      type: "SET_FIELD",
+                      field: "experienceYears",
+                      value,
+                    })
+                  }
+                >
                   <SelectTrigger className="bg-gray-50 border-0">
                     <SelectValue placeholder="Experience in Years" />
                   </SelectTrigger>
@@ -288,7 +577,6 @@ export default function KYCVerificationModal() {
                 <Label className="text-sm  text-gray-700">
                   Are you currently working?
                 </Label>
-
                 <div className="flex items-center w-full gap-4">
                   <label className="flex items-center gap-1 text-sm text-gray-800">
                     <input
@@ -296,7 +584,14 @@ export default function KYCVerificationModal() {
                       name="working"
                       value="yes"
                       className="accent-teal-500"
-                      defaultChecked
+                      checked={state.currentlyWorking === "yes"}
+                      onChange={() =>
+                        dispatch({
+                          type: "SET_FIELD",
+                          field: "currentlyWorking",
+                          value: "yes",
+                        })
+                      }
                     />
                     Yes
                   </label>
@@ -306,18 +601,35 @@ export default function KYCVerificationModal() {
                       name="working"
                       value="no"
                       className="accent-teal-500"
+                      checked={state.currentlyWorking === "no"}
+                      onChange={() =>
+                        dispatch({
+                          type: "SET_FIELD",
+                          field: "currentlyWorking",
+                          value: "no",
+                        })
+                      }
                     />
                     No
                   </label>
                 </div>
               </div>
+
               <div>
                 <Label className="text-sm mb-1 text-gray-700">
                   If yes, where?
                 </Label>
                 <Input
-                  placeholder="Workplace’s Name"
+                  placeholder="Workplace's Name"
                   className="bg-gray-50 border-0"
+                  value={state.workplace}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "SET_FIELD",
+                      field: "workplace",
+                      value: e.target.value,
+                    })
+                  }
                 />
               </div>
 
@@ -325,8 +637,16 @@ export default function KYCVerificationModal() {
                 <Label className="text-sm mb-1 text-gray-700">
                   Which grade students did you previously teach?
                 </Label>
-
-                <Select>
+                <Select
+                  value={state.gradesTaught}
+                  onValueChange={(value) =>
+                    dispatch({
+                      type: "SET_FIELD",
+                      field: "gradesTaught",
+                      value,
+                    })
+                  }
+                >
                   <SelectTrigger className="bg-gray-50 border-0 w-full">
                     <SelectValue placeholder="Select Grade" />
                   </SelectTrigger>
@@ -344,59 +664,80 @@ export default function KYCVerificationModal() {
 
       case 4:
         return (
-         <div className="space-y-6">
-      {/* Certificates Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Identification Certificate */}
-        <UploadCard
-          title="Identification Certificate"
-          description="Upload your Citizenship"
-        />
+          <div className="space-y-6">
+            {/* Certificates Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Identification Certificate */}
+              <UploadCard
+                title="Identification Certificate"
+                description="Upload your Citizenship"
+                file={state.identificationCert}
+                onFileChange={(file) =>
+                  dispatch({
+                    type: "SET_FIELD",
+                    field: "identificationCert",
+                    value: file,
+                  })
+                }
+              />
 
-        {/* Qualification Certificate */}
-        <UploadCard
-          title="Qualification Certificate"
-          description="Upload your latest Marksheet"
-        />
-      </div>
+              {/* Qualification Certificate */}
+              <UploadCard
+                title="Qualification Certificate"
+                description="Upload your latest Marksheet"
+                file={state.qualificationCert}
+                onFileChange={(file) =>
+                  dispatch({
+                    type: "SET_FIELD",
+                    field: "qualificationCert",
+                    value: file,
+                  })
+                }
+              />
+            </div>
 
-      {/* Experience Letter */}
-      <UploadCard
-        title="Experience Letter"
-        description="Upload your Experience Letter"
-        fullWidth
-      />
+            {/* Experience Letter */}
+            <UploadCard
+              title="Experience Letter"
+              description="Upload your Experience Letter"
+              file={state.experienceLetter}
+              onFileChange={(file) =>
+                dispatch({
+                  type: "SET_FIELD",
+                  field: "experienceLetter",
+                  value: file,
+                })
+              }
+              fullWidth
+            />
 
-      {/* Checkbox */}
-      <div className="flex items-center space-x-2">
-        <Checkbox className="border border-black" id="confirm" />
-        <Label htmlFor="confirm" className="text-sm">
-          Mark all the given Information Correct
-        </Label>
-      </div>
-    </div>
+            {/* Checkbox */}
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                className="border border-black"
+                id="confirm"
+                checked={state.confirmCorrect}
+                onCheckedChange={(checked) =>
+                  dispatch({
+                    type: "SET_FIELD",
+                    field: "confirmCorrect",
+                    value: checked,
+                  })
+                }
+              />
+              <Label htmlFor="confirm" className="text-sm">
+                Mark all the given Information Correct
+              </Label>
+            </div>
+          </div>
         );
       default:
         return null;
     }
   };
 
-  const [languageInput, setLanguageInput] = useState("");
-
-  const addLanguage = () => {
-    const trimmed = languageInput.trim();
-    if (trimmed && !languages.includes(trimmed)) {
-      setLanguages([...languages, trimmed]);
-    }
-    setLanguageInput("");
-  };
-
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <Button onClick={() => setIsOpen(true)} className="mb-4">
-        Open KYC Verification
-      </Button>
-
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-h-[90vh] w-full max-w-[95vw] md:max-w-[60rem] overflow-y-auto p-0 gap-0">
           <div className="flex flex-col md:flex-row">
@@ -404,13 +745,9 @@ export default function KYCVerificationModal() {
             <div className="w-full md:w-1/3 p-4 md:p-6">
               <div className="bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl p-6 h-64 md:h-full flex items-center justify-center border-2 border-blue-300">
                 <div className="relative w-full h-full max-h-64 md:max-h-full">
-                  <Image
-                    src="/static/landing/hero1.svg"
-                    alt="KYC Verification Illustration"
-                    height={400}
-                    width={300}
-                    className="object-contain mx-auto"
-                  />
+                  <div className="w-full h-full flex items-center justify-center text-blue-600 text-6xl font-bold">
+                    KYC
+                  </div>
                 </div>
               </div>
             </div>
@@ -440,8 +777,7 @@ export default function KYCVerificationModal() {
                   Back
                 </Button>
                 <Button
-                  onClick={nextStep}
-                   
+                  onClick={currentStep === 4 ? handleSubmit : nextStep}
                   className="w-full sm:w-auto bg-teal-500 hover:bg-teal-600 px-6"
                 >
                   {currentStep === 4 ? "Submit" : "Next"}
@@ -455,28 +791,79 @@ export default function KYCVerificationModal() {
   );
 }
 
-
- 
-
 function UploadCard({
   title,
   description,
+  file,
+  onFileChange,
   fullWidth = false,
 }: {
-  title: string
-  description: string
-  fullWidth?: boolean
+  title: string;
+  description: string;
+  file?: File | null;
+  onFileChange: (file: File | null) => void;
+  fullWidth?: boolean;
 }) {
+  const inputId = `upload-${title.replace(/\s+/g, "-").toLowerCase()}`;
+
   return (
     <div className={`${fullWidth ? "w-full" : ""}`}>
       <h3 className="mb-2 text-base font-medium">{title}</h3>
-      <div className="rounded-lg border border-dashed border-blue-300 bg-blue-50 p-6 text-center">
-       <Image src={"/static/icons/upload.svg"} alt="Upload Icon" width={30} height={30} className="mx-auto mb-4" />
-        <p className="">{description}</p>
-        <p className="text-xs mt-2 text-blue-500">
-          SVG, PNG or JPEG (Less than 10 MB)
-        </p>
+      <div
+        className="rounded-lg border border-dashed border-blue-300 bg-blue-50 p-6 text-center cursor-pointer hover:border-blue-400 transition-colors relative"
+        onClick={() => document.getElementById(inputId)?.click()}
+      >
+        {file ? (
+          <>
+            <div className="flex items-center justify-center mb-2">
+              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                ✓
+              </div>
+            </div>
+            <p className="font-medium text-blue-700">{file.name}</p>
+            <p className="text-xs mt-1 text-blue-500">
+              {(file.size / 1024 / 1024).toFixed(2)} MB
+            </p>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onFileChange(null);
+              }}
+              className="absolute top-2 right-2 bg-white text-red-500 rounded-full shadow p-1 hover:bg-red-100"
+            >
+              <X size={16} />
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="w-8 h-8 bg-blue-500 rounded mx-auto mb-4 flex items-center justify-center text-white">
+              ↑
+            </div>
+            <p className="">{description}</p>
+            <p className="text-xs mt-2 text-blue-500">
+              SVG, PNG or JPEG (Less than 10 MB)
+            </p>
+          </>
+        )}
+
+        <input
+          id={inputId}
+          type="file"
+          accept="image/*,.pdf"
+          className="hidden"
+          onChange={(e) => {
+            const selectedFile = e.target.files?.[0];
+            if (selectedFile) {
+              if (selectedFile.size > 10 * 1024 * 1024) {
+                toast.error("File size should be less than 10 MB");
+                return;
+              }
+              onFileChange(selectedFile);
+            }
+          }}
+        />
       </div>
     </div>
-  )
+  );
 }
