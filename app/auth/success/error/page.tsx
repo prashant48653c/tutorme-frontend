@@ -1,3 +1,4 @@
+"use client"
 import { useRouter, useSearchParams } from 'next/navigation'
 import { AlertCircle, Home, RotateCcw } from 'lucide-react'
 
