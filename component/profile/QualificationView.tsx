@@ -15,32 +15,12 @@ import AddQualificationModal from "./AddQualification";
 import { useAuthStore } from "@/store/useAuthStore";
 import { EducationType } from "@/types/auth";
 
-const items = [
-  {
-    title: "Education",
-    education: [
-      {
-        college: "Aims College of Medical",
-        course: "MCE",
-        time: "2018 - 2022",
-        type: "Full Time",
-      },
-      {
-        college: "Harvard University",
-        course: "BCE",
-        time: "2018 - 2022",
-        type: "Full Time",
-      },
-    ],
-  },
-];
-
 export default function QualificationView() {
   const [openItem, setOpenItem] = useState<string | null>(null);
   const [status, setStatus] = useState(false);
   const user = useAuthStore((state) => state.user);
-  console.log(user)
-  const education=user?.tutorProfile?.education;
+  console.log(user);
+  const education = user?.tutorProfile?.education;
 
   const handleEdit = (index: number) => {
     console.log("Editing item:", index);
@@ -59,7 +39,7 @@ export default function QualificationView() {
       onValueChange={(value) => setOpenItem(value)}
       className="max-w-lg w-full"
     >
-      {education.map(( edu:EducationType , index:number) => {
+      {education?.map((edu: EducationType, index: number) => {
         const isOpen = openItem === `item-${index}`;
 
         return (
@@ -86,42 +66,38 @@ export default function QualificationView() {
             </AccordionTrigger>
 
             <AccordionContent className="text-gray-500 justify-center text-sm flex flex-col gap-4">
-              {education.map((edu:EducationType, eduIndex:number) => (
-                <div
-                  key={eduIndex}
-                  className="flex justify-between items-center border-b pb-2"
-                >
-                  <div>
-                    <p className="font-semibold text-md text-black">
-                      {edu.qualification}
-                    </p>
-                    <p className="font-semibold text-md text-black">
-                      {edu.institutionName}
-                    </p>
-                    <p>
-                      {edu.timePeriod} | {edu.type == "FULL_TIME" ? "Full Time":"Part Time"}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-x-4">
-                    <Pencil
-                      size={18}
-                      className="text-primeGreen cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(eduIndex);
-                      }}
-                    />
-                    <Trash
-                      size={18}
-                      className="text-primeGreen cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(eduIndex);
-                      }}
-                    />
-                  </div>
+              <div className="flex justify-between items-center border-b pb-2">
+                <div>
+                  <p className="font-semibold text-md text-black">
+                    {edu.qualification}
+                  </p>
+                  <p className="font-semibold text-md text-black">
+                    {edu.institutionName}
+                  </p>
+                  <p>
+                    {edu.timePeriod} |{" "}
+                    {edu.type === "FULL_TIME" ? "Full Time" : "Part Time"}
+                  </p>
                 </div>
-              ))}
+                <div className="flex items-center gap-x-4">
+                  <Pencil
+                    size={18}
+                    className="text-primeGreen cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit(index);
+                    }}
+                  />
+                  <Trash
+                    size={18}
+                    className="text-primeGreen cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(index);
+                    }}
+                  />
+                </div>
+              </div>
             </AccordionContent>
           </AccordionItem>
         );

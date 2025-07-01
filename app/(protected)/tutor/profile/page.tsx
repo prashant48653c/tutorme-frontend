@@ -1,5 +1,5 @@
 
- 
+ 'use client'
 import CourseManagement from "@/component/profile/CourseManagement";
 import ProductManagement from "@/component/profile/ProductManagement";
 import Profile from "@/component/profile/Profile";
