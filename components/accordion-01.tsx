@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import EditBio from "@/component/profile/EditBio";
 import {
   Accordion,
@@ -6,6 +6,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import api from "@/hooks/axios";
+import { useAuthStore } from "@/store/useAuthStore";
 import { ArrowDown, ArrowUp, Pencil } from "lucide-react";
 import { useState } from "react";
 
@@ -19,11 +21,13 @@ const items = [
 
 export default function BioAccordion() {
   const [openItem, setOpenItem] = useState<string | null>(null);
-const [status,setStatus] = useState(false);
-  const handleEdit = (index: number) => {
-    console.log("Editing item:", index);
-    // Your edit logic here
-    setStatus(true)
+  const [status, setStatus] = useState(false);
+  const user = useAuthStore((state) => state.user);
+
+  const handleEdit =async (index: number) => {
+    console.log("Editing item:", user);
+     
+    setStatus(true);
   };
 
   return (
@@ -63,19 +67,17 @@ const [status,setStatus] = useState(false);
             </AccordionTrigger>
 
             <AccordionContent className="text-gray-500 text-sm">
-              {content}
+              {user?.bio || "New user at TutorMe"}
             </AccordionContent>
           </AccordionItem>
         );
       })}
 
-      {
-        status && (
-          <div className="absolute z-10 top-40 right-72 p-2 text-xs text-gray-400">
-           <EditBio/>
-          </div>
-        )
-      }
+      {status && (
+        <div className="absolute z-10 top-40 right-72 p-2 text-xs text-gray-400">
+          <EditBio  setStatus={setStatus} />
+        </div>
+      )}
     </Accordion>
   );
 }

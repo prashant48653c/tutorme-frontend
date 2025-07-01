@@ -1,116 +1,151 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Upload } from "lucide-react"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Upload } from "lucide-react";
+import api from "@/hooks/axios";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface AddQualificationModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSave: (data: QualificationData) => void
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (data: QualificationData) => void;
 }
 
 interface QualificationData {
-  qualification: string
-  graduationLocation: string
-  certificate: File | null
+  qualification: string;
+  graduationLocation: string;
+  certificate: File | null;
 }
 
 export default function AddQualificationModal() {
-  const [qualification, setQualification] = useState("")
-  const [graduationLocation, setGraduationLocation] = useState("")
-  const [certificate, setCertificate] = useState<File | null>(null)
-  const [dragActive, setDragActive] = useState(false)
+  const [qualification, setQualification] = useState("");
+  const [graduationLocation, setGraduationLocation] = useState("");
+  const [certificate, setCertificate] = useState<File | null>(null);
+  const [dragActive, setDragActive] = useState(false);
 
   const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+    e.preventDefault();
+    e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true)
+      setDragActive(true);
     } else if (e.type === "dragleave") {
-      setDragActive(false)
+      setDragActive(false);
     }
-  }
+  };
 
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDragActive(false)
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0]
+      const file = e.dataTransfer.files[0];
       if (validateFile(file)) {
-        setCertificate(file)
+        setCertificate(file);
       }
     }
-  }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
+      const file = e.target.files[0];
       if (validateFile(file)) {
-        setCertificate(file)
+        setCertificate(file);
       }
     }
-  }
+  };
 
   const validateFile = (file: File) => {
-    const validTypes = ["image/svg+xml", "image/png", "image/jpeg"]
-    const maxSize = 10 * 1024 * 1024 // 10MB
+    const validTypes = ["image/svg+xml", "image/png", "image/jpeg"];
+    const maxSize = 10 * 1024 * 1024; // 10MB
 
     if (!validTypes.includes(file.type)) {
-      alert("Please upload SVG, PNG or JPEG files only")
-      return false
+      alert("Please upload SVG, PNG or JPEG files only");
+      return false;
     }
 
     if (file.size > maxSize) {
-      alert("File size must be less than 10MB")
-      return false
+      alert("File size must be less than 10MB");
+      return false;
     }
 
-    return true
+    return true;
+  };
+const user=useAuthStore((state=>state.user))
+ const handleSave = async () => {
+  console.log("first")
+  if (!qualification || !graduationLocation || !certificate) {
+    alert("Please fill in all required fields");
+    return;
   }
 
-  const handleSave = () => {
-    if (!qualification || !graduationLocation) {
-      alert("Please fill in all required fields")
-      return
-    }
- 
+  const formData = new FormData();
+  formData.append("qualification", qualification);
+  formData.append("institutionName", graduationLocation);
+  formData.append("certificationUrl", certificate);
+  formData.append("type","FULL_TIME");
+  formData.append("timePeriod","2022-2025");
 
-    // Reset form
-    setQualification("")
-    setGraduationLocation("")
-    setCertificate(null)
-     
+  
+
+  try {
+    const id=user?.id;
+
+    const res = await api.patch(`/auth/tutor/edu/${id}`, formData);
+
+    console.log("Successfully updated:", res.data);
+
+    // Optional: Reset form and close modal
+    setQualification("");
+    setGraduationLocation("");
+    setCertificate(null);
+  } catch (error) {
+    console.error("Error uploading education:", error);
+    alert("Failed to upload qualification.");
   }
+};
+
 
   const handleCancel = () => {
     // Reset form
-    setQualification("")
-    setGraduationLocation("")
-    setCertificate(null)
-    
-  }
+    setQualification("");
+    setGraduationLocation("");
+    setCertificate(null);
+  };
 
   return (
-    <div >
+    <div>
       <div className="max-w min-w-[40rem] bg-white z-10 rounded-2xl w-full p-6">
-        
-<div>
-  <h3 className="text-2xl text-black font-semibold mb-2">Add Qualification</h3>
-</div>
+        <div>
+          <h3 className="text-2xl text-black font-semibold mb-2">
+            Add Qualification
+          </h3>
+        </div>
         <div className="space-y-6">
           {/* Qualification and Graduation Location */}
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Qualification</Label>
+              <Label className="text-sm font-medium text-gray-700">
+                Qualification
+              </Label>
               <Select value={qualification} onValueChange={setQualification}>
                 <SelectTrigger className="w-full bg-gray-50 border-gray-200">
                   <SelectValue placeholder="Select Qualification" />
@@ -127,7 +162,9 @@ export default function AddQualificationModal() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Where did you Graduate From?</Label>
+              <Label className="text-sm font-medium text-gray-700">
+                Where did you Graduate From?
+              </Label>
               <Input
                 placeholder="Enter institution name"
                 value={graduationLocation}
@@ -139,14 +176,16 @@ export default function AddQualificationModal() {
 
           {/* File Upload */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-700">Qualification Certificate</Label>
+            <Label className="text-sm font-medium text-gray-700">
+              Qualification Certificate
+            </Label>
             <div
               className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
                 dragActive
                   ? "border-teal-500 bg-teal-50"
                   : certificate
-                    ? "border-green-500 bg-green-50"
-                    : "border-gray-300 bg-gray-50"
+                  ? "border-green-500 bg-green-50"
+                  : "border-gray-300 bg-gray-50"
               }`}
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
@@ -168,13 +207,19 @@ export default function AddQualificationModal() {
 
                 {certificate ? (
                   <div className="text-center">
-                    <p className="text-sm font-medium text-green-600">File uploaded successfully!</p>
+                    <p className="text-sm font-medium text-green-600">
+                      File uploaded successfully!
+                    </p>
                     <p className="text-xs text-gray-500">{certificate.name}</p>
                   </div>
                 ) : (
                   <div className="text-center">
-                    <p className="text-sm font-medium text-gray-700 mb-1">Upload your Marksheet/Certificate</p>
-                    <p className="text-xs text-gray-500">SVG, PNG or JPEG (Less than 10 MB)</p>
+                    <p className="text-sm font-medium text-gray-700 mb-1">
+                      Upload your Marksheet/Certificate
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      SVG, PNG or JPEG (Less than 10 MB)
+                    </p>
                   </div>
                 )}
 
@@ -194,11 +239,14 @@ export default function AddQualificationModal() {
           <Button variant="outline" onClick={handleCancel} className="px-6">
             Cancel
           </Button>
-          <Button onClick={handleSave} className="bg-teal-500 hover:bg-teal-600 px-6">
+          <Button
+            onClick={handleSave}
+            className="bg-teal-500 hover:bg-teal-600 px-6"
+          >
             Save
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }

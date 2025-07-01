@@ -7,6 +7,7 @@ export interface User {
   phoneNumber: string;
   isEmailVerified: boolean;
   createdAt: string;
+  bio:string;
   updatedAt?: string;
   googleId?: string | null;
   tutorProfile?: any | null;
@@ -39,4 +40,14 @@ export interface LoginResponse {
   data: {
     user: User;
   };
+}
+
+
+export interface EducationType{
+  timePeriod:string;
+  qualification:string;
+  type:string;
+  institutionName:string;
+  id:number;
+
 }

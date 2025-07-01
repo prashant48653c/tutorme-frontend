@@ -159,7 +159,7 @@ export default function KYCVerificationModal() {
   const removeLanguage = (index: number) => {
     dispatch({ type: "REMOVE_LANGUAGE", index });
   };
-
+const setUser=useAuthStore((state)=>state.setUser);
   const handleSubmit = async () => {
     if (state.confirmAccount !== state.bankAccount) {
       toast.error("Bank account numbers do not match.");
@@ -209,7 +209,8 @@ export default function KYCVerificationModal() {
     if(id)
     formData.append("userId",id);
     const res = await api.post(`/auth/tutor/kyc`, formData);
-    console.log(res);
+    console.log(res.data);
+    setUser(res.data.profile)
     // Show success message
     toast.success("Form submitted successfully! Check console for data.");
   };
