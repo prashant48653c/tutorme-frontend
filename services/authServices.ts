@@ -11,4 +11,9 @@ export const authService = {
     const response = await api.post<LoginResponse>('/auth/login', data);
     return response.data;
   },
+
+  googleAuth: async (data: any): Promise<any> => {
+    const response = await api.post('/auth/google', data);
+    return response.data;
+  },
 };
