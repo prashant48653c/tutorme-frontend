@@ -40,7 +40,7 @@ export default function Slider() {
                   </div>
 
                   <h1 className="font-extrabold my-2 text-black">
-                    TUTOR<span className="text-green-400">ME </span>COURSE
+                    TUTOR<span className="text-primeGreen">ME </span>COURSE
                   </h1>
 
                   <p className="text-sm">

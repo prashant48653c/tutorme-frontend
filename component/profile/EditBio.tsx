@@ -6,14 +6,28 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import toast from "react-hot-toast";
+import api from "@/hooks/axios";
+import { useAuthStore } from "@/store/useAuthStore";
 
-export default function EditBio() {
+export default function EditBio({setStatus}:{setStatus:(b:boolean)=>void}) {
   const [newBio, setNewBio] = useState("Your bio");
+  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+  const handleUpdate = async (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+      console.log("Bio Update", newBio);
+      const id = user?.id;
+      const res = await api.patch(`/auth/profile/${id}`, { bio: newBio });
+      console.log(res.data.user);
+      setUser(res.data.user);
+      toast.success("bio updated");
+    } catch (error) {
+      toast.error("Something went wrong");
+    }finally{
+      setStatus(false)
 
-  const handleUpdate = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Bio Update", newBio);
-    toast.success("bio updated");
+    }
   };
   return (
     <div className="max-w-2xl min-w-[40rem] mx-auto bg-white p-6  rounded-2xl shadow-lg">

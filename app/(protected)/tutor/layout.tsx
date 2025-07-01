@@ -1,4 +1,5 @@
 import Sidebar from "@/component/reusable/Sidebar";
+import Topbar from "@/component/reusable/Topbar";
 import type { Metadata } from "next";
 
 import { ReactNode } from "react";
@@ -41,10 +42,15 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
       <body>
         <div className="flex w-full min-h-screen">
           {/* Sidebar */}
-         <Sidebar/>
+          <Sidebar links={links} />
 
           {/* Main Content */}
-          <main className="flex-1 w-full p-6 bg-gray-100">{children}</main>
+          <main className="flex-1 w-full p-6 bg-gray-100">
+            <div className={`w-full  h-max `}>
+              <Topbar />
+              {children}
+            </div>
+          </main>
         </div>
       </body>
     </html>

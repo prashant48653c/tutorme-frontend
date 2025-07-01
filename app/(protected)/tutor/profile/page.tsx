@@ -23,10 +23,9 @@ const ProfilePage = () => {
  
   
   return (
-    <div className={`w-full ${OnestFont.className} h-max `}>
-      <Topbar />
+   
 
-      <div className="grid mt-8 grid-cols-2 w-full gap-4">
+      <div className={`grid mt-8 ${OnestFont.className} grid-cols-2 w-full gap-4`}>
         <div className="  h-full  pb-7 flex flex-col  p-4">
           <Profile/>
 
@@ -45,7 +44,7 @@ const ProfilePage = () => {
 
         </div>
       </div>
-    </div>
+     
   );
 };
 
