@@ -39,10 +39,10 @@ const Sidebar = ({links}:{links:any}) => {
 
         <ul className="w-full px-2">
           {links.map((link:{path:string;icon:string;name:string}, index:number) => (
-            <li key={index} className="mb-2 p-3 flex items-center">
+            <li key={index} className="mb-2 hover:bg-[#09C4AE] rounded-3xl p-3 flex items-center hover:text-white">
               <Link
                 href={link.path}
-                className="flex items-center hover:underline"
+                className="flex  no-underline items-center hover:underline"
               >
                 <Image
                   src={`/static/icons/${link.icon}.svg`}

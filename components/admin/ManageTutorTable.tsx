@@ -1,235 +1,453 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Edit, Eye, ChevronLeft, ChevronRight } from "lucide-react"
+import { Edit, Eye, ChevronLeft, ChevronRight, ArrowUpAZ, Search } from "lucide-react"
+import ViewTutor from "./ViewTutor"
+import api from "@/hooks/axios"
 
 interface Tutor {
   id: number
   name: string
-  joinedDate: string
-  status: "approved" | "disapproved" | "banned" | "under-review" | "registered" | "kyc-approved" | "pending"
+  createdAt: string
+  status: "APPROVED" | "DISAPPROVED" | "BANNED" | "UNDERREVIEW" | "REGISTERED"
   avatar: string
+  tutorProfile:{
+    status:"APPROVED" | "DISAPPROVED" | "BANNED" | "UNDERREVIEW" | "REGISTERED"
+  }
 }
 
-const tutors: Tutor[] = [
-  {
-    id: 1,
-    name: "Sandesh Sapkota",
-    joinedDate: "2 Jan 2025",
-    status: "approved",
-    avatar: "/placeholder.svg?height=50&width=50",
-  },
-  {
-    id: 2,
-    name: "Priya Sharma",
-    joinedDate: "5 Jan 2025",
-    status: "disapproved",
-    avatar: "/placeholder.svg?height=50&width=50",
-  },
-  {
-    id: 3,
-    name: "Rajesh Kumar",
-    joinedDate: "8 Jan 2025",
-    status: "banned",
-    avatar: "/placeholder.svg?height=50&width=50",
-  },
-  {
-    id: 4,
-    name: "Anita Patel",
-    joinedDate: "10 Jan 2025",
-    status: "under-review",
-    avatar: "/placeholder.svg?height=50&width=50",
-  },
-  {
-    id: 5,
-    name: "Vikram Singh",
-    joinedDate: "12 Jan 2025",
-    status: "registered",
-    avatar: "/placeholder.svg?height=50&width=50",
-  },
-  {
-    id: 6,
-    name: "Meera Gupta",
-    joinedDate: "15 Jan 2025",
-    status: "kyc-approved",
-    avatar: "/placeholder.svg?height=50&width=50",
-  },
-  {
-    id: 7,
-    name: "Arjun Thapa",
-    joinedDate: "18 Jan 2025",
-    status: "pending",
-    avatar: "/placeholder.svg?height=50&width=50",
-  },
-]
+function formatDate(dateString:string) {
+  const date = new Date(dateString);
+
+  const day = date.getDate();
+  const month = date.toLocaleString('default', { month: 'short' }); // "Jan", "Feb", etc.
+  const year = date.getFullYear();
+
+  return `${day} ${month} ${year}`;
+}
+
 
 const getStatusBadge = (status: string) => {
   const statusConfig = {
-    approved: { label: "Approved", className: "bg-green-100 text-green-800 hover:bg-green-100" },
-    disapproved: { label: "Disapproved", className: "bg-purple-100 text-purple-800 hover:bg-purple-100" },
-    banned: { label: "Banned", className: "bg-red-100 text-red-800 hover:bg-red-100" },
-    "under-review": { label: "Under Review", className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" },
-    registered: { label: "Registered", className: "bg-blue-100 text-blue-800 hover:bg-blue-100" },
-    "kyc-approved": { label: "KYC Approved", className: "bg-green-100 text-green-800 hover:bg-green-100" },
-    pending: { label: "Pending", className: "bg-gray-100 text-gray-800 hover:bg-gray-100" },
+    APPROVED: { label: "Approved", className: "bg-green-100 text-green-800 hover:bg-green-100" },
+    DISAPPROVED: { label: "Disapproved", className: "bg-purple-100 text-purple-800 hover:bg-purple-100" },
+    BANNED: { label: "Banned", className: "bg-red-100 text-red-800 hover:bg-red-100" },
+    UNDERREVIEW: { label: "Under Review", className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" },
+    REGISTERED: { label: "Registered", className: "bg-blue-100 text-blue-800 hover:bg-blue-100" },
   }
 
-  return statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
+  return statusConfig[status as keyof typeof statusConfig] || { label: "UNKNOWN", className: "bg-gray-100 text-gray-800 hover:bg-gray-100" }
 }
 
-const filterTutorsByStatus = (tutors: Tutor[], status: string) => {
-  switch (status) {
+const getTabStatus = (tab: string) => {
+  switch (tab) {
     case "all":
-      return tutors
+      return ""
     case "registered":
-      return tutors.filter((t) => t.status === "registered")
+      return "REGISTERED"
     case "kyc-approved":
-      return tutors.filter((t) => t.status === "kyc-approved" || t.status === "approved")
+      return "APPROVED"
     case "under-review":
-      return tutors.filter((t) => t.status === "under-review")
+      return "UNDERREVIEW"
     case "banned":
-      return tutors.filter((t) => t.status === "banned" || t.status === "disapproved")
+      return "BANNED"
     default:
-      return tutors
+      return ""
   }
 }
 
 export default function TutorManagement() {
   const [activeTab, setActiveTab] = useState("all")
+  const [currentTutor,setCurrentTutor]=useState<any>({});
+  const [isViewOpen, setIsViewOpen] = useState(false)
+  const [tutors, setTutors] = useState<Tutor[]>([])
+  const [loading, setLoading] = useState(false)
+  const [counts, setCounts] = useState({
+    all: 0,
+    registered: 0,
+    approved: 0,
+    underReview: 0,
+    banned: 0
+  })
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 5,
+    total: 0,
+    totalPages: 0
+  })
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null)
 
-  const allTutors = tutors.length
-  const registeredCount = tutors.filter((t) => t.status === "registered").length
-  const kycApprovedCount = tutors.filter((t) => t.status === "kyc-approved" || t.status === "approved").length
-  const underReviewCount = tutors.filter((t) => t.status === "under-review").length
-  const bannedCount = tutors.filter((t) => t.status === "banned" || t.status === "disapproved").length
+  const fetchTutors = useCallback(async (tabValue: string, pageNum: number = 1, limit: number = 5, search: string = "") => {
+    setLoading(true)
+    try {
+      const status = getTabStatus(tabValue)
+      const res = await api.get("/auth/tutors", {
+        params: {
+          limit: limit,
+          page: pageNum,
+          name: search || undefined, // Only send if search is not empty
+          status: status || undefined, // Only send if status is not empty
+        },
+      })
+      
+      setTutors(res.data.data || [])
+      
+      // Update pagination info
+      if (res.data.pagination) {
+        setPagination(prev => ({
+          ...prev,
+          page: res.data.pagination.page,
+          limit: limit,
+          total: res.data.pagination.total,
+          totalPages: res.data.pagination.totalPages
+        }))
+      }
+      
+      // Update counts from statusSummary
+      if (res.data.statusSummary) {
+        const statusSummary = res.data.statusSummary
+        const newCounts = {
+          all: res.data.pagination.total || 0,
+          registered: statusSummary.find((s: any) => s.status === "REGISTERED")?.count || 0,
+          approved: statusSummary.find((s: any) => s.status === "APPROVED")?.count || 0,
+          underReview: statusSummary.find((s: any) => s.status === "UNDERREVIEW")?.count || 0,
+          banned: (statusSummary.find((s: any) => s.status === "BANNED")?.count || 0) + 
+                  (statusSummary.find((s: any) => s.status === "DISAPPROVED")?.count || 0),
+        }
+        setCounts(newCounts)
+      }
+      
+      console.log(res.data)
+    } catch (error) {
+      console.error("Error fetching tutors:", error)
+      setTutors([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
-  const filteredTutors = filterTutorsByStatus(tutors, activeTab)
+  const fetchCounts = useCallback(async () => {
+    try {
+      // Fetch counts from a single API call
+      const res = await api.get("/auth/tutors", { 
+        params: { limit: 1, page: 1, status: "" } 
+      })
+
+      if (res.data.statusSummary) {
+        const statusSummary = res.data.statusSummary
+        setCounts({
+          all: res.data.pagination.total || 0,
+          registered: statusSummary.find((s: any) => s.status === "REGISTERED")?.count || 0,
+          approved: statusSummary.find((s: any) => s.status === "APPROVED")?.count || 0,
+          underReview: statusSummary.find((s: any) => s.status === "UNDERREVIEW")?.count || 0,
+          banned: (statusSummary.find((s: any) => s.status === "BANNED")?.count || 0) + 
+                  (statusSummary.find((s: any) => s.status === "DISAPPROVED")?.count || 0),
+        })
+      }
+    } catch (error) {
+      console.error("Error fetching counts:", error)
+    }
+  }, [])
+
+  // Debounced search function
+  const handleSearch = useCallback((query: string) => {
+    if (searchTimeout) {
+      clearTimeout(searchTimeout)
+    }
+
+    const timeout = setTimeout(() => {
+      setSearchQuery(query)
+      setPagination(prev => ({ ...prev, page: 1 })) // Reset to first page when searching
+      fetchTutors(activeTab, 1, pagination.limit, query)
+    }, 500) // 500ms debounce
+
+    setSearchTimeout(timeout)
+  }, [activeTab, pagination.limit, fetchTutors, searchTimeout])
+
+  // Handle limit change
+  const handleLimitChange = (newLimit: number) => {
+    setPagination(prev => ({ ...prev, limit: newLimit, page: 1 }))
+    fetchTutors(activeTab, 1, newLimit, searchQuery)
+  }
+
+  useEffect(() => {
+    fetchCounts()
+  }, [fetchCounts])
+
+  useEffect(() => {
+    fetchTutors(activeTab, pagination.page, pagination.limit, searchQuery)
+  }, [activeTab, pagination.page, fetchTutors])
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value)
+    setPagination(prev => ({ ...prev, page: 1 })) // Reset to first page when changing tabs
+    fetchTutors(value, 1, pagination.limit, searchQuery)
+  }
+
+  const handlePageChange = (newPage: number) => {
+    setPagination(prev => ({ ...prev, page: newPage }))
+    fetchTutors(activeTab, newPage, pagination.limit, searchQuery)
+  }
+
+  const handlePreviousPage = () => {
+    if (pagination.page > 1) {
+      handlePageChange(pagination.page - 1)
+    }
+  }
+
+  const handleNextPage = () => {
+    if (pagination.page < pagination.totalPages) {
+      handlePageChange(pagination.page + 1)
+    }
+  }
+
+  const onClose = () => {
+    setIsViewOpen(false)
+  }
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout)
+      }
+    }
+  }, [searchTimeout])
 
   return (
-    <div className="w-full max-w-6xl mx-auto   bg-white rounded-lg shadow-sm">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="  w-full p-0">
-        <TabsList className="grid  bg-[#F5F7F9] w-full grid-cols-5  border-b rounded-none h-[3rem] p-0">
-          <TabsTrigger
-            value="all"
-            className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
-
+    <>
+      <div className="flex justify-between mb-4">
+        <div className="flex gap-2 items-center">
+          <span>Show</span>
+          <select
+            className="border-gray-600 py-1 px-2 rounded border"
+            value={pagination.limit}
+            onChange={(e) => handleLimitChange(Number(e.target.value))}
           >
-            All Tutors ({allTutors})
-          </TabsTrigger>
-          <TabsTrigger
-            value="registered"
-           className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+            {[5, 10, 15, 20, 25, 30].map((num) => (
+              <option key={num} value={num}>
+                {num}
+              </option>
+            ))}
+          </select>
+          <span>entries</span>
+        </div>
 
-          >
-            Registered ({registeredCount})
-          </TabsTrigger>
-          <TabsTrigger
-            value="kyc-approved"
-          className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+        <div className="flex items-center border rounded-lg bg-[#F5F7F9] p-2 gap-2 justify-center">
+          <Search size={18} />
+          <input
+            className="border-0 min-w-[20rem] outline-0 hover:outline-0 bg-transparent"
+            placeholder="Search tutors..."
+            onChange={(e) => handleSearch(e.target.value)}
+            defaultValue={searchQuery}
+          />
+        </div>
 
-          >
-            KYC Approved ({kycApprovedCount})
-          </TabsTrigger>
-          <TabsTrigger
-            value="under-review"
-           className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+        <div className="flex gap-3 items-center">
+          <span>Sort By (A-Z)</span>
+          <ArrowUpAZ />
+        </div>
+      </div>
 
-          >
-            Under Review ({underReviewCount})
-          </TabsTrigger>
-          <TabsTrigger
-            value="banned"
-          className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+      <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-sm">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full p-0">
+          <TabsList className="grid bg-[#F5F7F9] w-full grid-cols-5 border-b rounded-none h-[3rem] p-0">
+            <TabsTrigger
+              value="all"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+            >
+              All Tutors ({counts.all})
+            </TabsTrigger>
+            <TabsTrigger
+              value="registered"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+            >
+              Registered ({counts.registered})
+            </TabsTrigger>
+            <TabsTrigger
+              value="kyc-approved"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+            >
+              KYC Approved ({counts.approved})
+            </TabsTrigger>
+            <TabsTrigger
+              value="under-review"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+            >
+              Under Review ({counts.underReview})
+            </TabsTrigger>
+            <TabsTrigger
+              value="banned"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+            >
+              Banned ({counts.banned})
+            </TabsTrigger>
+          </TabsList>
 
-          >
-            Banned ({bannedCount})
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value={activeTab} className="mt-6">
-          <div className="space-y-4">
-            {filteredTutors.map((tutor) => {
-              const statusConfig = getStatusBadge(tutor.status)
-              return (
-                <div
-                  key={tutor.id}
-                  className="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50"
-                >
-                  <div className="flex items-center space-x-4">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={tutor.avatar || "/placeholder.svg"} alt={tutor.name} />
-                      <AvatarFallback className="bg-gray-800 text-white text-xs">
-                        {tutor.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{tutor.name}</h3>
-                      <p className="text-sm text-gray-500">Joined Date: {tutor.joinedDate}</p>
-                      <Badge className={`mt-1 ${statusConfig.className}`}>{statusConfig.label}</Badge>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </div>
+          <TabsContent value={activeTab} className="mt-6">
+            <div className="space-y-4">
+              {loading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500 mx-auto"></div>
+                  <p className="mt-2 text-gray-600">Loading tutors...</p>
                 </div>
-              )
-            })}
-          </div>
+              ) : tutors.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  {searchQuery ? `No tutors found matching "${searchQuery}"` : "No tutors found"}
+                </div>
+              ) : (
+                tutors.map((tutor) => {
+                  const statusConfig = getStatusBadge(tutor.status)
+                  return (
+                    <div
+                      key={tutor.id}
+                      className="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={tutor.avatar || "/placeholder.svg"} alt={tutor.name} />
+                          <AvatarFallback className="bg-gray-800 text-white text-xs">
+                            {tutor.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{tutor.name}</h3>
+                          <p className="text-sm text-gray-500">Joined Date: {formatDate(tutor.createdAt)}</p>
+                          <Badge className={`mt-1 ${statusConfig.className}`}>{tutor?.tutorProfile?.status || "UNKNOWN"}</Badge>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() =>{ 
+                            setCurrentTutor(tutor)
+                            setIsViewOpen(true)}}
+                          size="icon"
+                          className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                        >
+                          <Eye  className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
 
-          <div className="flex p-3 items-center justify-between mt-6 pt-4 border-t border-gray-200">
-            <div className="text-sm text-gray-600">
-              Showing 1 to {filteredTutors.length} of {filteredTutors.length} entries
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-teal-600 border-teal-300 hover:bg-teal-50 bg-transparent"
-              >
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Previous
-              </Button>
-              <Button variant="default" size="sm" className="bg-teal-500 hover:bg-teal-600">
-                1
-              </Button>
-              <Button variant="outline" size="sm">
-                2
-              </Button>
-              <Button variant="outline" size="sm">
-                3
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-teal-600 border-teal-300 hover:bg-teal-50 bg-transparent"
-              >
-                Next
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
+            {isViewOpen && <ViewTutor tutorProfile={currentTutor} onClose={onClose} />}
+
+            {/* Pagination */}
+            {tutors.length > 0 && (
+              <div className="flex p-3 items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                <div className="text-sm text-gray-600">
+                  Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min((pagination.page - 1) * pagination.limit + pagination.limit, pagination.total)} of {pagination.total} entries
+                  {searchQuery && (
+                    <span className="ml-2 text-teal-600">
+                      (filtered by "{searchQuery}")
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-teal-600 border-teal-300 hover:bg-teal-50 bg-transparent"
+                    onClick={handlePreviousPage}
+                    disabled={pagination.page === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Previous
+                  </Button>
+                  
+                  {/* Page numbers */}
+                  <div className="flex items-center space-x-1">
+                    {/* Show first page if not currently on it and there are more than 3 pages */}
+                    {pagination.page > 2 && pagination.totalPages > 3 && (
+                      <>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handlePageChange(1)}
+                        >
+                          1
+                        </Button>
+                        {pagination.page > 3 && <span className="px-2">...</span>}
+                      </>
+                    )}
+                    
+                    {/* Show previous page */}
+                    {pagination.page > 1 && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handlePageChange(pagination.page - 1)}
+                      >
+                        {pagination.page - 1}
+                      </Button>
+                    )}
+                    
+                    {/* Show current page */}
+                    <Button variant="default" size="sm" className="bg-teal-500 hover:bg-teal-600">
+                      {pagination.page}
+                    </Button>
+                    
+                    {/* Show next page */}
+                    {pagination.page < pagination.totalPages && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handlePageChange(pagination.page + 1)}
+                      >
+                        {pagination.page + 1}
+                      </Button>
+                    )}
+                    
+                    {/* Show last page if not currently on it and there are more than 3 pages */}
+                    {pagination.page < pagination.totalPages - 1 && pagination.totalPages > 3 && (
+                      <>
+                        {pagination.page < pagination.totalPages - 2 && <span className="px-2">...</span>}
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handlePageChange(pagination.totalPages)}
+                        >
+                          {pagination.totalPages}
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-teal-600 border-teal-300 hover:bg-teal-50 bg-transparent"
+                    onClick={handleNextPage}
+                    disabled={pagination.page >= pagination.totalPages}
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </>
   )
 }
