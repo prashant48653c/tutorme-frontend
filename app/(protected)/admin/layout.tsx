@@ -1,5 +1,6 @@
 import Sidebar from "@/component/reusable/Sidebar";
 import Topbar from "@/component/reusable/Topbar";
+import AdminGuard from "@/components/admin/AdminGuard";
 import type { Metadata } from "next";
 
 import { ReactNode } from "react";
@@ -44,6 +45,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
    return (
     <html lang="en">
       <body>
+        <AdminGuard>
         <div className="flex w-full min-h-screen">
           {/* Sidebar */}
           <Sidebar links={links} />
@@ -56,6 +58,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
             </div>
           </main>
         </div>
+        </AdminGuard>
       </body>
     </html>
   );
