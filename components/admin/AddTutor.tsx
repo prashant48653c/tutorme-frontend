@@ -1,47 +1,54 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useReducer, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { X, Upload } from "lucide-react"
+import { useReducer, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { X, Upload } from "lucide-react";
+import api from "@/hooks/axios";
 
 interface TutorState {
   personalDetails: {
-    firstName: string
-    lastName: string
-    email: string
-    phoneNo: string
-    address: string
-    languages: string[]
-  }
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNo: string;
+    address: string;
+    languages: string[];
+  };
   paymentDetails: {
-    bankName: string
-    bankAccountNo: string
-    confirmBankAccountNo: string
-  }
+    bankName: string;
+    bankAccountNo: string;
+    confirmBankAccountNo: string;
+  };
   qualificationDetails: {
-    qualification: string
-    graduateFrom: string
-    graduationYear: string
-    currentWork: string
-    workingExperience: string
-    previousGrades: string
-    currentlyWorking: boolean
-    workplaceName: string
-  }
+    qualification: string;
+    graduateFrom: string;
+    graduationYear: string;
+    currentWork: string;
+    workingExperience: string;
+    previousGrades: string;
+    currentlyWorking: boolean;
+    workplaceName: string;
+  };
   documents: {
-    identificationCertificate: File | null
-    qualificationCertificate: File | null
-    experienceLetter: File | null
-    accountVerification: File | null
-  }
-  isInformationCorrect: boolean
+    identificationCertificate: File | null;
+    qualificationCertificate: File | null;
+    experienceLetter: File | null;
+    accountVerification: File | null;
+  };
+  isInformationCorrect: boolean;
 }
 
 type TutorAction =
@@ -52,7 +59,7 @@ type TutorAction =
   | { type: "UPDATE_QUALIFICATION"; field: string; value: string | boolean }
   | { type: "UPDATE_DOCUMENT"; field: string; file: File | null }
   | { type: "TOGGLE_INFORMATION_CORRECT" }
-  | { type: "RESET_FORM" }
+  | { type: "RESET_FORM" };
 
 const initialState: TutorState = {
   personalDetails: {
@@ -85,7 +92,7 @@ const initialState: TutorState = {
     accountVerification: null,
   },
   isInformationCorrect: false,
-}
+};
 
 function tutorReducer(state: TutorState, action: TutorAction): TutorState {
   switch (action.type) {
@@ -96,7 +103,7 @@ function tutorReducer(state: TutorState, action: TutorAction): TutorState {
           ...state.personalDetails,
           [action.field]: action.value,
         },
-      }
+      };
     case "ADD_LANGUAGE":
       return {
         ...state,
@@ -104,15 +111,17 @@ function tutorReducer(state: TutorState, action: TutorAction): TutorState {
           ...state.personalDetails,
           languages: [...state.personalDetails.languages, action.language],
         },
-      }
+      };
     case "REMOVE_LANGUAGE":
       return {
         ...state,
         personalDetails: {
           ...state.personalDetails,
-          languages: state.personalDetails.languages.filter((lang) => lang !== action.language),
+          languages: state.personalDetails.languages.filter(
+            (lang) => lang !== action.language
+          ),
         },
-      }
+      };
     case "UPDATE_PAYMENT":
       return {
         ...state,
@@ -120,7 +129,7 @@ function tutorReducer(state: TutorState, action: TutorAction): TutorState {
           ...state.paymentDetails,
           [action.field]: action.value,
         },
-      }
+      };
     case "UPDATE_QUALIFICATION":
       return {
         ...state,
@@ -128,7 +137,7 @@ function tutorReducer(state: TutorState, action: TutorAction): TutorState {
           ...state.qualificationDetails,
           [action.field]: action.value,
         },
-      }
+      };
     case "UPDATE_DOCUMENT":
       return {
         ...state,
@@ -136,61 +145,118 @@ function tutorReducer(state: TutorState, action: TutorAction): TutorState {
           ...state.documents,
           [action.field]: action.file,
         },
-      }
+      };
     case "TOGGLE_INFORMATION_CORRECT":
       return {
         ...state,
         isInformationCorrect: !state.isInformationCorrect,
-      }
+      };
     case "RESET_FORM":
-      return initialState
+      return initialState;
     default:
-      return state
+      return state;
   }
 }
 
 interface AddTutorPopupProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
-  const [state, dispatch] = useReducer(tutorReducer, initialState)
-  const [newLanguage, setNewLanguage] = useState("")
+  const [state, dispatch] = useReducer(tutorReducer, initialState);
+  const [newLanguage, setNewLanguage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("=== TUTOR FORM DATA ===")
-    console.log("Personal Details:", state.personalDetails)
-    console.log("Payment Details:", state.paymentDetails)
-    console.log("Qualification Details:", state.qualificationDetails)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("=== TUTOR FORM DATA ===");
+    console.log("Personal Details:", state.personalDetails);
+    console.log("Payment Details:", state.paymentDetails);
+    console.log("Qualification Details:", state.qualificationDetails);
     console.log("Documents:", {
-      identificationCertificate: state.documents.identificationCertificate?.name || "Not uploaded",
-      qualificationCertificate: state.documents.qualificationCertificate?.name || "Not uploaded",
-      experienceLetter: state.documents.experienceLetter?.name || "Not uploaded",
-      accountVerification: state.documents.accountVerification?.name || "Not uploaded",
-    })
-    console.log("Information Correct:", state.isInformationCorrect)
-    console.log("=== END FORM DATA ===")
+      identificationCert:
+        state.documents.identificationCertificate?.name || "Not uploaded",
+      qualificationCert:
+        state.documents.qualificationCertificate?.name || "Not uploaded",
+      experienceLetter:
+        state.documents.experienceLetter?.name || "Not uploaded",
+      accountVerification:
+        state.documents.accountVerification?.name || "Not uploaded",
+    });
+    console.log("Information Correct:", state.isInformationCorrect);
+    console.log("=== END FORM DATA ===");
 
+    const formData = new FormData();
+    formData.append(
+      "name",
+      state.personalDetails.firstName + " " + state.personalDetails.lastName
+    );
+    formData.append("address", state.personalDetails.address);
+    formData.append("phoneNumber", state.personalDetails.phoneNo);
+    formData.append("bio", "New Tutor added by Admin");
+    formData.append("role", "TUTOR");
+    formData.append("email", state.personalDetails.email);
+
+    formData.append("qualifications", state.qualificationDetails.qualification);
+    if (state.documents.qualificationCertificate)
+      formData.append(
+        "qualificationCert",
+        state.documents.qualificationCertificate
+      );
+    if (state.documents.experienceLetter)
+      formData.append("experienceLetter", state.documents.experienceLetter);
+    if (state.documents.accountVerification)
+      formData.append("chequeImage", state.documents.accountVerification);
+    if (state.documents.identificationCertificate)
+      formData.append(
+        "identificationCert",
+        state.documents.identificationCertificate
+      );
+    formData.append("graduatedFrom", state.qualificationDetails.graduateFrom);
+    formData.append(
+      "currentlyWorking",
+      state.qualificationDetails.currentlyWorking ? "yes" : "no"
+    );
+    formData.append("graduatedAt", state.qualificationDetails.graduationYear);
+    formData.append(
+      "workingExperienceYear",
+      state.qualificationDetails.workingExperience
+    );
+    formData.append(
+      "currentOrganization",
+      state.qualificationDetails.workplaceName
+    );
+    formData.append("jobTitle", state.qualificationDetails.currentWork);
+    formData.append("bankName", state.paymentDetails.bankName);
+    formData.append("bankAccountNumber", state.paymentDetails.bankAccountNo);
+
+    formData.append("language", JSON.stringify(state.personalDetails.languages));
+
+    formData.append("gradesTaught", state.qualificationDetails.previousGrades);
+
+    const res = await api.post("/auth/add-tutor", formData);
+    console.log(res);
     // Reset form and close popup
-    dispatch({ type: "RESET_FORM" })
-    onClose()
-  }
+    dispatch({ type: "RESET_FORM" });
+    onClose();
+  };
 
   const handleFileUpload = (field: string, file: File | null) => {
-    dispatch({ type: "UPDATE_DOCUMENT", field, file })
-  }
+    dispatch({ type: "UPDATE_DOCUMENT", field, file });
+  };
 
   const addLanguage = () => {
-    if (newLanguage.trim() && !state.personalDetails.languages.includes(newLanguage.trim())) {
-      dispatch({ type: "ADD_LANGUAGE", language: newLanguage.trim() })
-      setNewLanguage("")
+    if (
+      newLanguage.trim() &&
+      !state.personalDetails.languages.includes(newLanguage.trim())
+    ) {
+      dispatch({ type: "ADD_LANGUAGE", language: newLanguage.trim() });
+      setNewLanguage("");
     }
-  }
+  };
 
   const removeLanguage = (language: string) => {
-    dispatch({ type: "REMOVE_LANGUAGE", language })
-  }
+    dispatch({ type: "REMOVE_LANGUAGE", language });
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -212,7 +278,13 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
                 <Input
                   id="firstName"
                   value={state.personalDetails.firstName}
-                  onChange={(e) => dispatch({ type: "UPDATE_PERSONAL", field: "firstName", value: e.target.value })}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "UPDATE_PERSONAL",
+                      field: "firstName",
+                      value: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
@@ -221,7 +293,13 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
                 <Input
                   id="lastName"
                   value={state.personalDetails.lastName}
-                  onChange={(e) => dispatch({ type: "UPDATE_PERSONAL", field: "lastName", value: e.target.value })}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "UPDATE_PERSONAL",
+                      field: "lastName",
+                      value: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
@@ -233,7 +311,13 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
                   id="email"
                   type="email"
                   value={state.personalDetails.email}
-                  onChange={(e) => dispatch({ type: "UPDATE_PERSONAL", field: "email", value: e.target.value })}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "UPDATE_PERSONAL",
+                      field: "email",
+                      value: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
@@ -242,7 +326,13 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
                 <Input
                   id="phoneNo"
                   value={state.personalDetails.phoneNo}
-                  onChange={(e) => dispatch({ type: "UPDATE_PERSONAL", field: "phoneNo", value: e.target.value })}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "UPDATE_PERSONAL",
+                      field: "phoneNo",
+                      value: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
@@ -252,7 +342,13 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
               <Textarea
                 id="address"
                 value={state.personalDetails.address}
-                onChange={(e) => dispatch({ type: "UPDATE_PERSONAL", field: "address", value: e.target.value })}
+                onChange={(e) =>
+                  dispatch({
+                    type: "UPDATE_PERSONAL",
+                    field: "address",
+                    value: e.target.value,
+                  })
+                }
                 required
               />
             </div>
@@ -297,7 +393,13 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
                 <Input
                   id="bankName"
                   value={state.paymentDetails.bankName}
-                  onChange={(e) => dispatch({ type: "UPDATE_PAYMENT", field: "bankName", value: e.target.value })}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "UPDATE_PAYMENT",
+                      field: "bankName",
+                      value: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
@@ -308,17 +410,29 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
                 <Input
                   id="bankAccountNo"
                   value={state.paymentDetails.bankAccountNo}
-                  onChange={(e) => dispatch({ type: "UPDATE_PAYMENT", field: "bankAccountNo", value: e.target.value })}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "UPDATE_PAYMENT",
+                      field: "bankAccountNo",
+                      value: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="confirmBankAccountNo">Confirm Bank Account No.</Label>
+                <Label htmlFor="confirmBankAccountNo">
+                  Confirm Bank Account No.
+                </Label>
                 <Input
                   id="confirmBankAccountNo"
                   value={state.paymentDetails.confirmBankAccountNo}
                   onChange={(e) =>
-                    dispatch({ type: "UPDATE_PAYMENT", field: "confirmBankAccountNo", value: e.target.value })
+                    dispatch({
+                      type: "UPDATE_PAYMENT",
+                      field: "confirmBankAccountNo",
+                      value: e.target.value,
+                    })
                   }
                   required
                 />
@@ -333,7 +447,13 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
               <div>
                 <Label htmlFor="qualification">Qualification</Label>
                 <Select
-                  onValueChange={(value) => dispatch({ type: "UPDATE_QUALIFICATION", field: "qualification", value })}
+                  onValueChange={(value) =>
+                    dispatch({
+                      type: "UPDATE_QUALIFICATION",
+                      field: "qualification",
+                      value,
+                    })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Qualification" />
@@ -347,19 +467,29 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="graduationYear">What year did you graduate?</Label>
+                <Label htmlFor="graduationYear">
+                  What year did you graduate?
+                </Label>
                 <Select
-                  onValueChange={(value) => dispatch({ type: "UPDATE_QUALIFICATION", field: "graduationYear", value })}
+                  onValueChange={(value) =>
+                    dispatch({
+                      type: "UPDATE_QUALIFICATION",
+                      field: "graduationYear",
+                      value,
+                    })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Year" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Array.from({ length: 30 }, (_, i) => 2024 - i).map((year) => (
-                      <SelectItem key={year} value={year.toString()}>
-                        {year}
-                      </SelectItem>
-                    ))}
+                    {Array.from({ length: 30 }, (_, i) => 2024 - i).map(
+                      (year) => (
+                        <SelectItem key={year} value={year.toString()}>
+                          {year}
+                        </SelectItem>
+                      )
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -370,7 +500,11 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
                 id="graduateFrom"
                 value={state.qualificationDetails.graduateFrom}
                 onChange={(e) =>
-                  dispatch({ type: "UPDATE_QUALIFICATION", field: "graduateFrom", value: e.target.value })
+                  dispatch({
+                    type: "UPDATE_QUALIFICATION",
+                    field: "graduateFrom",
+                    value: e.target.value,
+                  })
                 }
                 required
               />
@@ -382,7 +516,11 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
                   id="currentWork"
                   value={state.qualificationDetails.currentWork}
                   onChange={(e) =>
-                    dispatch({ type: "UPDATE_QUALIFICATION", field: "currentWork", value: e.target.value })
+                    dispatch({
+                      type: "UPDATE_QUALIFICATION",
+                      field: "currentWork",
+                      value: e.target.value,
+                    })
                   }
                   placeholder="Your Designation"
                   required
@@ -392,25 +530,42 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
                 <Label htmlFor="workingExperience">Working Experience</Label>
                 <Select
                   onValueChange={(value) =>
-                    dispatch({ type: "UPDATE_QUALIFICATION", field: "workingExperience", value })
+                    dispatch({
+                      type: "UPDATE_QUALIFICATION",
+                      field: "workingExperience",
+                      value,
+                    })
                   }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Experience in Years" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="0-1">0-1 years</SelectItem>
-                    <SelectItem value="1-3">1-3 years</SelectItem>
-                    <SelectItem value="3-5">3-5 years</SelectItem>
-                    <SelectItem value="5+">5+ years</SelectItem>
+                    <SelectItem value="1">1 years</SelectItem>
+                    <SelectItem value="2">2 years</SelectItem>
+                    <SelectItem value="3">3 years</SelectItem>
+                    <SelectItem value="4">4 years</SelectItem>
+                    <SelectItem value="5">5 years</SelectItem>
+                    <SelectItem value="6">6 years</SelectItem>
+                    <SelectItem value="7">7 years</SelectItem>
+                    <SelectItem value="8">8 years</SelectItem>
+                    <SelectItem value="9">9 years</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="mb-4">
-              <Label htmlFor="previousGrades">Which grade students did you previously teach?</Label>
+              <Label htmlFor="previousGrades">
+                Which grade students did you previously teach?
+              </Label>
               <Select
-                onValueChange={(value) => dispatch({ type: "UPDATE_QUALIFICATION", field: "previousGrades", value })}
+                onValueChange={(value) =>
+                  dispatch({
+                    type: "UPDATE_QUALIFICATION",
+                    field: "previousGrades",
+                    value,
+                  })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select Grade" />
@@ -418,7 +573,9 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
                 <SelectContent>
                   <SelectItem value="primary">Primary (1-5)</SelectItem>
                   <SelectItem value="secondary">Secondary (6-10)</SelectItem>
-                  <SelectItem value="higher-secondary">Higher Secondary (11-12)</SelectItem>
+                  <SelectItem value="higher-secondary">
+                    Higher Secondary (11-12)
+                  </SelectItem>
                   <SelectItem value="university">University Level</SelectItem>
                 </SelectContent>
               </Select>
@@ -430,8 +587,16 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
                   <input
                     type="radio"
                     name="currentlyWorking"
-                    checked={state.qualificationDetails.currentlyWorking === true}
-                    onChange={() => dispatch({ type: "UPDATE_QUALIFICATION", field: "currentlyWorking", value: true })}
+                    checked={
+                      state.qualificationDetails.currentlyWorking === true
+                    }
+                    onChange={() =>
+                      dispatch({
+                        type: "UPDATE_QUALIFICATION",
+                        field: "currentlyWorking",
+                        value: true,
+                      })
+                    }
                   />
                   <span>Yes</span>
                 </label>
@@ -439,8 +604,16 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
                   <input
                     type="radio"
                     name="currentlyWorking"
-                    checked={state.qualificationDetails.currentlyWorking === false}
-                    onChange={() => dispatch({ type: "UPDATE_QUALIFICATION", field: "currentlyWorking", value: false })}
+                    checked={
+                      state.qualificationDetails.currentlyWorking === false
+                    }
+                    onChange={() =>
+                      dispatch({
+                        type: "UPDATE_QUALIFICATION",
+                        field: "currentlyWorking",
+                        value: false,
+                      })
+                    }
                   />
                   <span>No</span>
                 </label>
@@ -453,7 +626,11 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
                   id="workplaceName"
                   value={state.qualificationDetails.workplaceName}
                   onChange={(e) =>
-                    dispatch({ type: "UPDATE_QUALIFICATION", field: "workplaceName", value: e.target.value })
+                    dispatch({
+                      type: "UPDATE_QUALIFICATION",
+                      field: "workplaceName",
+                      value: e.target.value,
+                    })
                   }
                 />
               </div>
@@ -465,23 +642,41 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
             <h3 className="text-lg font-medium mb-4">Upload Documents</h3>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { key: "identificationCertificate", label: "Identification Certificate" },
-                { key: "qualificationCertificate", label: "Qualification Certificate" },
+                {
+                  key: "identificationCertificate",
+                  label: "Identification Certificate",
+                },
+                {
+                  key: "qualificationCertificate",
+                  label: "Qualification Certificate",
+                },
                 { key: "experienceLetter", label: "Experience Letter" },
-                { key: "accountVerification", label: "For Account Verification" },
+                {
+                  key: "accountVerification",
+                  label: "For Account Verification",
+                },
               ].map(({ key, label }) => (
-                <div key={key} className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                <div
+                  key={key}
+                  className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center"
+                >
                   <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                   <p className="text-sm text-gray-600 mb-2">{label}</p>
                   <input
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => handleFileUpload(key, e.target.files?.[0] || null)}
+                    onChange={(e) =>
+                      handleFileUpload(key, e.target.files?.[0] || null)
+                    }
                     className="hidden"
                     id={key}
                   />
-                  <label htmlFor={key} className="text-xs text-blue-600 cursor-pointer hover:underline">
-                    {state.documents[key as keyof typeof state.documents]?.name || "Click here to upload"}
+                  <label
+                    htmlFor={key}
+                    className="text-xs text-blue-600 cursor-pointer hover:underline"
+                  >
+                    {state.documents[key as keyof typeof state.documents]
+                      ?.name || "Click here to upload"}
                   </label>
                 </div>
               ))}
@@ -493,17 +688,25 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
             <Checkbox
               id="informationCorrect"
               checked={state.isInformationCorrect}
-              onCheckedChange={() => dispatch({ type: "TOGGLE_INFORMATION_CORRECT" })}
+              onCheckedChange={() =>
+                dispatch({ type: "TOGGLE_INFORMATION_CORRECT" })
+              }
             />
-            <Label htmlFor="informationCorrect">Mark all the given Information Correct</Label>
+            <Label htmlFor="informationCorrect">
+              Mark all the given Information Correct
+            </Label>
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full bg-teal-500 hover:bg-teal-600" disabled={!state.isInformationCorrect}>
+          <Button
+            type="submit"
+            className="w-full bg-teal-500 hover:bg-teal-600"
+            disabled={!state.isInformationCorrect}
+          >
             Add Tutor
           </Button>
         </form>
       </div>
     </div>
-  )
+  );
 }

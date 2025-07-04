@@ -31,7 +31,7 @@ export default function Home() {
         console.log("first");
         router.push("/tutor/profile");
       }
-    }, []);
+    }, [user]);
   return (
     <div className={` ${OnestFont.className} w-full h-full `}>
       <Navbar />
