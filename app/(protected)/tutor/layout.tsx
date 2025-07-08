@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 const links = [
   {
-    path: "/",
+    path: "/tutor/mycourse",
     name: "My Courses",
     icon: "icon1",
   },
