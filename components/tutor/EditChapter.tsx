@@ -36,6 +36,7 @@ DropResult,
 
 import { useCourseStore } from "@/store/useCourseStore";
 import { useRouter } from "next/navigation";
+import MyEditor from "./TextEditor";
 
 // Types
 interface SubHeading {
@@ -700,7 +701,7 @@ Upload your Content Subtitle
 <h3 className="text-lg font-medium mb-3">Description</h3>
 <div className="border border-gray-300 rounded-lg p-4 min-h-48">
 <p className="text-blue-600 cursor-pointer">
-Embed Text Editor Here
+{/* <MyEditor/> */}
 </p>
 </div>
 </div>

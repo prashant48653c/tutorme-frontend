@@ -3,34 +3,14 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
-import {
-  ArrowUp,
-  GripVertical,
-  Pen,
-  PlusSquare,
-  Trash,
-  Upload,
-  X,
-} from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
+import { ArrowUp, GripVertical, Pen, PlusSquare, Trash, Upload, X } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { useState } from "react";
-import {
-  DragDropContext,
-  Draggable,
-  Droppable,
-  DropResult,
-} from "@hello-pangea/dnd";
-import CourseContentEditor from "./EditChapter";
-import { useCourseStore } from "@/store/useCourseStore";
+import { useReducer, createContext, useContext } from "react";
+import { DragDropContext, Draggable, Droppable, DropResult } from "@hello-pangea/dnd";
 import { useRouter } from "next/navigation";
 
+// Types
 export type SubHeading = {
   subHeadId: string;
   subHeadName: string;
@@ -48,293 +28,301 @@ export type Chapter = {
   subTitles: SubTitle[];
 };
 
-const initialChapters: Chapter[] = [
-  {
-    chapterId: "chapter-1",
-    chapterName: "Physical Chemistry",
-    subTitles: [
-      {
-        subId: "sub-1",
-        subName: "Mole Concept",
-        subHeading: [
-          { subHeadId: "subHead-1", subHeadName: "Mole Principles" },
-          { subHeadId: "subHead-2", subHeadName: "Definition" },
-        ],
-      },
-      {
-        subId: "sub-2",
-        subName: "Laws of Chemistry",
-        subHeading: [
-          { subHeadId: "subHead-3", subHeadName: "Law of Conservation" },
-          { subHeadId: "subHead-4", subHeadName: "Law of Degradation" },
-        ],
-      },
-    ],
-  },
-  {
-    chapterId: "chapter-2",
-    chapterName: "Organic Chemistry",
-    subTitles: [
-      {
-        subId: "sub-3",
-        subName: "HydroCompound Concept",
-        subHeading: [
-          { subHeadId: "subHead-5", subHeadName: "Hydrocarbon Types" },
-          { subHeadId: "subHead-6", subHeadName: "Structure" },
-        ],
-      },
-    ],
-  },
-];
+export type CourseDetails = {
+  courseName: string;
+  durationNumber: string;
+  durationUnit: string;
+  courseDescription: string;
+  university: string;
+  course: string;
+  semester: string;
+  level: string;
+  thumbnail: File | null;
+};
 
-const AddCourse = ({ onClose }: { onClose: () => void }) => {
-  const [categories, setCategories] = useState<Chapter[]>(initialChapters);
-  const [openChapters, setOpenChapters] = useState<Record<string, boolean>>({});
-  const [openSubTitles, setOpenSubTitles] = useState<Record<string, boolean>>(
-    {}
+export type CourseState = {
+  courseDetails: CourseDetails;
+  chapters: Chapter[];
+  openChapters: Record<string, boolean>;
+  openSubTitles: Record<string, boolean>;
+  isLoading: boolean;
+  isSaving: boolean;
+};
+
+// Initial state
+const initialState: CourseState = {
+  courseDetails: {
+    courseName: "",
+    durationNumber: "",
+    durationUnit: "",
+    courseDescription: "",
+    university: "",
+    course: "",
+    semester: "",
+    level: "beginner",
+    thumbnail: null,
+  },
+  chapters: [],
+  openChapters: {},
+  openSubTitles: {},
+  isLoading: false,
+  isSaving: false,
+};
+
+// Action types
+type CourseAction = 
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_SAVING"; payload: boolean }
+  | { type: "UPDATE_COURSE_DETAILS"; payload: Partial<CourseDetails> }
+  | { type: "SET_CHAPTERS"; payload: Chapter[] }
+  | { type: "ADD_CHAPTER" }
+  | { type: "DELETE_CHAPTER"; payload: string }
+  | { type: "ADD_SUBTITLE"; payload: string }
+  | { type: "DELETE_SUBTITLE"; payload: string }
+  | { type: "ADD_SUBHEADING"; payload: string }
+  | { type: "DELETE_SUBHEADING"; payload: string }
+  | { type: "TOGGLE_CHAPTER"; payload: string }
+  | { type: "TOGGLE_SUBTITLE"; payload: string }
+  | { type: "DRAG_END"; payload: DropResult }
+  | { type: "UPDATE_CHAPTER_NAME"; payload: { chapterId: string; name: string } }
+  | { type: "UPDATE_SUBTITLE_NAME"; payload: { subId: string; name: string } }
+  | { type: "UPDATE_SUBHEADING_NAME"; payload: { subHeadId: string; name: string } };
+
+// Reducer
+const courseReducer = (state: CourseState, action: CourseAction): CourseState => {
+  switch (action.type) {
+    case "SET_LOADING":
+      return { ...state, isLoading: action.payload };
+    
+    case "SET_SAVING":
+      return { ...state, isSaving: action.payload };
+    
+    case "UPDATE_COURSE_DETAILS":
+      return { ...state, courseDetails: { ...state.courseDetails, ...action.payload } };
+    
+    case "SET_CHAPTERS":
+      return { ...state, chapters: action.payload };
+    
+    case "ADD_CHAPTER":
+      const newChapterId = `chapter-${Date.now()}`;
+      const newChapter: Chapter = {
+        chapterId: newChapterId,
+        chapterName: `New Chapter ${state.chapters.length + 1}`,
+        subTitles: [],
+      };
+      return { ...state, chapters: [...state.chapters, newChapter] };
+    
+    case "DELETE_CHAPTER":
+      return {
+        ...state,
+        chapters: state.chapters.filter(ch => ch.chapterId !== action.payload),
+      };
+    
+    case "ADD_SUBTITLE":
+      const newSubId = `sub-${Date.now()}`;
+      const newSubTitle: SubTitle = {
+        subId: newSubId,
+        subName: "New Sub-Title",
+        subHeading: [],
+      };
+      return {
+        ...state,
+        chapters: state.chapters.map(chapter =>
+          chapter.chapterId === action.payload
+            ? { ...chapter, subTitles: [...chapter.subTitles, newSubTitle] }
+            : chapter
+        ),
+      };
+    
+    case "DELETE_SUBTITLE":
+      return {
+        ...state,
+        chapters: state.chapters.map(chapter => ({
+          ...chapter,
+          subTitles: chapter.subTitles.filter(sub => sub.subId !== action.payload),
+        })),
+      };
+    
+    case "ADD_SUBHEADING":
+      const newSubHeadId = `subHead-${Date.now()}`;
+      const newSubHeading: SubHeading = {
+        subHeadId: newSubHeadId,
+        subHeadName: "New Sub-Heading",
+      };
+      return {
+        ...state,
+        chapters: state.chapters.map(chapter => ({
+          ...chapter,
+          subTitles: chapter.subTitles.map(sub =>
+            sub.subId === action.payload
+              ? { ...sub, subHeading: [...sub.subHeading, newSubHeading] }
+              : sub
+          ),
+        })),
+      };
+    
+    case "DELETE_SUBHEADING":
+      return {
+        ...state,
+        chapters: state.chapters.map(chapter => ({
+          ...chapter,
+          subTitles: chapter.subTitles.map(sub => ({
+            ...sub,
+            subHeading: sub.subHeading.filter(head => head.subHeadId !== action.payload),
+          })),
+        })),
+      };
+    
+    case "TOGGLE_CHAPTER":
+      return {
+        ...state,
+        openChapters: { ...state.openChapters, [action.payload]: !state.openChapters[action.payload] },
+      };
+    
+    case "TOGGLE_SUBTITLE":
+      return {
+        ...state,
+        openSubTitles: { ...state.openSubTitles, [action.payload]: !state.openSubTitles[action.payload] },
+      };
+
+    case "UPDATE_CHAPTER_NAME":
+      return {
+        ...state,
+        chapters: state.chapters.map(chapter =>
+          chapter.chapterId === action.payload.chapterId
+            ? { ...chapter, chapterName: action.payload.name }
+            : chapter
+        ),
+      };
+
+    case "UPDATE_SUBTITLE_NAME":
+      return {
+        ...state,
+        chapters: state.chapters.map(chapter => ({
+          ...chapter,
+          subTitles: chapter.subTitles.map(sub =>
+            sub.subId === action.payload.subId
+              ? { ...sub, subName: action.payload.name }
+              : sub
+          ),
+        })),
+      };
+
+    case "UPDATE_SUBHEADING_NAME":
+      return {
+        ...state,
+        chapters: state.chapters.map(chapter => ({
+          ...chapter,
+          subTitles: chapter.subTitles.map(sub => ({
+            ...sub,
+            subHeading: sub.subHeading.map(head =>
+              head.subHeadId === action.payload.subHeadId
+                ? { ...head, subHeadName: action.payload.name }
+                : head
+            ),
+          })),
+        })),
+      };
+    
+    case "DRAG_END":
+      const { source, destination, type } = action.payload;
+      if (!destination || !source) return state;
+      
+      const updated = [...state.chapters];
+      
+      if (type === "chapter") {
+        const [moved] = updated.splice(source.index, 1);
+        updated.splice(destination.index, 0, moved);
+        return { ...state, chapters: updated };
+      }
+      
+      if (type === "subTitle") {
+        const chapterIndex = updated.findIndex(c => c.chapterId === source.droppableId);
+        if (chapterIndex === -1) return state;
+        
+        const subTitles = [...updated[chapterIndex].subTitles];
+        const [moved] = subTitles.splice(source.index, 1);
+        subTitles.splice(destination.index, 0, moved);
+        updated[chapterIndex].subTitles = subTitles;
+        return { ...state, chapters: updated };
+      }
+      
+      if (type === "subHeading") {
+        for (const chapter of updated) {
+          for (const subtitle of chapter.subTitles) {
+            if (subtitle.subId === source.droppableId) {
+              const items = [...subtitle.subHeading];
+              const [moved] = items.splice(source.index, 1);
+              items.splice(destination.index, 0, moved);
+              subtitle.subHeading = items;
+              break;
+            }
+          }
+        }
+        return { ...state, chapters: updated };
+      }
+      
+      return state;
+    
+    default:
+      return state;
+  }
+};
+
+// Context
+const CourseContext = createContext<{
+  state: CourseState;
+  dispatch: React.Dispatch<CourseAction>;
+} | null>(null);
+
+export const useCourse = () => {
+  const context = useContext(CourseContext);
+  if (!context) {
+    throw new Error("useCourse must be used within CourseProvider");
+  }
+  return context;
+};
+
+// Provider component
+export const CourseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [state, dispatch] = useReducer(courseReducer, initialState);
+  
+  return (
+    <CourseContext.Provider value={{ state, dispatch }}>
+      {children}
+    </CourseContext.Provider>
   );
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+};
 
+// Main component
+const AddCourse = ({ onClose }: { onClose: () => void }) => {
+  const { state, dispatch } = useCourse();
   const router = useRouter();
-  const setCourse = useCourseStore((state) => state.setCourse);
 
   const saveDraft = async () => {
-    if (!categories || categories.length === 0) {
-      console.warn("No categories to save");
+    if (!state.chapters || state.chapters.length === 0) {
+      console.warn("No chapters to save");
       return;
     }
-    console.log("first");
+    
     try {
-      setIsSaving(true);
-      setCourse(categories);
+      dispatch({ type: "SET_SAVING", payload: true });
+      // setCourse(state.chapters); // Replace with your store logic
       router.push("/tutor/mycourse/draft");
     } catch (error) {
       console.error("Failed to save draft:", error);
     } finally {
-      setIsSaving(false);
+      dispatch({ type: "SET_SAVING", payload: false });
     }
-  };
-
-  const deleteChapter = (e: React.MouseEvent, chapter: Chapter) => {
-    e.stopPropagation();
-
-    if (!chapter?.chapterId) {
-      console.warn("Invalid chapter for deletion");
-      return;
-    }
-
-    const chapterId = chapter.chapterId;
-    setCategories((prev) => {
-      if (!prev || !Array.isArray(prev)) return [];
-      return prev.filter((ch) => ch?.chapterId !== chapterId);
-    });
-  };
-
-  const addChapter = () => {
-    if (!categories || !Array.isArray(categories)) {
-      console.warn("Invalid categories state");
-      return;
-    }
-
-    const newChapterId = `chapter-${Date.now()}`;
-    const newChapter: Chapter = {
-      chapterId: newChapterId,
-      chapterName: `New Chapter ${categories.length + 1}`,
-      subTitles: [],
-    };
-
-    setCategories((prev) => {
-      if (!prev || !Array.isArray(prev)) return [newChapter];
-      return [...prev, newChapter];
-    });
-  };
-
-  const addSubTitle = (chapterId: string) => {
-    if (!chapterId) {
-      console.warn("Invalid chapter ID for adding subtitle");
-      return;
-    }
-
-    setCategories((prev) => {
-      if (!prev || !Array.isArray(prev)) return [];
-
-      return prev.map((chapter) => {
-        if (!chapter || chapter.chapterId !== chapterId) return chapter;
-
-        const newSubId = `sub-${Date.now()}`;
-        const newSubTitle: SubTitle = {
-          subId: newSubId,
-          subName: "New Sub-Title",
-          subHeading: [],
-        };
-
-        return {
-          ...chapter,
-          subTitles: [...(chapter.subTitles || []), newSubTitle],
-        };
-      });
-    });
-  };
-
-  const addSubHeading = (subId: string) => {
-    if (!subId) {
-      console.warn("Invalid sub ID for adding subheading");
-      return;
-    }
-
-    setCategories((prev) => {
-      if (!prev || !Array.isArray(prev)) return [];
-
-      return prev.map((chapter) => {
-        if (!chapter) return chapter;
-
-        return {
-          ...chapter,
-          subTitles: (chapter.subTitles || []).map((sub) => {
-            if (!sub || sub.subId !== subId) return sub;
-
-            const newSubHeadId = `subHead-${Date.now()}`;
-            const newSubHeading: SubHeading = {
-              subHeadId: newSubHeadId,
-              subHeadName: "New Sub-Heading",
-            };
-
-            return {
-              ...sub,
-              subHeading: [...(sub.subHeading || []), newSubHeading],
-            };
-          }),
-        };
-      });
-    });
-  };
-
-  const deleteSubTitle = (subId: string) => {
-    if (!subId) {
-      console.warn("Invalid sub ID for deletion");
-      return;
-    }
-
-    setCategories((prev) => {
-      if (!prev || !Array.isArray(prev)) return [];
-
-      return prev.map((chapter) => {
-        if (!chapter) return chapter;
-
-        return {
-          ...chapter,
-          subTitles: (chapter.subTitles || []).filter(
-            (sub) => sub?.subId !== subId
-          ),
-        };
-      });
-    });
-  };
-
-  const deleteSubHeading = (subHeadId: string) => {
-    if (!subHeadId) {
-      console.warn("Invalid subhead ID for deletion");
-      return;
-    }
-
-    setCategories((prev) => {
-      if (!prev || !Array.isArray(prev)) return [];
-
-      return prev.map((chapter) => {
-        if (!chapter) return chapter;
-
-        return {
-          ...chapter,
-          subTitles: (chapter.subTitles || []).map((sub) => {
-            if (!sub) return sub;
-
-            return {
-              ...sub,
-              subHeading: (sub.subHeading || []).filter(
-                (head) => head?.subHeadId !== subHeadId
-              ),
-            };
-          }),
-        };
-      });
-    });
-  };
-
-  const toggleChapter = (chapterId: string) => {
-    if (!chapterId) return;
-    setOpenChapters((prev) => ({ ...prev, [chapterId]: !prev[chapterId] }));
-  };
-
-  const toggleSubTitle = (subId: string) => {
-    if (!subId) return;
-    setOpenSubTitles((prev) => ({ ...prev, [subId]: !prev[subId] }));
   };
 
   const handleDragEnd = (result: DropResult) => {
-    const { source, destination, type } = result;
-
-    if (!destination || !source) return;
-
-    try {
-      setIsLoading(true);
-      const updated = [...(categories || [])];
-
-      if (type === "chapter") {
-        if (source.index >= updated.length || destination.index < 0) return;
-        const [moved] = updated.splice(source.index, 1);
-        if (moved) {
-          updated.splice(destination.index, 0, moved);
-          setCategories(updated);
-        }
-      }
-
-      if (type === "subTitle") {
-        const chapterIndex = updated.findIndex(
-          (c) => c?.chapterId === source.droppableId
-        );
-        if (chapterIndex === -1 || !updated[chapterIndex]) return;
-
-        const subTitles = Array.from(updated[chapterIndex].subTitles || []);
-        if (source.index >= subTitles.length || destination.index < 0) return;
-
-        const [moved] = subTitles.splice(source.index, 1);
-        if (moved) {
-          subTitles.splice(destination.index, 0, moved);
-          updated[chapterIndex].subTitles = subTitles;
-          setCategories(updated);
-        }
-      }
-
-      if (type === "subHeading") {
-        for (const chapter of updated) {
-          if (!chapter) continue;
-
-          for (const subtitle of chapter.subTitles || []) {
-            if (!subtitle || subtitle.subId !== source.droppableId) continue;
-
-            const items = Array.from(subtitle.subHeading || []);
-            if (source.index >= items.length || destination.index < 0) break;
-
-            const [moved] = items.splice(source.index, 1);
-            if (moved) {
-              items.splice(destination.index, 0, moved);
-              subtitle.subHeading = items;
-            }
-            break;
-          }
-        }
-        setCategories(updated);
-      }
-    } catch (error) {
-      console.error("Error during drag and drop:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    dispatch({ type: "SET_LOADING", payload: true });
+    dispatch({ type: "DRAG_END", payload: result });
+    dispatch({ type: "SET_LOADING", payload: false });
   };
 
-  // Show loading state
-  if (isLoading) {
+  if (state.isLoading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
         <div className="bg-white rounded-lg shadow-xl p-8 text-center">
@@ -345,28 +333,12 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
     );
   }
 
-  // Handle empty categories
-  if (!categories || !Array.isArray(categories)) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-lg shadow-xl p-8 text-center">
-          <p>Error: Unable to load course data</p>
-          <Button onClick={onClose} className="mt-4">
-            Close
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold">Add Tutor</h2>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
+          <Button variant="ghost" size="icon" onClick={onClose}><X className="h-4 w-4" /></Button>
         </div>
 
         <div className="flex flex-col gap-2 px-6 py-4">
@@ -374,30 +346,21 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
           <p className="text-primeGreen">Draft your course outlook</p>
         </div>
 
-        <form className="flex flex-col gap-6 px-6 pb-6">
-          {/* First Row */}
+        <div className="flex flex-col gap-6 px-6 pb-6">
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
               <Label htmlFor="courseName">Course Name</Label>
-              <Input
-                id="courseName"
-                className="outline-0 border border-gray-400 rounded-md"
-                type="text"
-              />
+              <Input id="courseName" className="outline-0 border border-gray-400 rounded-md" type="text" value={state.courseDetails.courseName} onChange={(e) => dispatch({ type: "UPDATE_COURSE_DETAILS", payload: { courseName: e.target.value } })} />
             </div>
 
             <div className="flex gap-2">
               <div className="flex flex-col gap-1 flex-1">
                 <Label htmlFor="durationNumber">Duration Number</Label>
-                <Select>
-                  <SelectTrigger className="outline-0 border border-gray-400 rounded-md">
-                    <SelectValue placeholder="Select no." />
-                  </SelectTrigger>
+                <Select value={state.courseDetails.durationNumber} onValueChange={(value) => dispatch({ type: "UPDATE_COURSE_DETAILS", payload: { durationNumber: value } })}>
+                  <SelectTrigger className="outline-0 border border-gray-400 rounded-md"><SelectValue placeholder="Select no." /></SelectTrigger>
                   <SelectContent>
                     {[...Array(12)].map((_, i) => (
-                      <SelectItem key={i + 1} value={`${i + 1}`}>
-                        {i + 1}
-                      </SelectItem>
+                      <SelectItem key={i + 1} value={`${i + 1}`}>{i + 1}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -405,10 +368,8 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
 
               <div className="flex flex-col gap-1 flex-1">
                 <Label htmlFor="durationUnit">Duration Unit</Label>
-                <Select>
-                  <SelectTrigger className="outline-0 border border-gray-400 rounded-md">
-                    <SelectValue placeholder="Select Duration" />
-                  </SelectTrigger>
+                <Select value={state.courseDetails.durationUnit} onValueChange={(value) => dispatch({ type: "UPDATE_COURSE_DETAILS", payload: { durationUnit: value } })}>
+                  <SelectTrigger className="outline-0 border border-gray-400 rounded-md"><SelectValue placeholder="Select Duration" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="days">Days</SelectItem>
                     <SelectItem value="weeks">Weeks</SelectItem>
@@ -419,66 +380,45 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
             </div>
           </div>
 
-          {/* Second Row */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="courseDescription">Course Description</Label>
-            <Textarea id="courseDescription" rows={10} />
+            <Textarea id="courseDescription" rows={10} value={state.courseDetails.courseDescription} onChange={(e) => dispatch({ type: "UPDATE_COURSE_DETAILS", payload: { courseDescription: e.target.value } })} />
           </div>
 
-          {/* Third Row */}
           <div className="grid grid-cols-2 gap-6">
-            {/* Student Target */}
             <div className="flex flex-col gap-4">
               <h4 className="font-semibold text-lg">Student Target</h4>
               <div className="flex flex-col gap-3">
-                <div className="w-full">
-                  <Select>
-                    <SelectTrigger className="outline-0 w-full border border-gray-400 rounded-md">
-                      <SelectValue placeholder="Select University" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="tu">Tribhuvan University</SelectItem>
-                      <SelectItem value="pu">Pokhara University</SelectItem>
-                      <SelectItem value="ku">Kathmandu University</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Select>
-                    <SelectTrigger className="outline-0 w-full border border-gray-400 rounded-md">
-                      <SelectValue placeholder="Select Course" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="bict">BICTE</SelectItem>
-                      <SelectItem value="bca">BCA</SelectItem>
-                      <SelectItem value="bit">BIT</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Select>
-                    <SelectTrigger className="outline-0 w-full border border-gray-400 rounded-md">
-                      <SelectValue placeholder="Select Semester" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[...Array(8)].map((_, i) => (
-                        <SelectItem key={i + 1} value={`sem-${i + 1}`}>
-                          Semester {i + 1}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Select value={state.courseDetails.university} onValueChange={(value) => dispatch({ type: "UPDATE_COURSE_DETAILS", payload: { university: value } })}>
+                  <SelectTrigger className="outline-0 w-full border border-gray-400 rounded-md"><SelectValue placeholder="Select University" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="tu">Tribhuvan University</SelectItem>
+                    <SelectItem value="pu">Pokhara University</SelectItem>
+                    <SelectItem value="ku">Kathmandu University</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={state.courseDetails.course} onValueChange={(value) => dispatch({ type: "UPDATE_COURSE_DETAILS", payload: { course: value } })}>
+                  <SelectTrigger className="outline-0 w-full border border-gray-400 rounded-md"><SelectValue placeholder="Select Course" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bict">BICTE</SelectItem>
+                    <SelectItem value="bca">BCA</SelectItem>
+                    <SelectItem value="bit">BIT</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={state.courseDetails.semester} onValueChange={(value) => dispatch({ type: "UPDATE_COURSE_DETAILS", payload: { semester: value } })}>
+                  <SelectTrigger className="outline-0 w-full border border-gray-400 rounded-md"><SelectValue placeholder="Select Semester" /></SelectTrigger>
+                  <SelectContent>
+                    {[...Array(8)].map((_, i) => (
+                      <SelectItem key={i + 1} value={`sem-${i + 1}`}>Semester {i + 1}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            {/* Course Depth */}
             <div className="flex flex-col gap-4">
               <h4 className="font-semibold text-lg">Course Depth</h4>
-              <RadioGroup
-                defaultValue="beginner"
-                className="flex flex-col gap-6"
-              >
+              <RadioGroup value={state.courseDetails.level} onValueChange={(value) => dispatch({ type: "UPDATE_COURSE_DETAILS", payload: { level: value } })} className="flex flex-col gap-6">
                 <div className="flex items-center gap-2">
                   <RadioGroupItem value="beginner" id="beginner" />
                   <Label htmlFor="beginner">Beginner</Label>
@@ -495,277 +435,103 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
             </div>
           </div>
 
-          {/* Upload Thumbnail */}
           <div className="w-full">
-            <Label htmlFor="thumbnail" className="pb-3">
-              Course Thumbnail Image
-            </Label>
+            <Label htmlFor="thumbnail" className="pb-3">Course Thumbnail Image</Label>
             <div className="flex w-full min-w-full p-6 rounded-xl items-center border border-gray-400 flex-col gap-1">
               <Upload />
               <h6>Upload your course image</h6>
-              <p className="text-blue-500 text-xs">
-                SVG, PNG or JPEG (Less than 10 MB)
-              </p>
+              <p className="text-blue-500 text-xs">SVG, PNG or JPEG (Less than 10 MB)</p>
             </div>
           </div>
 
-          {/* Course Structure */}
           <section className="py-4">
             <h5 className="font-semibold text-md">Course Structure</h5>
             <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="chapters" type="chapter">
                 {(provided) => (
                   <div ref={provided.innerRef} {...provided.droppableProps}>
-                    {categories.map((chapter, chapterIndex) => {
-                      if (!chapter) return null;
-
-                      return (
-                        <Draggable
-                          key={chapter.chapterId}
-                          draggableId={chapter.chapterId}
-                          index={chapterIndex}
-                        >
-                          {(provided) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              className="border p-2 my-2 bg-white"
-                            >
-                              <div
-                                className="w-full justify-between flex gap-1 items-center bg-gray-200 rounded-sm p-2"
-                                {...provided.dragHandleProps}
-                              >
-                                <div className="flex gap-1 items-center">
-                                  <GripVertical />
-                                  <Input
-                                    placeholder={
-                                      chapter.chapterName ||
-                                      `Chapter ${chapterIndex + 1}`
-                                    }
-                                    className="text-sm"
-                                  />
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  <div
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      addSubTitle(chapter.chapterId);
-                                    }}
-                                    onMouseDown={(e) => e.stopPropagation()}
-                                    className="flex cursor-pointer text-sm border border-gray-400 items-center gap-2 p-2 rounded-sm"
-                                  >
-                                    <PlusSquare size={15} />
-                                    Add Sub-Chapter
-                                  </div>
-                                  <Pen size={15} />
-                                  <Trash
-                                    onClick={(e) => deleteChapter(e, chapter)}
-                                    size={15}
-                                    color="red"
-                                    className="cursor-pointer"
-                                  />
-                                  <ArrowUp
-                                    size={15}
-                                    className={`cursor-pointer transition-transform ${
-                                      openChapters[chapter.chapterId]
-                                        ? "rotate-180"
-                                        : ""
-                                    }`}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      toggleChapter(chapter.chapterId);
-                                    }}
-                                  />
-                                </div>
+                    {state.chapters.map((chapter, chapterIndex) => (
+                      <Draggable key={chapter.chapterId} draggableId={chapter.chapterId} index={chapterIndex}>
+                        {(provided) => (
+                          <div ref={provided.innerRef} {...provided.draggableProps} className="border p-2 my-2 bg-white">
+                            <div className="w-full justify-between flex gap-1 items-center bg-gray-200 rounded-sm p-2" {...provided.dragHandleProps}>
+                              <div className="flex gap-1 items-center">
+                                <GripVertical />
+                                <Input placeholder={chapter.chapterName || `Chapter ${chapterIndex + 1}`} className="text-sm" value={chapter.chapterName} onChange={(e) => dispatch({ type: "UPDATE_CHAPTER_NAME", payload: { chapterId: chapter.chapterId, name: e.target.value } })} />
                               </div>
-
-                              {openChapters[chapter.chapterId] && (
-                                <Droppable
-                                  droppableId={chapter.chapterId}
-                                  type="subTitle"
-                                >
-                                  {(provided) => (
-                                    <div
-                                      ref={provided.innerRef}
-                                      {...provided.droppableProps}
-                                      className="ml-4"
-                                    >
-                                      {(chapter.subTitles || []).map(
-                                        (sub, subIndex) => {
-                                          if (!sub) return null;
-
-                                          return (
-                                            <Draggable
-                                              key={sub.subId}
-                                              draggableId={sub.subId}
-                                              index={subIndex}
-                                            >
-                                              {(provided) => (
-                                                <div
-                                                  ref={provided.innerRef}
-                                                  {...provided.draggableProps}
-                                                  className="border p-2 my-2 bg-gray-100 py-4 flex flex-col justify-center rounded"
-                                                >
-                                                  <div
-                                                    className="flex items-center justify-between"
-                                                    {...provided.dragHandleProps}
-                                                  >
-                                                    <div className="flex gap-1 items-center">
-                                                      <GripVertical />
-                                                      <h2 className="text-sm">
-                                                        {sub.subName ||
-                                                          "Unnamed Sub-Title"}
-                                                      </h2>
-                                                    </div>
-                                                    <div className="flex items-center gap-3">
-                                                      <div
-                                                        onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          addSubHeading(
-                                                            sub.subId
-                                                          );
-                                                        }}
-                                                        className="flex cursor-pointer text-sm border border-gray-400 items-center gap-2 p-1 rounded-sm"
-                                                      >
-                                                        <PlusSquare size={15} />
-                                                        Add Sub-Heading
-                                                      </div>
-                                                      <Pen size={15} />
-                                                      <Trash
-                                                        onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          deleteSubTitle(
-                                                            sub.subId
-                                                          );
-                                                        }}
-                                                        size={15}
-                                                        color="red"
-                                                        className="cursor-pointer"
-                                                      />
-                                                      <ArrowUp
-                                                        size={15}
-                                                        className={`cursor-pointer transition-transform ${
-                                                          openSubTitles[
-                                                            sub.subId
-                                                          ]
-                                                            ? "rotate-180"
-                                                            : ""
-                                                        }`}
-                                                        onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          toggleSubTitle(
-                                                            sub.subId
-                                                          );
-                                                        }}
-                                                        onMouseDown={(e) =>
-                                                          e.stopPropagation()
-                                                        }
-                                                      />
-                                                    </div>
-                                                  </div>
-
-                                                  {/* Subheadings */}
-                                                  {openSubTitles[sub.subId] && (
-                                                    <Droppable
-                                                      droppableId={sub.subId}
-                                                      type="subHeading"
-                                                    >
-                                                      {(provided) => (
-                                                        <ul
-                                                          className="ml-4 my-3 list-disc"
-                                                          ref={
-                                                            provided.innerRef
-                                                          }
-                                                          {...provided.droppableProps}
-                                                        >
-                                                          {(
-                                                            sub.subHeading || []
-                                                          ).map(
-                                                            (sh, shIndex) => {
-                                                              if (!sh)
-                                                                return null;
-
-                                                              return (
-                                                                <Draggable
-                                                                  key={
-                                                                    sh.subHeadId
-                                                                  }
-                                                                  draggableId={
-                                                                    sh.subHeadId
-                                                                  }
-                                                                  index={
-                                                                    shIndex
-                                                                  }
-                                                                >
-                                                                  {(
-                                                                    provided
-                                                                  ) => (
-                                                                    <li
-                                                                      ref={
-                                                                        provided.innerRef
-                                                                      }
-                                                                      {...provided.draggableProps}
-                                                                      {...provided.dragHandleProps}
-                                                                      className="py-2 pl-2 my-1 bg-white list-none border-b"
-                                                                    >
-                                                                      <div className="flex items-center justify-between">
-                                                                        <div className="flex gap-1 items-center">
-                                                                          <GripVertical />
-                                                                          <h2 className="text-sm">
-                                                                            {sh.subHeadName ||
-                                                                              "Unnamed Sub-Heading"}
-                                                                          </h2>
-                                                                        </div>
-                                                                        <div className="flex items-center gap-3">
-                                                                          <Pen
-                                                                            size={
-                                                                              15
-                                                                            }
-                                                                          />
-                                                                          <Trash
-                                                                            onClick={(
-                                                                              e
-                                                                            ) => {
-                                                                              e.stopPropagation();
-                                                                              deleteSubHeading(
-                                                                                sh.subHeadId
-                                                                              );
-                                                                            }}
-                                                                            size={
-                                                                              15
-                                                                            }
-                                                                            color="red"
-                                                                            className="cursor-pointer"
-                                                                          />
-                                                                        </div>
-                                                                      </div>
-                                                                    </li>
-                                                                  )}
-                                                                </Draggable>
-                                                              );
-                                                            }
-                                                          )}
-                                                          {provided.placeholder}
-                                                        </ul>
-                                                      )}
-                                                    </Droppable>
-                                                  )}
-                                                </div>
-                                              )}
-                                            </Draggable>
-                                          );
-                                        }
-                                      )}
-                                      {provided.placeholder}
-                                    </div>
-                                  )}
-                                </Droppable>
-                              )}
+                              <div className="flex items-center gap-3">
+                                <div onClick={(e) => { e.stopPropagation(); dispatch({ type: "ADD_SUBTITLE", payload: chapter.chapterId }); }} onMouseDown={(e) => e.stopPropagation()} className="flex cursor-pointer text-sm border border-gray-400 items-center gap-2 p-2 rounded-sm">
+                                  <PlusSquare size={15} />Add Sub-Chapter
+                                </div>
+                                <Pen size={15} />
+                                <Trash onClick={(e) => { e.stopPropagation(); dispatch({ type: "DELETE_CHAPTER", payload: chapter.chapterId }); }} size={15} color="red" className="cursor-pointer" />
+                                <ArrowUp size={15} className={`cursor-pointer transition-transform ${state.openChapters[chapter.chapterId] ? "rotate-180" : ""}`} onClick={(e) => { e.stopPropagation(); dispatch({ type: "TOGGLE_CHAPTER", payload: chapter.chapterId }); }} />
+                              </div>
                             </div>
-                          )}
-                        </Draggable>
-                      );
-                    })}
+
+                            {state.openChapters[chapter.chapterId] && (
+                              <Droppable droppableId={chapter.chapterId} type="subTitle">
+                                {(provided) => (
+                                  <div ref={provided.innerRef} {...provided.droppableProps} className="ml-4">
+                                    {chapter.subTitles.map((sub, subIndex) => (
+                                      <Draggable key={sub.subId} draggableId={sub.subId} index={subIndex}>
+                                        {(provided) => (
+                                          <div ref={provided.innerRef} {...provided.draggableProps} className="border p-2 my-2 bg-gray-100 py-4 flex flex-col justify-center rounded">
+                                            <div className="flex items-center justify-between" {...provided.dragHandleProps}>
+                                              <div className="flex gap-1 items-center">
+                                                <GripVertical />
+                                                <Input placeholder={sub.subName || `Subchapter ${subIndex + 1}`} className="text-sm" value={sub.subName} onChange={(e) => dispatch({ type: "UPDATE_SUBTITLE_NAME", payload: { subId: sub.subId, name: e.target.value } })} />
+                                              </div>
+                                              <div className="flex items-center gap-3">
+                                                <div onClick={(e) => { e.stopPropagation(); dispatch({ type: "ADD_SUBHEADING", payload: sub.subId }); }} className="flex cursor-pointer text-sm border border-gray-400 items-center gap-2 p-1 rounded-sm">
+                                                  <PlusSquare size={15} />Add Sub-Heading
+                                                </div>
+                                                <Pen size={15} />
+                                                <Trash onClick={(e) => { e.stopPropagation(); dispatch({ type: "DELETE_SUBTITLE", payload: sub.subId }); }} size={15} color="red" className="cursor-pointer" />
+                                                <ArrowUp size={15} className={`cursor-pointer transition-transform ${state.openSubTitles[sub.subId] ? "rotate-180" : ""}`} onClick={(e) => { e.stopPropagation(); dispatch({ type: "TOGGLE_SUBTITLE", payload: sub.subId }); }} onMouseDown={(e) => e.stopPropagation()} />
+                                              </div>
+                                            </div>
+
+                                            {state.openSubTitles[sub.subId] && (
+                                              <Droppable droppableId={sub.subId} type="subHeading">
+                                                {(provided) => (
+                                                  <ul className="ml-4 my-3 list-disc" ref={provided.innerRef} {...provided.droppableProps}>
+                                                    {sub.subHeading.map((sh, shIndex) => (
+                                                      <Draggable key={sh.subHeadId} draggableId={sh.subHeadId} index={shIndex}>
+                                                        {(provided) => (
+                                                          <li ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className="py-2 pl-2 my-1 bg-white list-none border-b">
+                                                            <div className="flex items-center justify-between">
+                                                              <div className="flex gap-1 items-center">
+                                                                <GripVertical />
+                                                                <Input placeholder={sh.subHeadName || `Subheading ${shIndex + 1}`} className="text-sm" value={sh.subHeadName} onChange={(e) => dispatch({ type: "UPDATE_SUBHEADING_NAME", payload: { subHeadId: sh.subHeadId, name: e.target.value } })} />
+                                                              </div>
+                                                              <div className="flex items-center gap-3">
+                                                                <Pen size={15} />
+                                                                <Trash onClick={(e) => { e.stopPropagation(); dispatch({ type: "DELETE_SUBHEADING", payload: sh.subHeadId }); }} size={15} color="red" className="cursor-pointer" />
+                                                              </div>
+                                                            </div>
+                                                          </li>
+                                                        )}
+                                                      </Draggable>
+                                                    ))}
+                                                    {provided.placeholder}
+                                                  </ul>
+                                                )}
+                                              </Droppable>
+                                            )}
+                                          </div>
+                                        )}
+                                      </Draggable>
+                                    ))}
+                                    {provided.placeholder}
+                                  </div>
+                                )}
+                              </Droppable>
+                            )}
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
                     {provided.placeholder}
                   </div>
                 )}
@@ -774,36 +540,26 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
           </section>
 
           <div className="flex flex-col gap-3">
-            <Button
-              onClick={(e) => {
-                e.preventDefault();
-                addChapter();
-              }}
-              variant="ghost"
-              className="border border-green-400"
-              disabled={isLoading}
-            >
-              <PlusSquare />
-              Add New Chapter
+            <Button onClick={(e) => { e.preventDefault(); dispatch({ type: "ADD_CHAPTER" }); }} variant="ghost" className="border border-green-400" disabled={state.isLoading}>
+              <PlusSquare />Add New Chapter
             </Button>
-            <Button
-              onClick={(e) => {
-                e.preventDefault();
-
-                saveDraft();
-              }}
-              className="bg-primeGreen"
-              disabled={isSaving}
-            >
-              {isSaving ? "Saving..." : "Save Draft"}
+            <Button onClick={(e) => { e.preventDefault(); saveDraft(); }} className="bg-primeGreen" disabled={state.isSaving}>
+              {state.isSaving ? "Saving..." : "Save Draft"}
             </Button>
           </div>
-        </form>
+        </div>
       </div>
-
-      {/* <CourseContentEditor /> */}
     </div>
   );
 };
 
-export default AddCourse;
+// Wrap your component with the provider
+const AddCourseWithProvider = ({ onClose }: { onClose: () => void }) => {
+  return (
+    <CourseProvider>
+      <AddCourse onClose={onClose} />
+    </CourseProvider>
+  );
+};
+
+export default AddCourseWithProvider;

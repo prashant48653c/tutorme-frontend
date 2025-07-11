@@ -16,20 +16,24 @@ import {
 import ViewTutor from "../admin/ViewTutor"; 
 import api from "@/hooks/axios";
 import toast from "react-hot-toast";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface Tutor {
   id: number;
   name: string;
   createdAt: string;
-  status: "APPROVED" | "DISAPPROVED" | "BANNED" | "UNDERREVIEW" | "REGISTERED";
+  courseStatus:  "PUBLISHED"
+      | "REJECTED"
+      | "DRAFT"
+      | "UNDERREVIEW";
   avatar: string;
   tutorProfile: {
     status:
-      | "APPROVED"
-      | "DISAPPROVED"
-      | "BANNED"
+      | "PUBLISHED"
+      | "REJECTED"
+      | "DRAFT"
       | "UNDERREVIEW"
-      | "REGISTERED";
+      
     id: number;
   };
 }
@@ -103,10 +107,10 @@ export default function CourseManagement() {
   const [loading, setLoading] = useState(false);
   const [counts, setCounts] = useState({
     all: 0,
-    registered: 0,
-    approved: 0,
+    published: 0,
+    rejected: 0,
     underReview: 0,
-    banned: 0,
+    draft: 0,
   });
   const [pagination, setPagination] = useState({
     page: 1,
@@ -120,8 +124,9 @@ export default function CourseManagement() {
     null
   );
   const [totalCount, setTotalCount] = useState([
-    { status: "REGISTERED", count: 0 },
+    { courseStatus: "UNDERREVIEW", count: 0 },
   ]);
+  const user=useAuthStore(state=>state.user)
 
   const fetchTutors = useCallback(
     async (
@@ -133,8 +138,11 @@ export default function CourseManagement() {
     ) => {
       setLoading(true);
       try {
+        const id=user?.tutorProfile?.id;
+        console.log(id)
+
         const status = getTabStatus(tabValue);
-        const res = await api.get("/auth/tutors", {
+        const res = await api.get(`/course/${id}`, {
           params: {
             limit: limit,
             page: pageNum,
@@ -143,38 +151,38 @@ export default function CourseManagement() {
             sortBy: sortBy,
           },
         });
-        setTotalCount(res.data.statusCounts);
-        setTutors(res.data.data || []);
+        setTotalCount(res.data.data.statusCounts);
+        console.log(res.data.data)
+        setTutors(res.data.data.data || []);
 
-        // Update pagination info
+        // Update paginain info
         if (res.data.pagination) {
           setPagination((prev) => ({
             ...prev,
-            page: res.data.pagination.page,
+            page: res.data.data.pagination.page,
             limit: limit,
-            total: res.data.pagination.total,
-            totalPages: res.data.pagination.totalPages,
+            total: res.data.data.pagination.total,
+            totalPages: res.data.data.pagination.totalPages,
           }));
         }
 
-        // Update counts from statusSummary
+        // Update counts fromstatsSummary
         if (res.data.statusSummary) {
           const statusSummary = res.data.statusSummary;
           const newCounts = {
             all: res.data.pagination.total || 0,
-            registered:
-              statusSummary.find((s: any) => s.status === "REGISTERED")
-                ?.count || 0,
-            approved:
-              statusSummary.find((s: any) => s.status === "APPROVED")?.count ||
+            
+            published:
+              statusSummary.find((s: any) => s.courseStatus === "PUBLISHED")?.count ||
               0,
             underReview:
-              statusSummary.find((s: any) => s.status === "UNDERREVIEW")
+              statusSummary.find((s: any) => s.courseStatus === "UNDERREVIEW")
                 ?.count || 0,
-            banned:
-              (statusSummary.find((s: any) => s.status === "DRAFT")?.count ||
-                0) +
-              (statusSummary.find((s: any) => s.status === "DISAPPROVED")
+            draft:
+              (statusSummary.find((s: any) => s.courseStatus === "DRAFT")?.count ||
+                0),
+                rejected:
+              (statusSummary.find((s: any) => s.courseStatus === "REJECTED")
                 ?.count || 0),
           };
           setCounts(newCounts);
@@ -193,7 +201,7 @@ export default function CourseManagement() {
 
   const updateTutorStatus = async (id: number, status: string) => {
     try {
-      const res = await api.patch(`/auth/tutor/status/${id}`, {
+      const res = await api.patch(`/course/status/${id}`, {
         status: status,
       });
       console.log(res);
@@ -205,42 +213,42 @@ export default function CourseManagement() {
         pagination.sortBy
       );
 
-      toast.success("Tutor kyc was updated!");
+      toast.success("Status was updated!");
     } catch (error) {
       console.log(error);
-      toast.success("Failed to update Kyc!");
+      toast.success("Failed to update status!");
     }
   };
-  const fetchCounts = useCallback(async () => {
-    try {
-      // Fetch counts from a single API call
-      const res = await api.get("/auth/tutors", {
-        params: { limit: 1, page: 1, status: "" },
-      });
+//   const fetchCounts = useCallback(async () => {
+//     try {
+//       // Fetch counts from a single API call
+//         const id=user?.tutorProfile?.id;
 
-      if (res.data.statusSummary) {
-        const statusSummary = res.data.statusSummary;
-        setCounts({
-          all: res.data.pagination.total || 0,
-          registered:
-            statusSummary.find((s: any) => s.status === "REGISTERED")?.count ||
-            0,
-          approved:
-            statusSummary.find((s: any) => s.status === "APPROVED")?.count || 0,
-          underReview:
-            statusSummary.find((s: any) => s.status === "UNDERREVIEW")?.count ||
-            0,
-          banned:
-            (statusSummary.find((s: any) => s.status === "BANNED")?.count ||
-              0) +
-            (statusSummary.find((s: any) => s.status === "DISAPPROVED")
-              ?.count || 0),
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching counts:", error);
-    }
-  }, []);
+//       const res = await api.get(`/course/${id}`, {
+//         params: { limit: 1, page: 1, status: "" },
+//       });
+
+//       if (res.data.statusSummary) {
+//         const statusSummary = res.data.statusSummary;
+//         setCounts({
+//           all: res.data.pagination.total || 0,
+//           rejected:
+//  statusSummary.find((s: any) => s.status === "REJECTED")?.count || 0,
+
+//           published:
+//             statusSummary.find((s: any) => s.status === "PUBLISHED")?.count || 0,
+//           underReview:
+//             statusSummary.find((s: any) => s.status === "UNDERREVIEW")?.count ||
+//             0,
+//           draft:
+//             (statusSummary.find((s: any) => s.status === "DRAFT")?.count ||
+//               0) 
+//         });
+//       }
+//     } catch (error) {
+//       console.error("Error fetching counts:", error);
+//     }
+//   }, []);
 
   // Debounced search function
   const handleSearch = useCallback(
@@ -270,9 +278,9 @@ export default function CourseManagement() {
     fetchTutors(activeTab, 1, pagination.limit, searchQuery, sort);
   };
 
-  useEffect(() => {
-    fetchCounts();
-  }, [fetchCounts]);
+  // useEffect(() => {
+  //   fetchCounts();
+  // }, [fetchCounts]);
 
   useEffect(() => {
     fetchTutors(
@@ -364,7 +372,7 @@ export default function CourseManagement() {
           <span>Sort By (A-Z)</span>
           <ArrowUpAZ />
         </div>
-      </div>
+      </div> 
 
       <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-sm">
         <Tabs
@@ -380,39 +388,33 @@ export default function CourseManagement() {
               All Course
             </TabsTrigger>
              <TabsTrigger
-              value="under-review"
+              value="underreview"
               className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
             >
-              Under Review (
-              {totalCount.find((item) => item.status === "UNDERREVIEW")
-                ?.count || 0}
+              UnderReview (
+              {/* {totalCount.find((item) => item?.courseStatus === "UNDERREVIEW")
+                ?.count || 0} */}
               )
             </TabsTrigger>
             <TabsTrigger
-              value="kyc-approved"
+              value="published"
               className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
             >
-              Approved (
-              {totalCount.find((item) => item.status === "APPROVED")?.count ||
-                0}
+              Published (
+              {/* {totalCount.find((item) => item.courseStatus === "PUBLISHED")?.count ||
+                0} */}
               )
             </TabsTrigger>
              <TabsTrigger
-              value="disapproved"
+              value="rejected"
               className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
             >
-              Disapproved (
-              {totalCount.find((item) => item.status === "DISAPPROVED")
-                ?.count || 0}
+              Rejected (
+              {/* {totalCount.find((item) => item.courseStatus === "REJECTED")
+                ?.count || 0} */}
               )
             </TabsTrigger>
-            <TabsTrigger
-              value="banned"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
-            >
-              Draft (
-              {totalCount.find((item) => item.status === "BANNED")?.count || 0})
-            </TabsTrigger>
+            
           
           </TabsList>
 
@@ -426,28 +428,26 @@ export default function CourseManagement() {
               ) : tutors.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   {searchQuery
-                    ? `No tutors found matching "${searchQuery}"`
+                    ? `No tutors foud matching "${searchQuery}"`
                     : "No tutors found"}
                 </div>
               ) : (
-                tutors.map((tutor) => {
-                  const statusConfig = getStatusBadge(tutor.status);
+                tutors?.map((tutor) => {
+                  const statusConfig = getStatusBadge(tutor.courseStatus);
                   return (
                     <div
                       key={tutor.id}
                       className="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
                     >
                       <div className="flex items-center space-x-4">
-                        <Avatar className="h-12 w-12">
+                        <Avatar className="h-12  w-12">
                           <AvatarImage
                             src={tutor.avatar || "/placeholder.svg"}
                             alt={tutor.name}
                           />
                           <AvatarFallback className="bg-gray-800 text-white text-xs">
                             {tutor.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
+                              }
                           </AvatarFallback>
                         </Avatar>
                         <div>
