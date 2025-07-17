@@ -12,6 +12,7 @@ import {
   ChevronRight,
   ArrowUpAZ,
   Search,
+  Pencil,
 } from "lucide-react";
 import ViewTutor from "../admin/ViewTutor"; 
 import api from "@/hooks/axios";
@@ -20,21 +21,21 @@ import { useAuthStore } from "@/store/useAuthStore";
 
 interface Tutor {
   id: number;
-  name: string;
-  createdAt: string;
+  title: string;
+  updatedAt: string;
   courseStatus:  "PUBLISHED"
       | "REJECTED"
       | "DRAFT"
       | "UNDERREVIEW";
-  avatar: string;
-  tutorProfile: {
+  thumbnail: string;
+  
+  tutor: {
     status:
       | "PUBLISHED"
       | "REJECTED"
       | "DRAFT"
       | "UNDERREVIEW"
       
-    id: number;
   };
 }
 
@@ -50,26 +51,23 @@ function formatDate(dateString: string) {
 
 const getStatusBadge = (status: string) => {
   const statusConfig = {
-    APPROVED: {
-      label: "Approved",
+    PUBLISHED: {
+      label: "Published",
       className: "bg-green-100 text-green-800 hover:bg-green-100",
     },
-    DISAPPROVED: {
-      label: "Disapproved",
+    REJECTED: {
+      label: "Rejected",
       className: "bg-purple-100 text-purple-800 hover:bg-purple-100",
     },
-    BANNED: {
-      label: "Banned",
+    DRAFT: {
+      label: "Draft",
       className: "bg-red-100 text-red-800 hover:bg-red-100",
     },
     UNDERREVIEW: {
       label: "Under Review",
       className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
     },
-    REGISTERED: {
-      label: "Registered",
-      className: "bg-blue-100 text-blue-800 hover:bg-blue-100",
-    },
+    
   };
 
   return (
@@ -84,16 +82,16 @@ const getTabStatus = (tab: string) => {
   switch (tab) {
     case "all":
       return "";
-    case "registered":
-      return "REGISTERED";
-    case "kyc-approved":
+    case "published":
+      return "PUBLISHED";
+    case "approved":
       return "APPROVED";
     case "under-review":
       return "UNDERREVIEW";
-    case "banned":
-      return "BANNED";
-    case "disapproved":
-      return "DISAPPROVED";
+    case "rejected":
+      return "REJECTED";
+    case "draft":
+      return "DRAFT";
     default:
       return "";
   }
@@ -124,7 +122,7 @@ export default function CourseManagement() {
     null
   );
   const [totalCount, setTotalCount] = useState([
-    { courseStatus: "UNDERREVIEW", count: 0 },
+    { status: "UNDERREVIEW", count: 0 },
   ]);
   const user=useAuthStore(state=>state.user)
 
@@ -152,11 +150,11 @@ export default function CourseManagement() {
           },
         });
         setTotalCount(res.data.data.statusCounts);
-        console.log(res.data.data)
+        console.log(res.data.data.statusCounts)
         setTutors(res.data.data.data || []);
 
         // Update paginain info
-        if (res.data.pagination) {
+        if (res.data.data.pagination) {
           setPagination((prev) => ({
             ...prev,
             page: res.data.data.pagination.page,
@@ -385,15 +383,18 @@ export default function CourseManagement() {
               value="all"
               className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
             >
-              All Course
+              All Course (
+             {   totalCount.reduce((acc, item) => acc + item.count, 0)}
+
+              )
             </TabsTrigger>
              <TabsTrigger
-              value="underreview"
+              value="under-review"
               className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
             >
               UnderReview (
-              {/* {totalCount.find((item) => item?.courseStatus === "UNDERREVIEW")
-                ?.count || 0} */}
+              {totalCount.find((item) => item?.status === "UNDERREVIEW")
+                ?.count || 0}
               )
             </TabsTrigger>
             <TabsTrigger
@@ -401,8 +402,8 @@ export default function CourseManagement() {
               className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
             >
               Published (
-              {/* {totalCount.find((item) => item.courseStatus === "PUBLISHED")?.count ||
-                0} */}
+              {totalCount.find((item) => item.status === "PUBLISHED")?.count ||
+                0}
               )
             </TabsTrigger>
              <TabsTrigger
@@ -410,8 +411,17 @@ export default function CourseManagement() {
               className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
             >
               Rejected (
-              {/* {totalCount.find((item) => item.courseStatus === "REJECTED")
-                ?.count || 0} */}
+              {totalCount.find((item) => item.status === "REJECTED")
+                ?.count || 0}
+              )
+            </TabsTrigger>
+             <TabsTrigger
+              value="draft"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+            >
+              Draft (
+              {totalCount.find((item) => item.status === "DRAFT")
+                ?.count || 0}
               )
             </TabsTrigger>
             
@@ -423,13 +433,13 @@ export default function CourseManagement() {
               {loading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500 mx-auto"></div>
-                  <p className="mt-2 text-gray-600">Loading tutors...</p>
+                  <p className="mt-2 text-gray-600">Loading courses...</p>
                 </div>
               ) : tutors.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   {searchQuery
-                    ? `No tutors foud matching "${searchQuery}"`
-                    : "No tutors found"}
+                    ? `No course found matching "${searchQuery}"`
+                    : "No courses found"}
                 </div>
               ) : (
                 tutors?.map((tutor) => {
@@ -442,110 +452,47 @@ export default function CourseManagement() {
                       <div className="flex items-center space-x-4">
                         <Avatar className="h-12  w-12">
                           <AvatarImage
-                            src={tutor.avatar || "/placeholder.svg"}
-                            alt={tutor.name}
+                            src={tutor.thumbnail || "/placeholder.svg"}
+                            alt={tutor.title}
                           />
                           <AvatarFallback className="bg-gray-800 text-white text-xs">
-                            {tutor.name
+                            {tutor?.title
                               }
                           </AvatarFallback>
                         </Avatar>
                         <div>
                           <h3 className="font-semibold text-gray-900">
-                            {tutor.name}
+                            {tutor.title}
                           </h3>
                           <p className="text-sm text-gray-500">
-                            Joined Date: {formatDate(tutor.createdAt)}
+                            Joined Date: {formatDate(tutor.updatedAt)}
                           </p>
                           <Badge className={`mt-1 ${statusConfig.className}`}>
-                            {tutor?.tutorProfile?.status || "UNKNOWN"}
+                            {tutor?.courseStatus || "UNKNOWN"}
                           </Badge>
                         </div>
                       </div>
 
                       <div className="flex w-fit items-center space-x-2">
-                        {activeTab == "under-review" && (
-                          <div className="flex gap-2 items-center justify-center">
-                            <Button
-                              onClick={() =>
-                                updateTutorStatus(
-                                  tutor?.tutorProfile?.id,
-                                  "APPROVED"
-                                )
-                              }
-                              className=" text-white bg-primeGreen rounded-full flex items-center justify-center  "
-                            >
-                              Approve
-                            </Button>
-                            <Button
-                              onClick={() =>
-                                updateTutorStatus(
-                                  tutor?.tutorProfile?.id,
-                                  "DISAPPROVED"
-                                )
-                              }
-                              className=" text-white bg-gray-500 rounded-full flex items-center justify-center  "
-                            >
-                              Disapprove
-                            </Button>
-                          </div>
-                        )}
+                      
 
-                        {activeTab == "banned" && (
-                          <div className="flex gap-2 items-center justify-center">
-                            <Button
-                              onClick={() =>
-                                updateTutorStatus(
-                                  tutor?.tutorProfile?.id,
-                                  "APPROVED"
-                                )
-                              }
-                              className=" text-white bg-primeGreen rounded-full flex items-center justify-center  "
-                            >
-                              Unban
-                            </Button>
-                          </div>
-                        )}
-                        {activeTab == "kyc-approved" && (
-                          <div className="flex gap-2 items-center justify-center">
-                            <Button
-                              onClick={() =>
-                                updateTutorStatus(
-                                  tutor?.tutorProfile?.id,
-                                  "BANNED"
-                                )
-                              }
-                              className=" text-white bg-primeGreen rounded-full flex items-center justify-center  "
-                            >
-                              Ban
-                            </Button>
-                          </div>
-                        )}
+                   
+                     
 
-                        {activeTab == "disapproved" && (
+                        {activeTab == "draft" && (
                           <div className="flex gap-2 items-center justify-center">
                             <Button
                               onClick={() =>
                                 updateTutorStatus(
-                                  tutor?.tutorProfile?.id,
-                                  "APPROVED"
+                                  tutor?.id,
+                                  "UNDERREVIEW"
                                 )
                               }
                               className=" text-white bg-primeGreen rounded-full flex items-center justify-center  "
                             >
-                              Approve
+                              Send for approval
                             </Button>
-                            <Button
-                              onClick={() =>
-                                updateTutorStatus(
-                                  tutor?.tutorProfile?.id,
-                                  "REVIEW"
-                                )
-                              }
-                              className=" text-white bg-gray-500 rounded-full flex items-center justify-center  "
-                            >
-                              Review Again
-                            </Button>
+                           
                           </div>
                         )}
                         <Button
@@ -565,6 +512,13 @@ export default function CourseManagement() {
                           className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
                         >
                           <Eye className="h-4 w-4" />
+                        </Button>
+                         <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                        >
+                          <Pencil className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>

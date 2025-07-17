@@ -36,8 +36,8 @@ DropResult,
 
 import { useCourseStore } from "@/store/useCourseStore";
 import { useRouter } from "next/navigation";
-import MyEditor from "./TextEditor";
-
+import RichTextExample from "./TextEditor.jsx";
+ 
 // Types
 interface SubHeading {
 subHeadId: string;
@@ -137,7 +137,7 @@ case "ADD_CHAPTER": {
 const newChapterId = `chapter-${Date.now()}`;
 const newChapter: Chapter = {
 chapterId: newChapterId,
-chapterName: `Chapter ${state.chapters.length + 1} Title`,
+chapterName: `Chapter ${state?.chapters?.length + 1} Title`,
 subTitles: [],
 };
 return {
@@ -235,11 +235,11 @@ prev.filter((chapter) => chapter.chapterId !== chapterId)
 };
 
 const addChapter = () => {
-const newChapterId = `chapter-${categories.length + 1}`;
+const newChapterId = `chapter-${categories?.length + 1}`;
 
 const newChapter = {
 chapterId: newChapterId,
-chapterName: `New Chapter ${categories.length + 1}`,
+chapterName: `New Chapter ${categories?.length + 1}`,
 subTitles: [],
 };
 
@@ -386,20 +386,16 @@ return null;
 const selectedContent = getSelectedContent();
 
 return (
-<div className="flex h-screen bg-gray-50">
-{/* Sidebar */}
-<div
-className={`bg-white border-r border-gray-200 transition-all duration-300 ${
-state.sidebarCollapsed ? "w-0 overflow-hidden" : "w-80"
-}`}
->
-<section className="py-4">
+<div className="flex border z-50  justify-center border-black p-1  w-[100%]  ">
+
+  <div className={` ${state.sidebarCollapsed ? 'w-0 invisible' :'w-[30%]'} px-3 border bg-red-300`}>
+<section className="py-4  overflow-hidden items-center    flex flex-col relative">
 <h5 className="font-semibold text-md">Course Structure</h5>
 <DragDropContext onDragEnd={handleDragEnd}>
 <Droppable droppableId="chapters" type="chapter">
 {(provided) => (
 <div ref={provided.innerRef} {...provided.droppableProps}>
-{categories.map((chapter, chapterIndex) => (
+{categories?.map((chapter, chapterIndex) => (
 <Draggable
 key={chapter.chapterId}
 draggableId={chapter.chapterId}
@@ -418,10 +414,10 @@ className="w-full justify-between flex gap-1 items-center bg-gray-200 rounded-sm
 <div className="flex gap-1 items-center">
 <GripVertical />
 <Input
-placeholder={
+placeholder={`
 chapter.chapterName ||
-`Chapter ${chapterIndex + 1}`
-}
+Chapter ${chapterIndex + 1}
+`}
 className=" text-sm"
 />
 </div>
@@ -614,7 +610,7 @@ className="flex items-center justify-between"
 )}
 </Droppable>
 </DragDropContext>
-</section>
+<div className="">
 <Button
 onClick={(e) => {
 e.preventDefault();
@@ -628,21 +624,28 @@ Add New Chapter
 </Button>
 </div>
 
-{/* Main Content */}
-<div className="flex-1 flex flex-col">
-{/* Header */}
-<div className="bg-white border-b border-gray-200 p-4 flex items-center justify-between">
-<div className="flex items-center gap-4">
-<button
+</section>
+  </div>
+
+  <div className={` overflow-auto  h-[90vh] relative flex flex-col  ${state.sidebarCollapsed ? 'w-[100%] ' :'w-[70%]'}
+ flex flex-col} px-3`}>
+
+<div className="absolute bg-black top-[45%]">
+  <button
 onClick={() => dispatch({ type: "TOGGLE_SIDEBAR" })}
-className="p-2 hover:bg-gray-100 rounded-lg"
+className="py-2 hover:bg-gray-900 rounded-lg"
 >
 {state.sidebarCollapsed ? (
-<ChevronRight className="w-5 h-5" />
+<ChevronRight color="white" className="w-5 h-5" />
 ) : (
-<ChevronLeft className="w-5 h-5" />
+<ChevronLeft color="white" className="w-5 h-5" />
 )}
 </button>
+</div>
+
+<div className="bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+<div className="flex items-center gap-4">
+
 <h1 className="text-xl font-semibold">
 {selectedContent?.title || "Select a chapter or section"}
 </h1>
@@ -660,7 +663,7 @@ Chapter 2
 </div>
 
 {/* Content Editor */}
-<div className="flex-1 p-6 overflow-y-auto">
+<div className="flex-1 p-6 mb-28 overflow-y-auto">
 {selectedContent ? (
 <div className="max-w-4xl mx-auto">
 <div className="mb-6">
@@ -701,7 +704,7 @@ Upload your Content Subtitle
 <h3 className="text-lg font-medium mb-3">Description</h3>
 <div className="border border-gray-300 rounded-lg p-4 min-h-48">
 <p className="text-blue-600 cursor-pointer">
-{/* <MyEditor/> */}
+<RichTextExample/>
 </p>
 </div>
 </div>
@@ -728,7 +731,10 @@ Select a chapter or section to start editing
 </div>
 )}
 </div>
-</div>
+
+
+  </div>
+
 </div>
 );
 };

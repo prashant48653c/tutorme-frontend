@@ -1,6 +1,9 @@
 'use client'
 import React, { useState } from 'react';
 import { ChevronUp, ChevronDown, Plus } from 'lucide-react';
+import { SimpleEditor } from '../tiptap-templates/simple/simple-editor';
+import ResourceManagement from './ResourceManagement';
+import TimeManagement from './TimeManagement';
 
 type Assignment = {
   id: string;
@@ -8,7 +11,7 @@ type Assignment = {
   description: string;
 };
 
-const AssignmentsUI: React.FC = () => {
+const CourseTab: React.FC = () => {
   const tabs: string[] = [
     'Course Content',
     'Resources',
@@ -19,13 +22,15 @@ const AssignmentsUI: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<string>('Assignments');
 
+
+  // Assignment
   const [expandedAssignments, setExpandedAssignments] = useState<Record<string, boolean>>({
     'assignment-1': true,
   });
 
   const [assignments, setAssignments] = useState<Assignment[]>([
     { id: 'assignment-1', title: 'Assignment 1', description: '' },
-    { id: 'assignment-2', title: 'Assignment 2', description: '' },
+  
   ]);
 
   const toggleAssignment = (id: string) => {
@@ -59,6 +64,9 @@ const AssignmentsUI: React.FC = () => {
     );
   };
 
+
+  // Resources
+ 
   const renderTabContent = () => {
     switch (activeTab) {
       case 'Assignments':
@@ -86,7 +94,7 @@ const AssignmentsUI: React.FC = () => {
                 </div>
 
                 {expandedAssignments[assignment.id] && (
-                  <div className="mt-6 space-y-4">
+                  <div className="mt-6 py-4 space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Assignment Title
@@ -104,13 +112,17 @@ const AssignmentsUI: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Assignment Description
                       </label>
-                      <textarea
+                      {/* <textarea
                         value={assignment.description}
                         onChange={(e) =>
                           updateAssignment(assignment.id, 'description', e.target.value)
                         }
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none min-h-32"
-                      />
+                      /> */}
+                      <div className='shadow-md'>
+                      <SimpleEditor/>
+
+                      </div>
                     </div>
                   </div>
                 )}
@@ -132,7 +144,7 @@ const AssignmentsUI: React.FC = () => {
       case 'Course Content':
         return (
           <div>
-            <h1 className="text-xl font-semibold mb-4">Course Content</h1>
+            <h1 className="text-xl font-semibold mb-4">Course Outlook</h1>
             <input
               type="text"
               placeholder="Enter topic title"
@@ -143,36 +155,24 @@ const AssignmentsUI: React.FC = () => {
 
       case 'Resources':
         return (
-          <div>
-            <h1 className="text-xl font-semibold mb-4">Resources</h1>
-            <input
-              type="text"
-              placeholder="Enter resource name"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg"
-            />
-          </div>
+       <ResourceManagement/>
         );
 
       case 'Practice Questions':
         return (
           <div>
-            <h1 className="text-xl font-semibold mb-4">Practice Questions</h1>
-            <textarea
-              placeholder="Enter question..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg min-h-32"
-            />
+            <h1 className="text-xl font-semibold ">Practice Questions</h1>
+            <p className='text-primeGreen mb-6'>Add previous year questions,image and links</p>
+           <SimpleEditor/>
           </div>
         );
 
       case 'Class Schedule':
         return (
-          <div>
-            <h1 className="text-xl font-semibold mb-4">Class Schedule</h1>
-            <input
-              type="date"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg"
-            />
-          </div>
+        
+             
+           <TimeManagement/>
+          
         );
 
       default:
@@ -181,7 +181,7 @@ const AssignmentsUI: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-gray-50 min-h-screen">
+    <div className="max-w overflow-y-scroll pb-20 mx-auto p-6 bg-gray-50 h-[90vh]">
       {/* Tabs */}
       <div className="flex gap-2 mb-8">
         {tabs.map((tab) => (
@@ -217,4 +217,4 @@ const AssignmentsUI: React.FC = () => {
   );
 };
 
-export default AssignmentsUI;
+export default CourseTab;
