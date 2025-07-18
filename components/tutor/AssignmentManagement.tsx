@@ -5,20 +5,20 @@ import { SimpleEditor } from '../tiptap-templates/simple/simple-editor';
 import { useGlobalCourseStore } from '@/store/useGlobalCourseStore';
 import api from '@/hooks/axios';
 import toast from 'react-hot-toast';
-import { Resource } from '@/types/course';
+import { Assignment, Resource } from '@/types/course';
 
-const ResourceManagement = () => {
+const AssignmentManagement = () => {
   const course = useGlobalCourseStore(state => state.course);
-console.log(course)
+ 
   const [expandedResources, setExpandedResources] = useState<Record<number, boolean>>({});
-  const [resources, setResources] = useState<Resource[]>([]);
+  const [resources, setResources] = useState<Assignment[]>([]);
 
   // Setup initial resources based on course
   useEffect(() => {
-    if (course?.resource && course.resource.length > 0) {
-      setResources(course.resource);
+    if (course?.assignment && course.assignment.length > 0) {
+      setResources(course.assignment);
       const expansionState: Record<number, boolean> = {};
-      course.resource.forEach((res) => {
+      course.assignment.forEach((res) => {
         if (res.id !== undefined) {
           expansionState[res.id] = true;
         }
@@ -26,7 +26,7 @@ console.log(course)
       setExpandedResources(expansionState);
     } else {
       // Initialize with one blank resource if none exist
-      setResources([{ title: 'Resource 1', description: '', courseId: course?.id || 0 }]);
+      setResources([{ title: 'Assignment 1', description: '', courseId: course?.id || 0 }]);
       setExpandedResources({ 0: true });
     }
   }, [course]);
@@ -40,8 +40,8 @@ console.log(course)
 
   const addResource = () => {
     const newId = Date.now(); // temp unique id
-    const newResource: Resource = {
-      title: `Resource ${resources.length + 1}`,
+    const newResource: Assignment = {
+      title: `Assignment ${resources.length + 1}`,
       description: '',
       courseId: course?.id || 0,
       
@@ -50,7 +50,7 @@ console.log(course)
     setExpandedResources(prev => ({ ...prev, [newId]: true }));
   };
 
-  const updateResource = (id: number, field: keyof Resource, value: string) => {
+  const updateResource = (id: number, field: keyof Assignment, value: string) => {
     setResources(prev =>
       prev.map(resource =>
         resource.id === id ? { ...resource, [field]: value } : resource
@@ -66,11 +66,11 @@ const handleResourceUpload = async () => {
   });
 console.log(payload,"Pay")
   try {    
-      const res = await api.post(`/course/resource/${course?.id}`, payload);
+      const res = await api.post(`/course/assignment/${course?.id}`, payload);
 
-    console.log("Created resources:", res.data);
+    console.log("Created assignment:", res.data);
   } catch (err) {
-    console.error("Error creating resources:", err);
+    console.error("Error creating assignment:", err);
   }
 };
 
@@ -148,4 +148,4 @@ console.log(payload,"Pay")
   );
 };
 
-export default ResourceManagement;
+export default AssignmentManagement;

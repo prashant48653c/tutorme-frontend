@@ -4,6 +4,10 @@ import { ChevronUp, ChevronDown, Plus } from 'lucide-react';
 import { SimpleEditor } from '../tiptap-templates/simple/simple-editor';
 import ResourceManagement from './ResourceManagement';
 import TimeManagement from './TimeManagement';
+import OverviewManagement from './OverviewManagement';
+import { useCourseStore } from '@/store/useCourseStore';
+import { stat } from 'fs';
+import AssignmentManagement from './AssignmentManagement';
 
 type Assignment = {
   id: string;
@@ -20,9 +24,11 @@ const CourseTab: React.FC = () => {
     'Class Schedule',
   ];
 
-  const [activeTab, setActiveTab] = useState<string>('Assignments');
+  const [activeTab, setActiveTab] = useState<string>('Course Content');
+const course=useCourseStore(state => state.courseDetails)
+const chapter=useCourseStore(state => state.chapters)
 
-
+console.log(course,chapter)
   // Assignment
   const [expandedAssignments, setExpandedAssignments] = useState<Record<string, boolean>>({
     'assignment-1': true,
@@ -71,86 +77,12 @@ const CourseTab: React.FC = () => {
     switch (activeTab) {
       case 'Assignments':
         return (
-          <>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Assignments</h1>
-
-            {assignments.map((assignment) => (
-              <div
-                key={assignment.id}
-                className="bg-white rounded-xl border-2 border-teal-200 p-6 shadow-sm mb-4"
-              >
-                <div
-                  className="flex items-center justify-between cursor-pointer"
-                  onClick={() => toggleAssignment(assignment.id)}
-                >
-                  <h3 className="text-lg font-medium text-gray-900">
-                    {assignment.title}
-                  </h3>
-                  {expandedAssignments[assignment.id] ? (
-                    <ChevronUp className="h-5 w-5 text-teal-500" />
-                  ) : (
-                    <ChevronDown className="h-5 w-5 text-teal-500" />
-                  )}
-                </div>
-
-                {expandedAssignments[assignment.id] && (
-                  <div className="mt-6 py-4 space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Assignment Title
-                      </label>
-                      <input
-                        type="text"
-                        value={assignment.title}
-                        onChange={(e) =>
-                          updateAssignment(assignment.id, 'title', e.target.value)
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Assignment Description
-                      </label>
-                      {/* <textarea
-                        value={assignment.description}
-                        onChange={(e) =>
-                          updateAssignment(assignment.id, 'description', e.target.value)
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none min-h-32"
-                      /> */}
-                      <div className='shadow-md'>
-                      <SimpleEditor/>
-
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            <button
-              onClick={addAssignment}
-              className="w-full bg-white border-2 border-dashed border-teal-300 rounded-xl p-6 text-center hover:border-teal-400 hover:bg-teal-50 transition-colors group"
-            >
-              <div className="flex items-center justify-center gap-2 text-teal-500 group-hover:text-teal-600">
-                <Plus className="h-5 w-5" />
-                <span className="font-medium">Add Assignment</span>
-              </div>
-            </button>
-          </>
+       <AssignmentManagement/>
         );
 
       case 'Course Content':
         return (
-          <div>
-            <h1 className="text-xl font-semibold mb-4">Course Outlook</h1>
-            <input
-              type="text"
-              placeholder="Enter topic title"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg"
-            />
-          </div>
+         <OverviewManagement/>
         );
 
       case 'Resources':
@@ -164,6 +96,15 @@ const CourseTab: React.FC = () => {
             <h1 className="text-xl font-semibold ">Practice Questions</h1>
             <p className='text-primeGreen mb-6'>Add previous year questions,image and links</p>
            <SimpleEditor/>
+             {/* Action Buttons */}
+        <div className="flex gap-4 pt-6">
+          <button className="flex-1 bg-teal-500 text-white py-4 px-8 rounded-lg font-medium hover:bg-teal-600 transition-colors">
+            Save Draft
+          </button>
+          <button className="flex-1 bg-white border border-gray-300 text-gray-700 py-4 px-8 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+            Send for Approval
+          </button>
+        </div>
           </div>
         );
 
@@ -203,15 +144,7 @@ const CourseTab: React.FC = () => {
       <div className="space-y-6">
         {renderTabContent()}
 
-        {/* Action Buttons */}
-        <div className="flex gap-4 pt-6">
-          <button className="flex-1 bg-teal-500 text-white py-4 px-8 rounded-lg font-medium hover:bg-teal-600 transition-colors">
-            Save Draft
-          </button>
-          <button className="flex-1 bg-white border border-gray-300 text-gray-700 py-4 px-8 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-            Send for Approval
-          </button>
-        </div>
+      
       </div>
     </div>
   );

@@ -3,9 +3,9 @@ import React from 'react'
 
 const DraftPage = () => {
   return (
-    <div>
+   
         <CourseContentEditor/>
-    </div>
+    
   )
 }
 

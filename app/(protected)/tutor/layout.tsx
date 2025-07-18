@@ -5,8 +5,8 @@ import type { Metadata } from "next";
 import { ReactNode } from "react";
 
 export const metadata: Metadata = {
-  title: "Sidebar Layout App",
-  description: "A Next.js app with sidebar layout",
+ title: "Tutor Dashboard",
+  description: "Dashboard for tutor",
 };
 
 const links = [
@@ -40,7 +40,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <div className="flex relative justify-center w-full min-h-screen">
+        <div className="flex relative justify-center w-[100%] min-h-screen">
           {/* Sidebar */}
           <div className="w-[18%]">
           <Sidebar links={links} />
@@ -48,7 +48,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
           </div>
 
           {/* Main Content */}
-          <main className="flex w-full p-6 bg-gray-100">
+          <main className="flex w-[82%] p-6 bg-gray-100">
             <div className={`w-full  flex flex-col h-max `}>
               <Topbar />
               <div className="relative">

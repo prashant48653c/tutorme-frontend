@@ -10,8 +10,8 @@ import { useAuthStore } from '@/store/useAuthStore';
 const Sidebar = ({links}:{links:any}) => {
   const user=useAuthStore((state=>state.user))
   return (
-    <aside className="w-[18%] h-screen relative bg-gray-100 text-black p-4  left-0 top-0">
-      <div className="flex flex-col items-center bg-gray-100 no-scrollbar fixed h-full overflow-y-auto pt-8 space-y-4">
+    <aside className="w-full h-screen relative bg-gray-100 text-black   ">
+      <div className="flex w-[13rem] z-20 bg-gray-100  flex-col items-center  no-scrollbar absolute top-0 h-full overflow-y-auto pt-8 space-y-4">
         <div>
           <h1 className="font-extrabold text-3xl text-black">
             TUTOR<span className="text-primeGreen">ME</span>

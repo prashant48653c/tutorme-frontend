@@ -6,7 +6,7 @@ export interface Course {
   description?: string;
   price?: number;
   courseStatus?: Status;
-  duration?: number;
+  duration?: string;
   chapterCount?: number;
   targetUniversity?: string;
   targetCourse?: string;
@@ -42,7 +42,7 @@ export interface Chapter {
 
 export interface SubChapter {
   id?: number;
-  chapterId?: number;
+ 
   title?: string;
   description?: string;
   video?: string;
@@ -53,7 +53,7 @@ export interface SubChapter {
 
 export interface SubHeading {
   id?: number;
-  subChapterId?: number;
+  subid?: number;
   title?: string;
   description?: string;
   video?: string;

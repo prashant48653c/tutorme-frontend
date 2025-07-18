@@ -13,32 +13,19 @@ import {
   ArrowUpAZ,
   Search,
   Pencil,
+  Trash,
 } from "lucide-react";
-import ViewTutor from "../admin/ViewTutor"; 
+import ViewTutor from "../admin/ViewTutor";
 import api from "@/hooks/axios";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useRouter } from "next/navigation";
+import CourseTab from "./CourseTab";
+import { Chapter, Course } from "@/types/course";
+import { useCourseStore } from "@/store/useCourseStore";
+import { useGlobalCourseStore } from "@/store/useGlobalCourseStore";
 
-interface Tutor {
-  id: number;
-  title: string;
-  updatedAt: string;
-  courseStatus:  "PUBLISHED"
-      | "REJECTED"
-      | "DRAFT"
-      | "UNDERREVIEW";
-  thumbnail: string;
-  
-  tutor: {
-    status:
-      | "PUBLISHED"
-      | "REJECTED"
-      | "DRAFT"
-      | "UNDERREVIEW"
-      
-  };
-}
-
+ 
 function formatDate(dateString: string) {
   const date = new Date(dateString);
 
@@ -67,7 +54,6 @@ const getStatusBadge = (status: string) => {
       label: "Under Review",
       className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
     },
-    
   };
 
   return (
@@ -101,8 +87,9 @@ export default function CourseManagement() {
   const [activeTab, setActiveTab] = useState("all");
   const [currentTutor, setCurrentTutor] = useState<any>({});
   const [isViewOpen, setIsViewOpen] = useState(false);
-  const [tutors, setTutors] = useState<Tutor[]>([]);
+  const [tutors, setTutors] = useState<Course[]>([]);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
   const [counts, setCounts] = useState({
     all: 0,
     published: 0,
@@ -121,11 +108,59 @@ export default function CourseManagement() {
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
+
   const [totalCount, setTotalCount] = useState([
     { status: "UNDERREVIEW", count: 0 },
   ]);
-  const user=useAuthStore(state=>state.user)
+  const user = useAuthStore((state) => state.user);
+const setChapters = useCourseStore((state) => state.setChapters);
 
+  const handleCourseSelection = (course: Course) => {
+    setCurrentTutor(course);
+    
+    let {
+      id,
+      title,
+      tutorProfileId,
+      courseDepth,
+      courseStatus,
+      description,
+      duration,
+      price,
+      targetCourse,
+      targetSem,
+      targetUniversity,
+      thumbnail,
+    } = course;
+ 
+    if (!thumbnail) thumbnail = "";
+useGlobalCourseStore.getState().setCourse(course);
+
+    useCourseStore.setState({
+      courseDetails: {
+        id,
+        title,
+        tutorProfileId,
+        courseDepth,
+        courseStatus,
+        description,
+     duration: duration ?? "0",
+        durationUnit:"Weeks",
+        price,
+        targetCourse,
+        targetSem,
+        targetUniversity,
+        thumbnail,
+      },
+      
+      isDraftSaved: true, // optional
+    });
+    if(course.chapters)
+      console.log(course)
+   setChapters(course.chapters as any[]); // if it's an array
+
+router.push("mycourse/draft/edit")
+  };
   const fetchTutors = useCallback(
     async (
       tabValue: string,
@@ -136,8 +171,8 @@ export default function CourseManagement() {
     ) => {
       setLoading(true);
       try {
-        const id=user?.tutorProfile?.id;
-        console.log(id)
+        const id = user?.tutorProfile?.id;
+        console.log(id);
 
         const status = getTabStatus(tabValue);
         const res = await api.get(`/course/${id}`, {
@@ -150,7 +185,7 @@ export default function CourseManagement() {
           },
         });
         setTotalCount(res.data.data.statusCounts);
-        console.log(res.data.data.statusCounts)
+        console.log(res.data.data.statusCounts);
         setTutors(res.data.data.data || []);
 
         // Update paginain info
@@ -169,19 +204,19 @@ export default function CourseManagement() {
           const statusSummary = res.data.statusSummary;
           const newCounts = {
             all: res.data.pagination.total || 0,
-            
+
             published:
-              statusSummary.find((s: any) => s.courseStatus === "PUBLISHED")?.count ||
-              0,
+              statusSummary.find((s: any) => s.courseStatus === "PUBLISHED")
+                ?.count || 0,
             underReview:
               statusSummary.find((s: any) => s.courseStatus === "UNDERREVIEW")
                 ?.count || 0,
             draft:
-              (statusSummary.find((s: any) => s.courseStatus === "DRAFT")?.count ||
-                0),
-                rejected:
-              (statusSummary.find((s: any) => s.courseStatus === "REJECTED")
-                ?.count || 0),
+              statusSummary.find((s: any) => s.courseStatus === "DRAFT")
+                ?.count || 0,
+            rejected:
+              statusSummary.find((s: any) => s.courseStatus === "REJECTED")
+                ?.count || 0,
           };
           setCounts(newCounts);
         }
@@ -217,36 +252,36 @@ export default function CourseManagement() {
       toast.success("Failed to update status!");
     }
   };
-//   const fetchCounts = useCallback(async () => {
-//     try {
-//       // Fetch counts from a single API call
-//         const id=user?.tutorProfile?.id;
+  //   const fetchCounts = useCallback(async () => {
+  //     try {
+  //       // Fetch counts from a single API call
+  //         const id=user?.tutorProfile?.id;
 
-//       const res = await api.get(`/course/${id}`, {
-//         params: { limit: 1, page: 1, status: "" },
-//       });
+  //       const res = await api.get(`/course/${id}`, {
+  //         params: { limit: 1, page: 1, status: "" },
+  //       });
 
-//       if (res.data.statusSummary) {
-//         const statusSummary = res.data.statusSummary;
-//         setCounts({
-//           all: res.data.pagination.total || 0,
-//           rejected:
-//  statusSummary.find((s: any) => s.status === "REJECTED")?.count || 0,
+  //       if (res.data.statusSummary) {
+  //         const statusSummary = res.data.statusSummary;
+  //         setCounts({
+  //           all: res.data.pagination.total || 0,
+  //           rejected:
+  //  statusSummary.find((s: any) => s.status === "REJECTED")?.count || 0,
 
-//           published:
-//             statusSummary.find((s: any) => s.status === "PUBLISHED")?.count || 0,
-//           underReview:
-//             statusSummary.find((s: any) => s.status === "UNDERREVIEW")?.count ||
-//             0,
-//           draft:
-//             (statusSummary.find((s: any) => s.status === "DRAFT")?.count ||
-//               0) 
-//         });
-//       }
-//     } catch (error) {
-//       console.error("Error fetching counts:", error);
-//     }
-//   }, []);
+  //           published:
+  //             statusSummary.find((s: any) => s.status === "PUBLISHED")?.count || 0,
+  //           underReview:
+  //             statusSummary.find((s: any) => s.status === "UNDERREVIEW")?.count ||
+  //             0,
+  //           draft:
+  //             (statusSummary.find((s: any) => s.status === "DRAFT")?.count ||
+  //               0)
+  //         });
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching counts:", error);
+  //     }
+  //   }, []);
 
   // Debounced search function
   const handleSearch = useCallback(
@@ -370,7 +405,7 @@ export default function CourseManagement() {
           <span>Sort By (A-Z)</span>
           <ArrowUpAZ />
         </div>
-      </div> 
+      </div>
 
       <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-sm">
         <Tabs
@@ -384,11 +419,9 @@ export default function CourseManagement() {
               className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
             >
               All Course (
-             {   totalCount.reduce((acc, item) => acc + item.count, 0)}
-
-              )
+              {totalCount.reduce((acc, item) => acc + item.count, 0)})
             </TabsTrigger>
-             <TabsTrigger
+            <TabsTrigger
               value="under-review"
               className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
             >
@@ -406,26 +439,22 @@ export default function CourseManagement() {
                 0}
               )
             </TabsTrigger>
-             <TabsTrigger
+            <TabsTrigger
               value="rejected"
               className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
             >
               Rejected (
-              {totalCount.find((item) => item.status === "REJECTED")
-                ?.count || 0}
+              {totalCount.find((item) => item.status === "REJECTED")?.count ||
+                0}
               )
             </TabsTrigger>
-             <TabsTrigger
+            <TabsTrigger
               value="draft"
               className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
             >
               Draft (
-              {totalCount.find((item) => item.status === "DRAFT")
-                ?.count || 0}
-              )
+              {totalCount.find((item) => item.status === "DRAFT")?.count || 0})
             </TabsTrigger>
-            
-          
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-6">
@@ -443,7 +472,7 @@ export default function CourseManagement() {
                 </div>
               ) : (
                 tutors?.map((tutor) => {
-                  const statusConfig = getStatusBadge(tutor.courseStatus);
+                  const statusConfig = getStatusBadge(tutor.courseStatus ?? "DRAFT");
                   return (
                     <div
                       key={tutor.id}
@@ -456,8 +485,7 @@ export default function CourseManagement() {
                             alt={tutor.title}
                           />
                           <AvatarFallback className="bg-gray-800 text-white text-xs">
-                            {tutor?.title
-                              }
+                            {tutor?.title}
                           </AvatarFallback>
                         </Avatar>
                         <div>
@@ -465,7 +493,8 @@ export default function CourseManagement() {
                             {tutor.title}
                           </h3>
                           <p className="text-sm text-gray-500">
-                            Joined Date: {formatDate(tutor.updatedAt)}
+                           Joined Date: {tutor.updatedAt ? formatDate(tutor.updatedAt) : "N/A"}
+
                           </p>
                           <Badge className={`mt-1 ${statusConfig.className}`}>
                             {tutor?.courseStatus || "UNKNOWN"}
@@ -474,62 +503,66 @@ export default function CourseManagement() {
                       </div>
 
                       <div className="flex w-fit items-center space-x-2">
-                      
+                        {activeTab == "draft" ? (
+                          <>
+                            <div className="flex gap-2 items-center justify-center">
+                              <Button
+                                onClick={() =>
+                                  updateTutorStatus(tutor?.id ?? 0, "UNDERREVIEW")
 
-                   
-                     
-
-                        {activeTab == "draft" && (
-                          <div className="flex gap-2 items-center justify-center">
+                                }
+                                className=" text-white bg-primeGreen rounded-full flex items-center justify-center  "
+                              >
+                                Send for approval
+                              </Button>
+                            </div>
                             <Button
-                              onClick={() =>
-                                updateTutorStatus(
-                                  tutor?.id,
-                                  "UNDERREVIEW"
-                                )
-                              }
-                              className=" text-white bg-primeGreen rounded-full flex items-center justify-center  "
+                              variant="ghost"
+                              onClick={() => handleCourseSelection(tutor)}
+                              size="icon"
+                              className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
                             >
-                              Send for approval
+                              <Pencil className="h-4 w-4" />
                             </Button>
-                           
-                          </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                            >
+                              <Trash color="red" className="h-4 w-4" />
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </>
                         )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          onClick={() => {
-                            setCurrentTutor(tutor);
-                            setIsViewOpen(true);
-                          }}
-                          size="icon"
-                          className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                         <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
                       </div>
                     </div>
                   );
                 })
               )}
             </div>
-
-            {isViewOpen && (
-              <ViewTutor tutorProfile={currentTutor} onClose={onClose} />
-            )}
 
             {/* Pagination */}
             {tutors.length > 0 && (

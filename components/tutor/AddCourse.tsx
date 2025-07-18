@@ -1,328 +1,161 @@
-"use client";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Textarea } from "../ui/textarea";
-import { Button } from "../ui/button";
-import { ArrowUp, GripVertical, Pen, PlusSquare, Trash, Upload, X } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { useReducer, createContext, useContext } from "react";
-import { DragDropContext, Draggable, Droppable, DropResult } from "@hello-pangea/dnd";
-import { useRouter } from "next/navigation";
 
-// Types
-export type SubHeading = {
-  subHeadId: string;
-  subHeadName: string;
-};
+// components/AddCourse.tsx
+"use client"
+import { Input } from "../ui/input"
+import { Label } from "../ui/label"
+import { Textarea } from "../ui/textarea"
+import { Button } from "../ui/button"
+import { ArrowUp, GripVertical, Pen, PlusSquare, Trash, Upload, UploadIcon, X } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
+import { DragDropContext, Draggable, Droppable, DropResult } from "@hello-pangea/dnd"
+import { useRouter } from "next/navigation"
+import { useCourseStore } from "@/store/useCourseStore"
+import Image from "next/image"
+import { useRef, useState } from "react"
+import api from "@/hooks/axios"
+import { useAuthStore } from "@/store/useAuthStore"
+import { toast } from "sonner"
 
-export type SubTitle = {
-  subId: string;
-  subName: string;
-  subHeading: SubHeading[];
-};
 
-export type Chapter = {
-  chapterId: string;
-  chapterName: string;
-  subTitles: SubTitle[];
-};
-
-export type CourseDetails = {
-  courseName: string;
-  durationNumber: string;
-  durationUnit: string;
-  courseDescription: string;
-  university: string;
-  course: string;
-  semester: string;
-  level: string;
-  thumbnail: File | null;
-};
-
-export type CourseState = {
-  courseDetails: CourseDetails;
-  chapters: Chapter[];
-  openChapters: Record<string, boolean>;
-  openSubTitles: Record<string, boolean>;
-  isLoading: boolean;
-  isSaving: boolean;
-};
-
-// Initial state
-const initialState: CourseState = {
-  courseDetails: {
-    courseName: "",
-    durationNumber: "",
-    durationUnit: "",
-    courseDescription: "",
-    university: "",
-    course: "",
-    semester: "",
-    level: "beginner",
-    thumbnail: null,
-  },
-  chapters: [],
-  openChapters: {},
-  openSubTitles: {},
-  isLoading: false,
-  isSaving: false,
-};
-
-// Action types
-type CourseAction = 
-  | { type: "SET_LOADING"; payload: boolean }
-  | { type: "SET_SAVING"; payload: boolean }
-  | { type: "UPDATE_COURSE_DETAILS"; payload: Partial<CourseDetails> }
-  | { type: "SET_CHAPTERS"; payload: Chapter[] }
-  | { type: "ADD_CHAPTER" }
-  | { type: "DELETE_CHAPTER"; payload: string }
-  | { type: "ADD_SUBTITLE"; payload: string }
-  | { type: "DELETE_SUBTITLE"; payload: string }
-  | { type: "ADD_SUBHEADING"; payload: string }
-  | { type: "DELETE_SUBHEADING"; payload: string }
-  | { type: "TOGGLE_CHAPTER"; payload: string }
-  | { type: "TOGGLE_SUBTITLE"; payload: string }
-  | { type: "DRAG_END"; payload: DropResult }
-  | { type: "UPDATE_CHAPTER_NAME"; payload: { chapterId: string; name: string } }
-  | { type: "UPDATE_SUBTITLE_NAME"; payload: { subId: string; name: string } }
-  | { type: "UPDATE_SUBHEADING_NAME"; payload: { subHeadId: string; name: string } };
-
-// Reducer
-const courseReducer = (state: CourseState, action: CourseAction): CourseState => {
-  switch (action.type) {
-    case "SET_LOADING":
-      return { ...state, isLoading: action.payload };
-    
-    case "SET_SAVING":
-      return { ...state, isSaving: action.payload };
-    
-    case "UPDATE_COURSE_DETAILS":
-      return { ...state, courseDetails: { ...state.courseDetails, ...action.payload } };
-    
-    case "SET_CHAPTERS":
-      return { ...state, chapters: action.payload };
-    
-    case "ADD_CHAPTER":
-      const newChapterId = `chapter-${Date.now()}`;
-      const newChapter: Chapter = {
-        chapterId: newChapterId,
-        chapterName: `New Chapter ${state.chapters.length + 1}`,
-        subTitles: [],
-      };
-      return { ...state, chapters: [...state.chapters, newChapter] };
-    
-    case "DELETE_CHAPTER":
-      return {
-        ...state,
-        chapters: state.chapters.filter(ch => ch.chapterId !== action.payload),
-      };
-    
-    case "ADD_SUBTITLE":
-      const newSubId = `sub-${Date.now()}`;
-      const newSubTitle: SubTitle = {
-        subId: newSubId,
-        subName: "New Sub-Title",
-        subHeading: [],
-      };
-      return {
-        ...state,
-        chapters: state.chapters.map(chapter =>
-          chapter.chapterId === action.payload
-            ? { ...chapter, subTitles: [...chapter.subTitles, newSubTitle] }
-            : chapter
-        ),
-      };
-    
-    case "DELETE_SUBTITLE":
-      return {
-        ...state,
-        chapters: state.chapters.map(chapter => ({
-          ...chapter,
-          subTitles: chapter.subTitles.filter(sub => sub.subId !== action.payload),
-        })),
-      };
-    
-    case "ADD_SUBHEADING":
-      const newSubHeadId = `subHead-${Date.now()}`;
-      const newSubHeading: SubHeading = {
-        subHeadId: newSubHeadId,
-        subHeadName: "New Sub-Heading",
-      };
-      return {
-        ...state,
-        chapters: state.chapters.map(chapter => ({
-          ...chapter,
-          subTitles: chapter.subTitles.map(sub =>
-            sub.subId === action.payload
-              ? { ...sub, subHeading: [...sub.subHeading, newSubHeading] }
-              : sub
-          ),
-        })),
-      };
-    
-    case "DELETE_SUBHEADING":
-      return {
-        ...state,
-        chapters: state.chapters.map(chapter => ({
-          ...chapter,
-          subTitles: chapter.subTitles.map(sub => ({
-            ...sub,
-            subHeading: sub.subHeading.filter(head => head.subHeadId !== action.payload),
-          })),
-        })),
-      };
-    
-    case "TOGGLE_CHAPTER":
-      return {
-        ...state,
-        openChapters: { ...state.openChapters, [action.payload]: !state.openChapters[action.payload] },
-      };
-    
-    case "TOGGLE_SUBTITLE":
-      return {
-        ...state,
-        openSubTitles: { ...state.openSubTitles, [action.payload]: !state.openSubTitles[action.payload] },
-      };
-
-    case "UPDATE_CHAPTER_NAME":
-      return {
-        ...state,
-        chapters: state.chapters.map(chapter =>
-          chapter.chapterId === action.payload.chapterId
-            ? { ...chapter, chapterName: action.payload.name }
-            : chapter
-        ),
-      };
-
-    case "UPDATE_SUBTITLE_NAME":
-      return {
-        ...state,
-        chapters: state.chapters.map(chapter => ({
-          ...chapter,
-          subTitles: chapter.subTitles.map(sub =>
-            sub.subId === action.payload.subId
-              ? { ...sub, subName: action.payload.name }
-              : sub
-          ),
-        })),
-      };
-
-    case "UPDATE_SUBHEADING_NAME":
-      return {
-        ...state,
-        chapters: state.chapters.map(chapter => ({
-          ...chapter,
-          subTitles: chapter.subTitles.map(sub => ({
-            ...sub,
-            subHeading: sub.subHeading.map(head =>
-              head.subHeadId === action.payload.subHeadId
-                ? { ...head, subHeadName: action.payload.name }
-                : head
-            ),
-          })),
-        })),
-      };
-    
-    case "DRAG_END":
-      const { source, destination, type } = action.payload;
-      if (!destination || !source) return state;
-      
-      const updated = [...state.chapters];
-      
-      if (type === "chapter") {
-        const [moved] = updated.splice(source.index, 1);
-        updated.splice(destination.index, 0, moved);
-        return { ...state, chapters: updated };
-      }
-      
-      if (type === "subTitle") {
-        const chapterIndex = updated.findIndex(c => c.chapterId === source.droppableId);
-        if (chapterIndex === -1) return state;
-        
-        const subTitles = [...updated[chapterIndex].subTitles];
-        const [moved] = subTitles.splice(source.index, 1);
-        subTitles.splice(destination.index, 0, moved);
-        updated[chapterIndex].subTitles = subTitles;
-        return { ...state, chapters: updated };
-      }
-      
-      if (type === "subHeading") {
-        for (const chapter of updated) {
-          for (const subtitle of chapter.subTitles) {
-            if (subtitle.subId === source.droppableId) {
-              const items = [...subtitle.subHeading];
-              const [moved] = items.splice(source.index, 1);
-              items.splice(destination.index, 0, moved);
-              subtitle.subHeading = items;
-              break;
-            }
-          }
-        }
-        return { ...state, chapters: updated };
-      }
-      
-      return state;
-    
-    default:
-      return state;
-  }
-};
-
-// Context
-const CourseContext = createContext<{
-  state: CourseState;
-  dispatch: React.Dispatch<CourseAction>;
-} | null>(null);
-
-export const useCourse = () => {
-  const context = useContext(CourseContext);
-  if (!context) {
-    throw new Error("useCourse must be used within CourseProvider");
-  }
-  return context;
-};
-
-// Provider component
-export const CourseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(courseReducer, initialState);
-  
-  return (
-    <CourseContext.Provider value={{ state, dispatch }}>
-      {children}
-    </CourseContext.Provider>
-  );
-};
-
-// Main component
 const AddCourse = ({ onClose }: { onClose: () => void }) => {
-  const { state, dispatch } = useCourse();
-  const router = useRouter();
+  const router = useRouter()
+   const inputRef = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+const [thumbnail,setThumbnail]=useState<File>();
+   const handleClick = () => {
+    inputRef.current?.click();
+  };
 
+   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+setThumbnail(file);
+    // Optional: upload the file to server
+    try {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+ 
+    } catch (error) {
+      console.error("Upload failed:", error);
+    }
+  };
+  const user=useAuthStore(state=>state.user)
+  const handleCourseUpload=async()=>{
+    try {
+
+      // Course basic datas
+      const formdata=new FormData();
+formdata.append("title", courseDetails.title || "");
+formdata.append("description", courseDetails.description || "");
+formdata.append("duration", courseDetails.duration );
+formdata.append("targetSem", courseDetails.targetSem || "");
+formdata.append("targetUniversity", courseDetails.targetUniversity || "");
+formdata.append("targetCourse", courseDetails.targetCourse || "");
+formdata.append("courseDepth", courseDetails.courseDepth || "");
+
+      formdata.append("price","0.00");
+      if(thumbnail)
+      formdata.append("thumbnail",thumbnail);
+      formdata.append("tutorProfileId",user?.tutorProfile.id)
+      //Chapter data
+    const chapterDatas = chapters?.map((chap) => ({
+  title: chap.title,
+  subChapters: chap.subChapters?.map((sub) => ({
+    title: sub.title,
+    subHeadings: sub.subHeadings?.map((sh) => ({
+      title: sh.title,
+    })),
+  })),
+}));
+formdata.append("chapters",JSON.stringify(chapterDatas))
+
+
+
+      const res=await api.post("/course",formdata);
+      console.log(res)
+      toast.success("Course has been saved!")
+    } catch (error) {
+      console.log(error)
+      toast.success("Something went wrong!")
+
+    }
+  }
+
+  // Get everything from the store
+  const {
+    courseDetails,
+    chapters,
+    openChapters,
+    opensubChapters,
+    isLoading,
+    isSaving,
+    setLoading,
+    setSaving,
+    updateCourseDetails,
+    addChapter,
+    deleteChapter,
+    updatetitle,
+    toggleChapter,
+    addSubTitle,
+    deleteSubTitle,
+    updateSubTitleName,
+    toggleSubTitle,
+    addSubHeading,
+    deleteSubHeading,
+    updateSubHeadingName,
+    reorderChapters,
+    reordersubChapters,
+    reorderSubHeadings,
+    saveDraft:saveMyDraft
+  } = useCourseStore()
+
+  // Save draft function
   const saveDraft = async () => {
-    if (!state.chapters || state.chapters.length === 0) {
-      console.warn("No chapters to save");
-      return;
+    if (!chapters || chapters.length === 0) {
+      console.warn("No chapters to save")
+      return
+    }
+
+    try {
+      setSaving(true)
+      // saveMyDraft();
+     handleCourseUpload()
+      console.log("Saving course:", { courseDetails, chapters })
+      // router.push("/tutor/mycourse/draft")
+    } catch (error) {
+      console.error("Failed to save draft:", error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+ 
+
+
+  // Handle drag and drop
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return
+
+    const { source, destination, type } = result
+    
+    setLoading(true)
+    
+    if (type === "chapter") {
+      reorderChapters(source.index, destination.index)
+    } else if (type === "subTitle") {
+      reordersubChapters(source.droppableId, source.index, destination.index)
+    } else if (type === "subHeading") {
+      reorderSubHeadings(source.droppableId, source.index, destination.index)
     }
     
-    try {
-      dispatch({ type: "SET_SAVING", payload: true });
-      // setCourse(state.chapters); // Replace with your store logic
-      router.push("/tutor/mycourse/draft");
-    } catch (error) {
-      console.error("Failed to save draft:", error);
-    } finally {
-      dispatch({ type: "SET_SAVING", payload: false });
-    }
-  };
+    setLoading(false)
+  }
 
-  const handleDragEnd = (result: DropResult) => {
-    dispatch({ type: "SET_LOADING", payload: true });
-    dispatch({ type: "DRAG_END", payload: result });
-    dispatch({ type: "SET_LOADING", payload: false });
-  };
-
-  if (state.isLoading) {
+  if (isLoading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
         <div className="bg-white rounded-lg shadow-xl p-8 text-center">
@@ -330,37 +163,54 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
           <p>Loading...</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Add Tutor</h2>
-          <Button variant="ghost" size="icon" onClick={onClose}><X className="h-4 w-4" /></Button>
+          <h2 className="text-xl font-semibold">Add Course</h2>
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
         </div>
 
         <div className="flex flex-col gap-2 px-6 py-4">
           <h4 className="text-2xl">Add Course</h4>
-          <p className="text-primeGreen">Draft your course outlook</p>
+          <p className="text-green-600">Draft your course outlook</p>
         </div>
 
         <div className="flex flex-col gap-6 px-6 pb-6">
+          {/* Course Details Form */}
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
               <Label htmlFor="courseName">Course Name</Label>
-              <Input id="courseName" className="outline-0 border border-gray-400 rounded-md" type="text" value={state.courseDetails.courseName} onChange={(e) => dispatch({ type: "UPDATE_COURSE_DETAILS", payload: { courseName: e.target.value } })} />
+              <Input
+                id="courseName"
+                className="outline-0 border border-gray-400 rounded-md"
+                type="text"
+                value={courseDetails?.title}
+                onChange={(e) => updateCourseDetails({ title: e.target.value })}
+              />
             </div>
 
             <div className="flex gap-2">
               <div className="flex flex-col gap-1 flex-1">
                 <Label htmlFor="durationNumber">Duration Number</Label>
-                <Select value={state.courseDetails.durationNumber} onValueChange={(value) => dispatch({ type: "UPDATE_COURSE_DETAILS", payload: { durationNumber: value } })}>
-                  <SelectTrigger className="outline-0 border border-gray-400 rounded-md"><SelectValue placeholder="Select no." /></SelectTrigger>
+                <Select
+                 value={courseDetails.duration.toString() ? courseDetails.duration.toString() : "1"}
+
+                  onValueChange={(value) => updateCourseDetails({ duration: value })}
+                >
+                  <SelectTrigger className="outline-0 border border-gray-400 rounded-md">
+                    <SelectValue placeholder="Select no." />
+                  </SelectTrigger>
                   <SelectContent>
                     {[...Array(12)].map((_, i) => (
-                      <SelectItem key={i + 1} value={`${i + 1}`}>{i + 1}</SelectItem>
+                      <SelectItem key={i + 1} value={`${i + 1}`}>
+                        {i + 1}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -368,8 +218,13 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
 
               <div className="flex flex-col gap-1 flex-1">
                 <Label htmlFor="durationUnit">Duration Unit</Label>
-                <Select value={state.courseDetails.durationUnit} onValueChange={(value) => dispatch({ type: "UPDATE_COURSE_DETAILS", payload: { durationUnit: value } })}>
-                  <SelectTrigger className="outline-0 border border-gray-400 rounded-md"><SelectValue placeholder="Select Duration" /></SelectTrigger>
+                <Select
+                  value={courseDetails?.durationUnit}
+                  onValueChange={(value) => updateCourseDetails({ durationUnit: value })}
+                >
+                  <SelectTrigger className="outline-0 border border-gray-400 rounded-md">
+                    <SelectValue placeholder="Select Duration" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="days">Days</SelectItem>
                     <SelectItem value="weeks">Weeks</SelectItem>
@@ -380,36 +235,60 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
             </div>
           </div>
 
+          {/* Course Description */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="courseDescription">Course Description</Label>
-            <Textarea id="courseDescription" rows={10} value={state.courseDetails.courseDescription} onChange={(e) => dispatch({ type: "UPDATE_COURSE_DETAILS", payload: { courseDescription: e.target.value } })} />
+            <Textarea
+              id="courseDescription"
+              rows={10}
+              value={courseDetails?.description}
+              onChange={(e) => updateCourseDetails({ description: e.target.value })}
+            />
           </div>
 
+          {/* Student Target & Course Depth */}
           <div className="grid grid-cols-2 gap-6">
             <div className="flex flex-col gap-4">
               <h4 className="font-semibold text-lg">Student Target</h4>
               <div className="flex flex-col gap-3">
-                <Select value={state.courseDetails.university} onValueChange={(value) => dispatch({ type: "UPDATE_COURSE_DETAILS", payload: { university: value } })}>
-                  <SelectTrigger className="outline-0 w-full border border-gray-400 rounded-md"><SelectValue placeholder="Select University" /></SelectTrigger>
+                <Select
+                  value={courseDetails?.targetUniversity}
+                  onValueChange={(value) => updateCourseDetails({ targetUniversity: value })}
+                >
+                  <SelectTrigger className="outline-0 w-full border border-gray-400 rounded-md">
+                    <SelectValue placeholder="Select University" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="tu">Tribhuvan University</SelectItem>
                     <SelectItem value="pu">Pokhara University</SelectItem>
                     <SelectItem value="ku">Kathmandu University</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={state.courseDetails.course} onValueChange={(value) => dispatch({ type: "UPDATE_COURSE_DETAILS", payload: { course: value } })}>
-                  <SelectTrigger className="outline-0 w-full border border-gray-400 rounded-md"><SelectValue placeholder="Select Course" /></SelectTrigger>
+                <Select
+                  value={courseDetails?.targetCourse}
+                  onValueChange={(value) => updateCourseDetails({ targetCourse: value })}
+                >
+                  <SelectTrigger className="outline-0 w-full border border-gray-400 rounded-md">
+                    <SelectValue placeholder="Select Course" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="bict">BICTE</SelectItem>
                     <SelectItem value="bca">BCA</SelectItem>
                     <SelectItem value="bit">BIT</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={state.courseDetails.semester} onValueChange={(value) => dispatch({ type: "UPDATE_COURSE_DETAILS", payload: { semester: value } })}>
-                  <SelectTrigger className="outline-0 w-full border border-gray-400 rounded-md"><SelectValue placeholder="Select Semester" /></SelectTrigger>
+                <Select
+                  value={courseDetails?.targetSem}
+                  onValueChange={(value) => updateCourseDetails({ targetSem: value })}
+                >
+                  <SelectTrigger className="outline-0 w-full border border-gray-400 rounded-md">
+                    <SelectValue placeholder="Select Semester" />
+                  </SelectTrigger>
                   <SelectContent>
-                    {[...Array(8)].map((_, i) => (
-                      <SelectItem key={i + 1} value={`sem-${i + 1}`}>Semester {i + 1}</SelectItem>
+                    {[...Array(8)]?.map((_, i) => (
+                      <SelectItem key={i + 1} value={`sem-${i + 1}`}>
+                        Semester {i + 1}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -418,7 +297,11 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
 
             <div className="flex flex-col gap-4">
               <h4 className="font-semibold text-lg">Course Depth</h4>
-              <RadioGroup value={state.courseDetails.level} onValueChange={(value) => dispatch({ type: "UPDATE_COURSE_DETAILS", payload: { level: value } })} className="flex flex-col gap-6">
+              <RadioGroup
+                value={courseDetails?.courseDepth}
+                onValueChange={(value) => updateCourseDetails({ courseDepth: value })}
+                className="flex flex-col gap-6"
+              >
                 <div className="flex items-center gap-2">
                   <RadioGroupItem value="beginner" id="beginner" />
                   <Label htmlFor="beginner">Beginner</Label>
@@ -435,79 +318,184 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
             </div>
           </div>
 
-          <div className="w-full">
-            <Label htmlFor="thumbnail" className="pb-3">Course Thumbnail Image</Label>
-            <div className="flex w-full min-w-full p-6 rounded-xl items-center border border-gray-400 flex-col gap-1">
-              <Upload />
-              <h6>Upload your course image</h6>
-              <p className="text-blue-500 text-xs">SVG, PNG or JPEG (Less than 10 MB)</p>
-            </div>
-          </div>
+          {/* Thumbnail Upload */}
+        <div className="w-full">
+      <label htmlFor="thumbnail" className="pb-3 block font-medium">
+        Course Thumbnail Image
+      </label>
 
+      <div
+        className="flex w-full min-w-full p-6 rounded-xl items-center border border-gray-400 flex-col gap-2 cursor-pointer bg-gray-50 hover:bg-gray-100"
+        onClick={handleClick}
+      >
+        {preview ? (
+          <Image
+            src={preview}
+            alt="Thumbnail preview"
+            width={200}
+            height={120}
+            className="rounded-md object-cover"
+          />
+        ) : (
+          <>
+            <UploadIcon />
+            <h6>Upload your course image</h6>
+            <p className="text-blue-500 text-xs">
+              SVG, PNG or JPEG (Less than 10 MB)
+            </p>
+          </>
+        )}
+
+        <input
+          type="file"
+          accept=".png,.jpg,.jpeg,.svg"
+          ref={inputRef}
+          onChange={handleFileChange}
+          className="hidden"
+        />
+      </div>
+    </div>
+
+          {/* Course Structure */}
           <section className="py-4">
             <h5 className="font-semibold text-md">Course Structure</h5>
             <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="chapters" type="chapter">
                 {(provided) => (
                   <div ref={provided.innerRef} {...provided.droppableProps}>
-                    {state.chapters.map((chapter, chapterIndex) => (
-                      <Draggable key={chapter.chapterId} draggableId={chapter.chapterId} index={chapterIndex}>
+                    {chapters?.map((chapter, chapterIndex) => (
+                      <Draggable key={chapter.id} draggableId={chapter.id.toString()} index={chapterIndex}>
                         {(provided) => (
                           <div ref={provided.innerRef} {...provided.draggableProps} className="border p-2 my-2 bg-white">
-                            <div className="w-full justify-between flex gap-1 items-center bg-gray-200 rounded-sm p-2" {...provided.dragHandleProps}>
-                              <div className="flex gap-1 items-center">
-                                <GripVertical />
-                                <Input placeholder={chapter.chapterName || `Chapter ${chapterIndex + 1}`} className="text-sm" value={chapter.chapterName} onChange={(e) => dispatch({ type: "UPDATE_CHAPTER_NAME", payload: { chapterId: chapter.chapterId, name: e.target.value } })} />
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <div onClick={(e) => { e.stopPropagation(); dispatch({ type: "ADD_SUBTITLE", payload: chapter.chapterId }); }} onMouseDown={(e) => e.stopPropagation()} className="flex cursor-pointer text-sm border border-gray-400 items-center gap-2 p-2 rounded-sm">
-                                  <PlusSquare size={15} />Add Sub-Chapter
-                                </div>
-                                <Pen size={15} />
-                                <Trash onClick={(e) => { e.stopPropagation(); dispatch({ type: "DELETE_CHAPTER", payload: chapter.chapterId }); }} size={15} color="red" className="cursor-pointer" />
-                                <ArrowUp size={15} className={`cursor-pointer transition-transform ${state.openChapters[chapter.chapterId] ? "rotate-180" : ""}`} onClick={(e) => { e.stopPropagation(); dispatch({ type: "TOGGLE_CHAPTER", payload: chapter.chapterId }); }} />
-                              </div>
-                            </div>
+                          <div className="w-full justify-between flex gap-1 items-center bg-gray-200 rounded-sm p-2 group" {...provided.dragHandleProps}>
+  <div className="flex gap-1 items-center">
+    <GripVertical />
+    <Input
+      placeholder={chapter.title || `Chapter ${chapterIndex + 1}`}
+      className="text-sm"
+      value={chapter.title}
+      onChange={(e) => updatetitle(chapter.id.toString(), e.target.value)}
+    />
+  </div>
 
-                            {state.openChapters[chapter.chapterId] && (
-                              <Droppable droppableId={chapter.chapterId} type="subTitle">
+  <div className="flex items-center gap-3 jitu opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+    <div
+      onClick={(e) => {
+        e.stopPropagation()
+        addSubTitle(chapter.id.toString())
+      }}
+      onMouseDown={(e) => e.stopPropagation()}
+      className="flex cursor-pointer text-sm border border-gray-400 items-center gap-2 p-2 rounded-sm"
+    >
+      <PlusSquare size={15} />
+      Add Sub-Chapter
+    </div>
+    <Pen size={15} />
+    <Trash
+      onClick={(e) => {
+        e.stopPropagation()
+        deleteChapter(chapter.id.toString())
+      }}
+      size={15}
+      color="red"
+      className="cursor-pointer"
+    />
+    <ArrowUp
+      size={15}
+      className={`cursor-pointer transition-transform ${
+        openChapters[chapter.id] ? "rotate-180" : ""
+      }`}
+      onClick={(e) => {
+        e.stopPropagation()
+        toggleChapter(chapter.id.toString())
+      }}
+    />
+  </div>
+</div>
+
+
+                            {openChapters[chapter.id] && (
+                              <Droppable droppableId={chapter.id.toString()} type="subTitle">
                                 {(provided) => (
                                   <div ref={provided.innerRef} {...provided.droppableProps} className="ml-4">
-                                    {chapter.subTitles.map((sub, subIndex) => (
-                                      <Draggable key={sub.subId} draggableId={sub.subId} index={subIndex}>
+                                    {chapter.subChapters?.map((sub, subIndex) => (
+                                      <Draggable key={sub.id.toString()} draggableId={sub.id.toString()} index={subIndex}>
                                         {(provided) => (
                                           <div ref={provided.innerRef} {...provided.draggableProps} className="border p-2 my-2 bg-gray-100 py-4 flex flex-col justify-center rounded">
                                             <div className="flex items-center justify-between" {...provided.dragHandleProps}>
                                               <div className="flex gap-1 items-center">
                                                 <GripVertical />
-                                                <Input placeholder={sub.subName || `Subchapter ${subIndex + 1}`} className="text-sm" value={sub.subName} onChange={(e) => dispatch({ type: "UPDATE_SUBTITLE_NAME", payload: { subId: sub.subId, name: e.target.value } })} />
+                                                <Input
+                                                  placeholder={sub.title || `Subchapter ${subIndex + 1}`}
+                                                  className="text-sm"
+                                                  value={sub.title}
+                                                  onChange={(e) => updateSubTitleName(sub.id.toString(), e.target.value)}
+                                                />
                                               </div>
                                               <div className="flex items-center gap-3">
-                                                <div onClick={(e) => { e.stopPropagation(); dispatch({ type: "ADD_SUBHEADING", payload: sub.subId }); }} className="flex cursor-pointer text-sm border border-gray-400 items-center gap-2 p-1 rounded-sm">
-                                                  <PlusSquare size={15} />Add Sub-Heading
+                                                <div
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    addSubHeading(sub.id.toString())
+                                                  }}
+                                                  className="flex cursor-pointer text-sm border border-gray-400 items-center gap-2 p-1 rounded-sm"
+                                                >
+                                                  <PlusSquare size={15} />
+                                                  Add Sub-Heading
                                                 </div>
                                                 <Pen size={15} />
-                                                <Trash onClick={(e) => { e.stopPropagation(); dispatch({ type: "DELETE_SUBTITLE", payload: sub.subId }); }} size={15} color="red" className="cursor-pointer" />
-                                                <ArrowUp size={15} className={`cursor-pointer transition-transform ${state.openSubTitles[sub.subId] ? "rotate-180" : ""}`} onClick={(e) => { e.stopPropagation(); dispatch({ type: "TOGGLE_SUBTITLE", payload: sub.subId }); }} onMouseDown={(e) => e.stopPropagation()} />
+                                                <Trash
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    deleteSubTitle(sub.id.toString())
+                                                  }}
+                                                  size={15}
+                                                  color="red"
+                                                  className="cursor-pointer"
+                                                />
+                                                <ArrowUp
+                                                  size={15}
+                                                  className={`cursor-pointer transition-transform ${
+                                                    opensubChapters[sub.id.toString()] ? "rotate-180" : ""
+                                                  }`}
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    toggleSubTitle(sub.id.toString())
+                                                  }}
+                                                  onMouseDown={(e) => e.stopPropagation()}
+                                                />
                                               </div>
                                             </div>
 
-                                            {state.openSubTitles[sub.subId] && (
-                                              <Droppable droppableId={sub.subId} type="subHeading">
+                                            {opensubChapters[sub.id.toString()] && (
+                                              <Droppable droppableId={sub.id.toString()} type="subHeading">
                                                 {(provided) => (
                                                   <ul className="ml-4 my-3 list-disc" ref={provided.innerRef} {...provided.droppableProps}>
-                                                    {sub.subHeading.map((sh, shIndex) => (
-                                                      <Draggable key={sh.subHeadId} draggableId={sh.subHeadId} index={shIndex}>
+                                                    {sub.subHeadings?.map((sh, shIndex) => (
+                                                      <Draggable key={sh.id.toString()} draggableId={sh.id.toString()} index={shIndex}>
                                                         {(provided) => (
                                                           <li ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className="py-2 pl-2 my-1 bg-white list-none border-b">
                                                             <div className="flex items-center justify-between">
                                                               <div className="flex gap-1 items-center">
                                                                 <GripVertical />
-                                                                <Input placeholder={sh.subHeadName || `Subheading ${shIndex + 1}`} className="text-sm" value={sh.subHeadName} onChange={(e) => dispatch({ type: "UPDATE_SUBHEADING_NAME", payload: { subHeadId: sh.subHeadId, name: e.target.value } })} />
+                                                                <Input
+                                                                  placeholder={sh.title || `Subheading ${shIndex + 1}`}
+                                                                  className="text-sm"
+                                                                  value={sh.title}
+                                                                  onChange={(e) => updateSubHeadingName(sh.id.toString(), e.target.value)}
+                                                                />
                                                               </div>
                                                               <div className="flex items-center gap-3">
                                                                 <Pen size={15} />
-                                                                <Trash onClick={(e) => { e.stopPropagation(); dispatch({ type: "DELETE_SUBHEADING", payload: sh.subHeadId }); }} size={15} color="red" className="cursor-pointer" />
+                                                                <Trash
+                                                                  onClick={(e) => {
+                                                                    e.stopPropagation()
+                                                                    deleteSubHeading(sh.id.toString())
+                                                                  }}
+                                                                  size={15}
+                                                                  color="red"
+                                                                  className="cursor-pointer"
+                                                                />
                                                               </div>
                                                             </div>
                                                           </li>
@@ -539,27 +527,35 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
             </DragDropContext>
           </section>
 
+          {/* Action Buttons */}
           <div className="flex flex-col gap-3">
-            <Button onClick={(e) => { e.preventDefault(); dispatch({ type: "ADD_CHAPTER" }); }} variant="ghost" className="border border-green-400" disabled={state.isLoading}>
-              <PlusSquare />Add New Chapter
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                addChapter()
+              }}
+              variant="ghost"
+              className="border border-green-400"
+              disabled={isLoading}
+            >
+              <PlusSquare />
+              Add New Chapter
             </Button>
-            <Button onClick={(e) => { e.preventDefault(); saveDraft(); }} className="bg-primeGreen" disabled={state.isSaving}>
-              {state.isSaving ? "Saving..." : "Save Draft"}
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                saveDraft()
+              }}
+              className="bg-green-600 hover:bg-green-700"
+              disabled={isSaving}
+            >
+              {isSaving ? "Saving..." : "Save Draft"}
             </Button>
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-// Wrap your component with the provider
-const AddCourseWithProvider = ({ onClose }: { onClose: () => void }) => {
-  return (
-    <CourseProvider>
-      <AddCourse onClose={onClose} />
-    </CourseProvider>
-  );
-};
-
-export default AddCourseWithProvider;
+export default AddCourse

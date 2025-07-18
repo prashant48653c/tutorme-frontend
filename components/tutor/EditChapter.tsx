@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useReducer } from "react";
+import React, { useState, useReducer, useEffect, useRef } from "react";
 import {
 ChevronLeft,
 ChevronRight,
@@ -34,608 +34,328 @@ Droppable,
 DropResult,
 } from "@hello-pangea/dnd";
 
-import { useCourseStore } from "@/store/useCourseStore";
+import {
+Chapter,
+SubHeading,
+SubTitle,
+useCourseStore,
+} from "@/store/useCourseStore";
 import { useRouter } from "next/navigation";
 import RichTextExample from "./TextEditor.jsx";
- 
-// Types
-interface SubHeading {
-subHeadId: string;
-subHeadName: string;
-}
-
-interface SubTitle {
-subId: string;
-subName: string;
-subHeading: SubHeading[];
-}
-
-interface Chapter {
-chapterId: string;
-chapterName: string;
-subTitles: SubTitle[];
-}
-
-interface State {
-chapters: Chapter[];
-openChapters: Record<string, boolean>;
-openSubTitles: Record<string, boolean>;
-selectedItem: string | null;
-sidebarCollapsed: boolean;
-}
-
-type Action =
-| { type: "TOGGLE_CHAPTER"; payload: string }
-| { type: "TOGGLE_SUBTITLE"; payload: string }
-| { type: "ADD_CHAPTER" }
-| { type: "ADD_SUBTITLE"; payload: string }
-| { type: "ADD_SUBHEADING"; payload: { subId: string } }
-| { type: "SELECT_ITEM"; payload: string }
-| { type: "TOGGLE_SIDEBAR" };
-
-// Sample data
-const initialChapters: Chapter[] = [
-{
-chapterId: "chapter-1",
-chapterName: "Chapter 1 Title",
-subTitles: [
-{
-subId: "sub-1",
-subName: "Chapter 1 Sub-Title",
-subHeading: [
-{ subHeadId: "subHead-1", subHeadName: "Chapter 1 Sub-head" },
-],
-},
-],
-},
-{
-chapterId: "chapter-2",
-chapterName: "Chapter 2 Title",
-subTitles: [],
-},
-{
-chapterId: "chapter-3",
-chapterName: "Chapter 3 Title",
-subTitles: [
-{
-subId: "sub-3",
-subName: "Chapter 3 Sub-Title",
-subHeading: [
-{ subHeadId: "subHead-3", subHeadName: "Chapter 3 Sub-Head" },
-],
-},
-],
-},
-{
-chapterId: "chapter-4",
-chapterName: "Chapter 4 Title",
-subTitles: [],
-},
-];
-
-const reducer = (state: State, action: Action): State => {
-switch (action.type) {
-case "TOGGLE_CHAPTER":
-return {
-...state,
-openChapters: {
-...state.openChapters,
-[action.payload]: !state.openChapters[action.payload],
-},
-};
-
-case "TOGGLE_SUBTITLE":
-return {
-...state,
-openSubTitles: {
-...state.openSubTitles,
-[action.payload]: !state.openSubTitles[action.payload],
-},
-};
-
-case "ADD_CHAPTER": {
-const newChapterId = `chapter-${Date.now()}`;
-const newChapter: Chapter = {
-chapterId: newChapterId,
-chapterName: `Chapter ${state?.chapters?.length + 1} Title`,
-subTitles: [],
-};
-return {
-...state,
-chapters: [...state.chapters, newChapter],
-openChapters: { ...state.openChapters, [newChapterId]: true },
-};
-}
-
-case "ADD_SUBTITLE": {
-const newSubId = `sub-${Date.now()}`;
-const newSubTitle: SubTitle = {
-subId: newSubId,
-subName: `New Sub-Title`,
-subHeading: [],
-};
-return {
-...state,
-chapters: state.chapters.map((chapter) =>
-chapter.chapterId === action.payload
-? { ...chapter, subTitles: [...chapter.subTitles, newSubTitle] }
-: chapter
-),
-openSubTitles: { ...state.openSubTitles, [newSubId]: true },
-};
-}
-
-case "ADD_SUBHEADING": {
-const newSubHeadId = `subHead-${Date.now()}`;
-const newSubHeading: SubHeading = {
-subHeadId: newSubHeadId,
-subHeadName: `New Sub-Heading`,
-};
-return {
-...state,
-chapters: state.chapters.map((chapter) => ({
-...chapter,
-subTitles: chapter.subTitles.map((subTitle) =>
-subTitle.subId === action.payload.subId
-? {
-...subTitle,
-subHeading: [...subTitle.subHeading, newSubHeading],
-}
-: subTitle
-),
-})),
-};
-}
-
-case "SELECT_ITEM":
-return {
-...state,
-selectedItem: action.payload,
-};
-
-case "TOGGLE_SIDEBAR":
-return {
-...state,
-sidebarCollapsed: !state.sidebarCollapsed,
-};
-
-default:
-return state;
-}
-};
+import api from "@/hooks/axios";
+import toast from "react-hot-toast";
 
 export const CourseContentEditor = () => {
-const [state, dispatch] = useReducer(reducer, {
-chapters: initialChapters,
-openChapters: { "chapter-1": true, "chapter-3": true },
-openSubTitles: { "sub-1": false, "sub-3": false },
-selectedItem: "sub-1",
-sidebarCollapsed: false,
-});
-const courses: Chapter[] = useCourseStore((state) => state.course);
-const [categories, setCategories] = useState(courses);
-const [openChapters, setOpenChapters] = useState<Record<string, boolean>>({});
-const [openSubTitles, setOpenSubTitles] = useState<Record<string, boolean>>(
-{}
-);
+const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 const router = useRouter();
-const setCourse = useCourseStore((state) => state.setCourse);
+const [selectedItem, setSelectedItem] = useState<
+Chapter | SubHeading | SubTitle
+>();
+// Get everything from the store
 
-const saveDraft = () => {
-setCourse(categories);
-router.push("/mycourse/draft");
-};
-const deleteChapter = (e: any, chapter: any) => {
+const handleSelection = (e: any, item: Chapter | SubHeading | SubTitle) => {
 e.stopPropagation();
-const chapterId = chapter.chapterId;
-console.log(chapterId);
-setCategories((prev) =>
-prev.filter((chapter) => chapter.chapterId !== chapterId)
-);
+setSelectedItem(item);
+console.log(selectedItem || item);
 };
+  const {
+    courseDetails,
+    chapters,
+    openChapters,
+    opensubChapters,
+    isLoading,
+    isSaving,
+    setLoading,
+    setSaving,
+    updateCourseDetails,
+    addChapter,
+    deleteChapter,
+    updatetitle,
+    toggleChapter,
+    addSubTitle,
+    deleteSubTitle,
+    updateSubTitleName,
+    toggleSubTitle,
+    addSubHeading,
+    deleteSubHeading,
+    updateSubHeadingName,
+    reorderChapters,
+    reordersubChapters,
+    reorderSubHeadings,
+    saveDraft:saveMyDraft
+  } = useCourseStore()
 
-const addChapter = () => {
-const newChapterId = `chapter-${categories?.length + 1}`;
+// Handle drag and drop
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return
 
-const newChapter = {
-chapterId: newChapterId,
-chapterName: `New Chapter ${categories?.length + 1}`,
-subTitles: [],
-};
+    const { source, destination, type } = result
+    
+    setLoading(true)
+    
+    if (type === "chapter") {
+      reorderChapters(source.index, destination.index)
+    } else if (type === "subTitle") {
+      reordersubChapters(source.droppableId, source.index, destination.index)
+    } else if (type === "subHeading") {
+      reorderSubHeadings(source.droppableId, source.index, destination.index)
+    }
+    
+    setLoading(false)
+  }
 
-setCategories((prev) => [...prev, newChapter]);
-};
-const addSubTitle = (chapterId: string) => {
-console.log("first");
-setCategories((prev) =>
-prev.map((chapter) => {
-if (chapter.chapterId === chapterId) {
-const newSubId = `sub-${Date.now()}`;
-const newSubTitle = {
-subId: newSubId,
-subName: "New Sub-Title",
-subHeading: [],
-};
-return {
-...chapter,
-subTitles: [...chapter.subTitles, newSubTitle],
-};
-}
-return chapter;
-})
-);
-};
+   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [subtitleFile, setSubtitleFile] = useState<File | null>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const subtitleInputRef = useRef<HTMLInputElement>(null);
 
-const addSubHeading = (subId: string) => {
-setCategories((prev) =>
-prev.map((chapter) => ({
-...chapter,
-subTitles: chapter.subTitles.map((sub) => {
-if (sub.subId === subId) {
-const newSubHeadId = `subHead-${Date.now()}`;
-const newSubHeading = {
-subHeadId: newSubHeadId,
-subHeadName: "New Sub-Heading",
-};
-return {
-...sub,
-subHeading: [...sub.subHeading, newSubHeading],
-};
-}
-return sub;
-}),
-}))
-);
-};
+  const handleUpload = async () => {
+    if (!videoFile || !subtitleFile) {
+      alert("Please upload both video and subtitle.");
+      return;
+    }
 
-const deleteSubTitle = (subId: string) => {
-setCategories((prev) =>
-prev.map((chapter) => ({
-...chapter,
-subTitles: chapter.subTitles.filter((sub) => sub.subId !== subId),
-}))
-);
+    const formData = new FormData();
+    formData.append("video", videoFile);
+    formData.append("subtitle", subtitleFile);
+    formData.append("title",selectedItem?.title ?? "");
+    formData.append("description","Yo");
+
+
+    try {
+      const res = await api.patch(`/course/chapter/${selectedItem?.id}`, formData);
+      console.log("Upload success:", res.data);
+      toast.success("Course has been updated!")
+    } catch (error) {
+      toast.error("Course wasn't updated!")
+
+      console.error("Upload failed:", error);
+    }
+  };
+
+const handleSaveDraft = async () => {
+
 };
-
-const deleteSubHeading = (subHeadId: string) => {
-setCategories((prev) =>
-prev.map((chapter) => ({
-...chapter,
-subTitles: chapter.subTitles.map((sub) => ({
-...sub,
-subHeading: sub.subHeading.filter(
-(head) => head.subHeadId !== subHeadId
-),
-})),
-}))
-);
-};
-
-const toggleChapter = (chapterId: string) => {
-setOpenChapters((prev) => ({ ...prev, [chapterId]: !prev[chapterId] }));
-};
-console.log(categories);
-const toggleSubTitle = (subId: string) => {
-setOpenSubTitles((prev) => ({ ...prev, [subId]: !prev[subId] }));
-};
-
-const handleDragEnd = (result: DropResult) => {
-const { source, destination, type } = result;
-
-if (!destination) return;
-
-const updated = [...categories];
-
-if (type === "chapter") {
-const [moved] = updated.splice(source.index, 1);
-updated.splice(destination.index, 0, moved);
-setCategories(updated);
-}
-
-if (type === "subTitle") {
-const chapterIndex = updated.findIndex(
-(c) => c.chapterId === source.droppableId
-);
-const subTitles = Array.from(updated[chapterIndex].subTitles);
-const [moved] = subTitles.splice(source.index, 1);
-subTitles.splice(destination.index, 0, moved);
-updated[chapterIndex].subTitles = subTitles;
-setCategories(updated);
-}
-
-if (type === "subHeading") {
-for (const chapter of updated) {
-for (const subtitle of chapter.subTitles) {
-if (subtitle.subId === source.droppableId) {
-const items = Array.from(subtitle.subHeading);
-const [moved] = items.splice(source.index, 1);
-items.splice(destination.index, 0, moved);
-subtitle.subHeading = items;
-break;
-}
-}
-}
-setCategories(updated);
-}
-};
-
-const getSelectedContent = () => {
-for (const chapter of state.chapters) {
-for (const subtitle of chapter.subTitles) {
-if (subtitle.subId === state.selectedItem) {
-return {
-type: "subtitle",
-title: subtitle.subName,
-chapterName: chapter.chapterName,
-};
-}
-for (const subhead of subtitle.subHeading) {
-if (subhead.subHeadId === state.selectedItem) {
-return {
-type: "subheading",
-title: subhead.subHeadName,
-chapterName: chapter.chapterName,
-};
-}
-}
-}
-}
-return null;
-};
-
-const selectedContent = getSelectedContent();
 
 return (
-<div className="flex border z-50  justify-center border-black p-1  w-[100%]  ">
-
-  <div className={` ${state.sidebarCollapsed ? 'w-0 invisible' :'w-[30%]'} px-3 border bg-red-300`}>
-<section className="py-4  overflow-hidden items-center    flex flex-col relative">
+<div className="flex border relative justify-end  p-1  overflow-hidden   ">
+<div
+className={`${
+sidebarCollapsed ? "w-0 invisible" : "w-[30%]"
+} border transition-all duration-300 ease-in-out overflow-x-hidden `}
+>
+<section className="py-4 overflow-y-auto pb-10 h-[30rem] flex flex-col">
+<div className="flex items-center justify-between mb-4">
 <h5 className="font-semibold text-md">Course Structure</h5>
-<DragDropContext onDragEnd={handleDragEnd}>
-<Droppable droppableId="chapters" type="chapter">
-{(provided) => (
-<div ref={provided.innerRef} {...provided.droppableProps}>
-{categories?.map((chapter, chapterIndex) => (
-<Draggable
-key={chapter.chapterId}
-draggableId={chapter.chapterId}
-index={chapterIndex}
->
-{(provided) => (
-<div
-ref={provided.innerRef}
-{...provided.draggableProps}
-className="border p-2 my-2 bg-white"
->
-<div
-className="w-full justify-between flex gap-1 items-center bg-gray-200 rounded-sm p-2"
-{...provided.dragHandleProps}
->
-<div className="flex gap-1 items-center">
-<GripVertical />
-<Input
-placeholder={`
-chapter.chapterName ||
-Chapter ${chapterIndex + 1}
-`}
-className=" text-sm"
-/>
-</div>
-<div className="flex items-center gap-3">
-<div
-onClick={(e) => {
-e.stopPropagation();
-addSubTitle(chapter.chapterId);
-}}
-onMouseDown={(e) => e.stopPropagation()}
-className="flex cursor-pointer text-sm border border-gray-400  items-center gap-2 p-2 rounded-sm"
->
-<PlusSquare size={15} />
-Add Sub-Chapter
-</div>
-<Pen size={15} />
-<Trash
-onClick={(e) => deleteChapter(e, chapter)}
-size={15}
-color="red"
-/>
-
-<ArrowUp
-size={15}
-className={`cursor-pointer transition-transform ${
-openChapters[chapter.chapterId]
-? "rotate-180"
-: ""
-}`}
-onClick={(e) => {
-e.stopPropagation();
-toggleChapter(chapter.chapterId);
-}}
-/>
-</div>
-</div>
-{openChapters[chapter.chapterId] && (
-<Droppable
-droppableId={chapter.chapterId}
-type="subTitle"
->
-{(provided) => (
-<div
-ref={provided.innerRef}
-{...provided.droppableProps}
-className="ml-4"
->
-{chapter.subTitles.map((sub, subIndex) => (
-<Draggable
-key={sub.subId}
-draggableId={sub.subId}
-index={subIndex}
->
-{(provided) => (
-<div
-ref={provided.innerRef}
-{...provided.draggableProps}
-className="border p-2 my-2 bg-gray-100 py-4  flex flex-col justify-center rounded"
->
-<div
-className="flex items-center justify-between"
-{...provided.dragHandleProps}
->
-<div className="flex gap-1 items-center">
-  <GripVertical />
-  <h2 className=" text-sm">
-    {sub.subName}
-  </h2>
-</div>
-<div className="flex items-center gap-3">
-  <div
-    onClick={(e) => {
-      e.stopPropagation();
-      addSubHeading(sub.subId);
-    }}
-    className="flex cursor-pointer text-sm border border-gray-400  items-center gap-2 p-1 rounded-sm"
-  >
-    <PlusSquare size={15} />
-    Add Sub-Heading
-  </div>
-  <Pen size={15} />
-  <Trash
-    onClick={(e) => {
-      e.stopPropagation();
-      deleteSubTitle(sub.subId);
-    }}
-    size={15}
-    color="red"
-  />
-  <ArrowUp
-    size={15}
-    className={`cursor-pointer transition-transform ${
-      openSubTitles[sub.subId]
-        ? "rotate-180"
-        : ""
-    }`}
-    onClick={(e) => {
-      e.stopPropagation();
-      toggleSubTitle(sub.subId);
-    }}
-    onMouseDown={(e) =>
-      e.stopPropagation()
-    }
-  />
-</div>
 </div>
 
-{/* Subheadings */}
-{openSubTitles[sub.subId] && (
-<Droppable
-  droppableId={sub.subId}
-  type="subHeading"
->
-  {(provided) => (
-    <ul
-      className="ml-4 my-3 list-disc"
-      ref={provided.innerRef}
-      {...provided.droppableProps}
-    >
-      {sub.subHeading.map(
-        (sh, shIndex) => (
-          <Draggable
-            key={sh.subHeadId}
-            draggableId={
-              sh.subHeadId
-            }
-            index={shIndex}
-          >
-            {(provided) => (
-              <li
-                ref={
-                  provided.innerRef
-                }
-                {...provided.draggableProps}
-                {...provided.dragHandleProps}
-                className="py-2 pl-2 my-1 bg-white list-none border-b"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-1 items-center">
-                    <GripVertical />
-                    <h2 className=" text-sm">
-                      {
-                        sh.subHeadName
-                      }
-                    </h2>
+{/* Course Info */}
+
+{/* Drag and Drop Course Structure */}
+<div className="flex flex-col items-start ">
+  <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="chapters" type="chapter">
+                {(provided) => (
+                  <div ref={provided.innerRef} {...provided.droppableProps}>
+                    {chapters?.map((chapter, chapterIndex) => (
+                      <Draggable key={chapter.id} draggableId={chapter.id.toString()} index={chapterIndex}>
+                        {(provided) => (
+                          <div ref={provided.innerRef} {...provided.draggableProps} className="border p-2 my-2 bg-white">
+                            <div onClick={(e)=>handleSelection(e,chapter)} className="w-full justify-between flex gap-1 items-center bg-gray-200 rounded-sm p-2" {...provided.dragHandleProps}>
+                              <div className="flex gap-1 items-center">
+                                <GripVertical />
+                                <Input
+                                  placeholder={chapter.title || `Chapter ${chapterIndex + 1}`}
+                                  className="text-sm"
+                                  value={chapter.title}
+                                  onChange={(e) => updatetitle(chapter.id.toString(), e.target.value)}
+                                />
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <div
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    addSubTitle(chapter.id.toString())
+                                  }}
+                                  onMouseDown={(e) => e.stopPropagation()}
+                                  className="flex cursor-pointer text-xs border border-gray-400 items-center  gap-2 p-2 rounded-sm"
+                                >
+                                  <PlusSquare size={15} />
+                                  
+                                </div>
+                                <Pen size={15} />
+                                <Trash
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    deleteChapter(chapter.id.toString())
+                                  }}
+                                  size={15}
+                                  color="red"
+                                  className="cursor-pointer"
+                                />
+                                <ArrowUp
+                                  size={15}
+                                  className={`cursor-pointer transition-transform ${
+                                    openChapters[chapter.id] ? "rotate-180" : ""
+                                  }`}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    toggleChapter(chapter.id.toString())
+                                  }}
+                                />
+                              </div>
+                            </div>
+
+                            {openChapters[chapter.id] && (
+                              <Droppable droppableId={chapter.id.toString()} type="subTitle">
+                                {(provided) => (
+                                  <div ref={provided.innerRef} {...provided.droppableProps} className="ml-4">
+                                    {chapter.subChapters?.map((sub, subIndex) => (
+                                      <Draggable key={sub.id.toString()} draggableId={sub.id.toString()} index={subIndex}>
+                                        {(provided) => (
+                                          <div ref={provided.innerRef} {...provided.draggableProps} className="border p-2 my-2 bg-gray-100 py-4 flex flex-col justify-center rounded">
+                                            <div onClick={(e)=>handleSelection(e,sub)}  className="flex items-center justify-between" {...provided.dragHandleProps}>
+                                              <div className="flex gap-1 items-center">
+                                                <GripVertical />
+                                                <Input
+                                                  placeholder={sub.title || `Subchapter ${subIndex + 1}`}
+                                                  className="text-sm"
+                                                  value={sub.title}
+                                                  onChange={(e) => updateSubTitleName(sub.id.toString(), e.target.value)}
+                                                />
+                                              </div>
+                                              <div className="flex items-center gap-3">
+                                                <div
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    addSubHeading(sub.id.toString())
+                                                  }}
+                                                  className="flex cursor-pointer text-sm border border-gray-400 items-center gap-2 p-1 rounded-sm"
+                                                >
+                                                  <PlusSquare size={15} />
+                                                 
+                                                </div>
+                                                <Pen size={15} />
+                                                <Trash
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    deleteSubTitle(sub.id.toString())
+                                                  }}
+                                                  size={15}
+                                                  color="red"
+                                                  className="cursor-pointer"
+                                                />
+                                                <ArrowUp
+                                                  size={15}
+                                                  className={`cursor-pointer transition-transform ${
+                                                    opensubChapters[sub.id.toString()] ? "rotate-180" : ""
+                                                  }`}
+                                                  onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    toggleSubTitle(sub.id.toString())
+                                                  }}
+                                                  onMouseDown={(e) => e.stopPropagation()}
+                                                />
+                                              </div>
+                                            </div>
+
+                                            {opensubChapters[sub.id.toString()] && (
+                                              <Droppable droppableId={sub.id.toString()} type="subHeading">
+                                                {(provided) => (
+                                                  <ul className="ml-4 my-3 list-disc" ref={provided.innerRef} {...provided.droppableProps}>
+                                                    {sub.subHeadings?.map((sh, shIndex) => (
+                                                      <Draggable key={sh.id.toString()} draggableId={sh.id.toString()} index={shIndex}>
+                                                        {(provided) => (
+                                                          <li ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className="py-2 pl-2 my-1 bg-white list-none border-b">
+                                                            <div className="flex items-center justify-between">
+                                                              <div className="flex gap-1 items-center">
+                                                                <GripVertical />
+                                                                <Input
+                                                                  placeholder={sh.title || `Subheading ${shIndex + 1}`}
+                                                                  className="text-sm"
+                                                                  value={sh.title}
+                                                                  onChange={(e) => updateSubHeadingName(sh.id.toString(), e.target.value)}
+                                                                />
+                                                              </div>
+                                                              <div className="flex items-center gap-3">
+                                                                <Pen size={15} />
+                                                                <Trash
+                                                                  onClick={(e) => {
+                                                                    e.stopPropagation()
+                                                                    deleteSubHeading(sh.id.toString())
+                                                                  }}
+                                                                  size={15}
+                                                                  color="red"
+                                                                  className="cursor-pointer"
+                                                                />
+                                                              </div>
+                                                            </div>
+                                                          </li>
+                                                        )}
+                                                      </Draggable>
+                                                    ))}
+                                                    {provided.placeholder}
+                                                  </ul>
+                                                )}
+                                              </Droppable>
+                                            )}
+                                          </div>
+                                        )}
+                                      </Draggable>
+                                    ))}
+                                    {provided.placeholder}
+                                  </div>
+                                )}
+                              </Droppable>
+                            )}
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Pen
-                      size={15}
-                    />
-                    <Trash
-                      onClick={(
-                        e
-                      ) => {
-                        e.stopPropagation();
-                        deleteSubHeading(
-                          sh.subHeadId
-                        );
-                      }}
-                      size={15}
-                      color="red"
-                    />
-                  </div>
-                </div>
-              </li>
-            )}
-          </Draggable>
-        )
-      )}
-      {provided.placeholder}
-    </ul>
-  )}
-</Droppable>
-)}
+                )}
+              </Droppable>
+            </DragDropContext>
 </div>
-)}
-</Draggable>
-))}
-{provided.placeholder}
-</div>
-)}
-</Droppable>
-)}
-</div>
-)}
-</Draggable>
-))}
-{provided.placeholder}
-</div>
-)}
-</Droppable>
-</DragDropContext>
-<div className="">
+
+{/* Action Buttons */}
+<div className="border-t pt-4 space-y-3">
 <Button
 onClick={(e) => {
 e.preventDefault();
 addChapter();
 }}
-variant="ghost"
-className="border border-green-400"
+className="border py-2 bg-transparent text-black hover:bg-green-200 w-full border-green-400"
+disabled={isLoading}
 >
-<PlusSquare />
-Add New Chapter
+<PlusSquare className="text-green-400 mr-2" size={16} />
+ 
+</Button>
+
+<Button
+onClick={handleSaveDraft}
+className="w-full bg-green-600 hover:bg-green-700"
+disabled={isSaving}
+>
+{isSaving ? "Saving..." : "Save Draft"}
 </Button>
 </div>
-
 </section>
-  </div>
+</div>
 
-  <div className={` overflow-auto  h-[90vh] relative flex flex-col  ${state.sidebarCollapsed ? 'w-[100%] ' :'w-[70%]'}
- flex flex-col} px-3`}>
-
-<div className="absolute bg-black top-[45%]">
-  <button
-onClick={() => dispatch({ type: "TOGGLE_SIDEBAR" })}
-className="py-2 hover:bg-gray-900 rounded-lg"
+<div
+className={` overflow-auto  h-[90vh] relative flex flex-col  ${
+sidebarCollapsed ? "w-[100%] " : "w-[70%]"
+}
+flex flex-col} px-1`}
 >
-{state.sidebarCollapsed ? (
+<div className="absolute rounded-lg bg-black  top-[45%]">
+<button
+onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+className="py-2  px-1   "
+>
+{sidebarCollapsed ? (
 <ChevronRight color="white" className="w-5 h-5" />
 ) : (
 <ChevronLeft color="white" className="w-5 h-5" />
@@ -643,12 +363,14 @@ className="py-2 hover:bg-gray-900 rounded-lg"
 </button>
 </div>
 
-<div className="bg-white border-b border-gray-200 p-4 flex items-center justify-between">
-<div className="flex items-center gap-4">
-
+<div className="border-b border-gray-200 p-4 flex items-center justify-between">
+<div className="flex items-start gap-1 flex-col">
 <h1 className="text-xl font-semibold">
-{selectedContent?.title || "Select a chapter or section"}
+{selectedItem?.title || "Select a chapter or section"}
 </h1>
+<span className="text-sm text-teal-600 font-medium">
+Draft your Content
+</span>
 </div>
 <div className="flex items-center gap-2">
 <button className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded">
@@ -663,78 +385,67 @@ Chapter 2
 </div>
 
 {/* Content Editor */}
-<div className="flex-1 p-6 mb-28 overflow-y-auto">
-{selectedContent ? (
-<div className="max-w-4xl mx-auto">
-<div className="mb-6">
-<span className="text-sm text-teal-600 font-medium">
-Draft your Content
-</span>
-</div>
+  <div className="flex-1 p-6 mb-28 overflow-y-auto">
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Video Upload */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Content Video</h3>
+          <div
+            className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer"
+            onClick={() => videoInputRef.current?.click()}
+          >
+            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600 mb-2">
+              {videoFile ? videoFile.name : "Upload your Content Video"}
+            </p>
+            <p className="text-sm text-blue-500">mp4 or mov (less than 2GB)</p>
+            <input
+              type="file"
+              ref={videoInputRef}
+              accept="video/mp4,video/mov"
+              onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
+              className="hidden"
+            />
+          </div>
+        </div>
 
-<div className="space-y-6">
-{/* Content Video */}
-<div>
-<h3 className="text-lg font-medium mb-3">Content Video</h3>
-<div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-<Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-<p className="text-gray-600 mb-2">
-Upload your Content Video
-</p>
-<p className="text-sm text-blue-500">
-mp4 or mov (less than 2GB)
-</p>
-</div>
-</div>
+        {/* Subtitle Upload */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Content Subtitle</h3>
+          <div
+            className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer"
+            onClick={() => subtitleInputRef.current?.click()}
+          >
+            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600 mb-2">
+              {subtitleFile ? subtitleFile.name : "Upload your Content Subtitle"}
+            </p>
+            <p className="text-sm text-blue-500">SRT (less than 1MB)</p>
+            <input
+              type="file"
+              ref={subtitleInputRef}
+              accept=".srt"
+              onChange={(e) => setSubtitleFile(e.target.files?.[0] || null)}
+              className="hidden"
+            />
+          </div>
+        </div>
 
-{/* Content Subtitle */}
-<div>
-<h3 className="text-lg font-medium mb-3">Content Subtitle</h3>
-<div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-<Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-<p className="text-gray-600 mb-2">
-Upload your Content Subtitle
-</p>
-<p className="text-sm text-blue-500">SRT (less than 1MB)</p>
+        {/* Action Buttons */}
+        <div className="flex gap-4 mt-8">
+          <button
+            onClick={handleUpload}
+            className="flex-1 bg-teal-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-teal-600"
+          >
+            Save Draft
+          </button>
+          <button className="flex-1 border border-gray-300 text-gray-700 py-3 px-6 rounded-lg font-medium hover:bg-gray-50">
+            Send for Approval
+          </button>
+        </div>
+      </div>
+    </div>
 </div>
-</div>
-
-{/* Description */}
-<div>
-<h3 className="text-lg font-medium mb-3">Description</h3>
-<div className="border border-gray-300 rounded-lg p-4 min-h-48">
-<p className="text-blue-600 cursor-pointer">
-<RichTextExample/>
-</p>
-</div>
-</div>
-</div>
-
-{/* Action Buttons */}
-<div className="flex gap-4 mt-8">
-<button className="flex-1 bg-teal-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-teal-600">
-Save Draft
-</button>
-<button className="flex-1 border border-gray-300 text-gray-700 py-3 px-6 rounded-lg font-medium hover:bg-gray-50">
-Send for Approval
-</button>
-</div>
-</div>
-) : (
-<div className="flex items-center justify-center h-full">
-<div className="text-center">
-<FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-<p className="text-gray-500 text-lg">
-Select a chapter or section to start editing
-</p>
-</div>
-</div>
-)}
-</div>
-
-
-  </div>
-
 </div>
 );
 };
