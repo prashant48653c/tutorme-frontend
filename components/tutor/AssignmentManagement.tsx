@@ -9,6 +9,7 @@ import { Assignment, Resource } from '@/types/course';
 
 const AssignmentManagement = () => {
   const course = useGlobalCourseStore(state => state.course);
+   const setCourse = useGlobalCourseStore(state => state.setCourse);
  
   const [expandedResources, setExpandedResources] = useState<Record<number, boolean>>({});
   const [resources, setResources] = useState<Assignment[]>([]);
@@ -39,13 +40,15 @@ const AssignmentManagement = () => {
   };
 
   const addResource = () => {
-    const newId = Date.now(); // temp unique id
-    const newResource: Assignment = {
-      title: `Assignment ${resources.length + 1}`,
-      description: '',
-      courseId: course?.id || 0,
-      
-    };
+   const newId = Math.random() * 100; // temporary unique ID
+     console.log(newId, "New ID")
+   const newResource: Resource = {
+     id: newId , // ✅ Assign the ID
+     title: `Assignment  ${resources.length + 1}`,
+     description: '',
+     courseId: course?.id || 0,
+   };
+   
     setResources(prev => [...prev, newResource]);
     setExpandedResources(prev => ({ ...prev, [newId]: true }));
   };
@@ -67,7 +70,7 @@ const handleResourceUpload = async () => {
 console.log(payload,"Pay")
   try {    
       const res = await api.post(`/course/assignment/${course?.id}`, payload);
-
+setCourse(res.data.data)
     console.log("Created assignment:", res.data);
   } catch (err) {
     console.error("Error creating assignment:", err);
@@ -115,7 +118,12 @@ console.log(payload,"Pay")
                   Resource Description
                 </label>
                 <div className="shadow-md">
-                  <SimpleEditor />
+                        <SimpleEditor
+                    value={resource?.description || ""}
+                    onChange={(value) =>
+                      updateResource(resource.id!, "description", value)
+                    }
+                  />
                 </div>
               </div>
             </div>

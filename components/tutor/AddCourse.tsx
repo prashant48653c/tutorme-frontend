@@ -52,6 +52,8 @@ setThumbnail(file);
 formdata.append("title", courseDetails.title || "");
 formdata.append("description", courseDetails.description || "");
 formdata.append("duration", courseDetails.duration );
+formdata.append("durationUnit", courseDetails.durationUnit );
+
 formdata.append("targetSem", courseDetails.targetSem || "");
 formdata.append("targetUniversity", courseDetails.targetUniversity || "");
 formdata.append("targetCourse", courseDetails.targetCourse || "");

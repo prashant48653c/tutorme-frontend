@@ -3,15 +3,30 @@ import React from 'react'
 import Image from "next/image";
 import Link from "next/link";
 import { useAuthStore } from '@/store/useAuthStore';
+import api from '@/hooks/axios';
+import { useRouter } from 'next/navigation';
 
 
 
 
 const Sidebar = ({links}:{links:any}) => {
-  const user=useAuthStore((state=>state.user))
+const router=useRouter()
+
+  const {user,logout}=useAuthStore()
+  
+  const handleLogout=async()=>{
+    try {
+      await api.post("/auth/logout");
+      logout();
+      router.push("/")
+      
+    } catch (error) {
+      console.log(error)
+    }
+  }
   return (
-    <aside className="w-full h-screen relative bg-gray-100 text-black   ">
-      <div className="flex w-[13rem] z-20 bg-gray-100  flex-col items-center  no-scrollbar absolute top-0 h-full overflow-y-auto pt-8 space-y-4">
+    <aside className="w-full border h-screen relative bg-gray-100 text-black   ">
+      <div className="flex w-[13rem] z-20 bg-gray-100  flex-col items-center  no-scrollbar  overflow-y-auto  fixed top-0 h-full pt-8 space-y-4">
         <div>
           <h1 className="font-extrabold text-3xl text-black">
             TUTOR<span className="text-primeGreen">ME</span>
@@ -37,7 +52,7 @@ const Sidebar = ({links}:{links:any}) => {
           </p>
         </div>
 
-        <ul className="w-full px-2">
+        <ul className="w-full decoration-0 no-underline px-2">
           {links.map((link:{path:string;icon:string;name:string}, index:number) => (
             <li key={index} className="mb-2 hover:bg-[#09C4AE] rounded-3xl p-3 flex items-center hover:text-white">
               <Link
@@ -56,10 +71,10 @@ const Sidebar = ({links}:{links:any}) => {
             </li>
           ))}
 
-          <li className="mb-6 p-3  mt-36 flex items-center">
-            <Link
-              href="/"
-              className="flex items-center hover:underline"
+           <li onClick={handleLogout} className="mb-6 hover:bg-red-500 rounded-3xl p-3 flex items-center hover:text-white  mt-36  ">
+            <div
+               
+              className="flex items-center  hover:underline"
             >
               <Image
                 src="/static/icons/logout.svg"
@@ -69,9 +84,10 @@ const Sidebar = ({links}:{links:any}) => {
                 className="mr-2"
               />
               Logout
-            </Link>
+            </div>
           </li>
         </ul>
+       
       </div>
     </aside>
   );

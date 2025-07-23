@@ -1,6 +1,6 @@
 "use client";
 
-import { useReducer, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -208,12 +208,19 @@ const setUser=useAuthStore((state)=>state.setUser);
     const id = user?.id.toString();
     if(id)
     formData.append("userId",id);
-    const res = await api.post(`/auth/tutor/kyc`, formData);
+  try {
+     const res = await api.post(`/auth/tutor/kyc`, formData);
     console.log(res.data);
     setUser(res.data.profile)
     // Show success message
-    toast.success("Form submitted successfully! Check console for data.");
-  };
+    toast.success("Form submitted successfully! ");
+ 
+  } catch (error) {
+    console.log(error)
+    toast.success("Something went wrong");
+    
+  }
+    };
 
   const nextStep = () => {
     if (currentStep < 4) {
@@ -806,6 +813,20 @@ function UploadCard({
   fullWidth?: boolean;
 }) {
   const inputId = `upload-${title.replace(/\s+/g, "-").toLowerCase()}`;
+const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+useEffect(() => {
+  if (file) {
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+
+    return () => {
+      URL.revokeObjectURL(url); // Clean up when component unmounts or file changes
+    };
+  } else {
+    setPreviewUrl(null);
+  }
+}, [file]);
 
   return (
     <div className={`${fullWidth ? "w-full" : ""}`}>
@@ -821,10 +842,28 @@ function UploadCard({
                 ✓
               </div>
             </div>
-            <p className="font-medium text-blue-700">{file.name}</p>
-            <p className="text-xs mt-1 text-blue-500">
-              {(file.size / 1024 / 1024).toFixed(2)} MB
-            </p>
+       {previewUrl && file.type.startsWith("image/") && (
+  <img
+    src={previewUrl}
+    alt="Preview"
+    className="max-h-40 mx-auto mt-2 rounded border"
+  />
+)}
+
+{previewUrl && file.type === "application/pdf" && (
+  <iframe
+    src={previewUrl}
+    title="PDF Preview"
+    className="w-full h-40 mt-2 border rounded"
+  />
+)}
+
+<p className="font-medium text-blue-700 mt-2">{file.name}</p>
+<p className="text-xs text-blue-500">
+  {(file.size / 1024 / 1024).toFixed(2)} MB
+</p>
+
+
             <button
               type="button"
               onClick={(e) => {

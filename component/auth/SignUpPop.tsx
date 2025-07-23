@@ -63,19 +63,19 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToLogin }: SignUp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="p-5 min-w-[46rem] bg-white rounded-3xl">
-        <div className="grid w-full  md:grid-cols-[40%_60%] ">
+      <DialogContent className="p-5 min-w-[50rem] bg-white rounded-3xl">
+        <div className="grid w-full  md:grid-cols-[35%_65%] ">
           {/* Left side - Illustration */}
-          <div className="bg-gradient-to-br rounded-3xl from-blue-100 to-blue-200  flex items-center justify-center">
+          <div className=" flex     items-center justify-center">
            
               
                 {/* 3D Browser Window */}
                <Image
                   src="/static/landing/signup.svg"
                   alt="Signup Illustration"
-                  width={500}
-                  height={500}
-                  className=" "
+                  width={550}
+                  height={600}
+                  className="  "
                   />
 
          
@@ -84,8 +84,8 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToLogin }: SignUp
           </div>
 
           {/* Right side - Form */}
-          <div className=" pt-2 flex flex-col max-h-[90vh]">
-            <div className="max-w-sm mx-auto w-full text-center mb-8">
+          <div className=" pt-2    flex flex-col max-h-[90vh]">
+            <div className="max-w-sm mx-auto w-full text-center mb-8">  
               <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign Up</h2>
               <p className="text-cyan-500 font-medium">{"Let's get your setup ready."}</p>
             </div>

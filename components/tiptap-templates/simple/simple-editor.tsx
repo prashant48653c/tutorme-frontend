@@ -179,7 +179,13 @@ const MobileToolbarContent = ({
   </>
 )
 
-export function SimpleEditor() {
+export const SimpleEditor = ({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) => {
   const isMobile = useMobile()
   const windowSize = useWindowSize()
   const [mobileView, setMobileView] = React.useState<
@@ -189,6 +195,11 @@ export function SimpleEditor() {
 
   const editor = useEditor({
     immediatelyRender: false,
+    onUpdate: ({ editor }) => {
+      // const text = editor.getText(); // for plain text
+      const html = editor.getHTML(); // for HTML
+      onChange(html); // or onChange(html)
+    },
     editorProps: {
       attributes: {
         autocomplete: "on",
@@ -220,7 +231,7 @@ export function SimpleEditor() {
       TrailingNode,
       Link.configure({ openOnClick: false }),
     ],
-    content: content,
+    content:value
   })
 
   

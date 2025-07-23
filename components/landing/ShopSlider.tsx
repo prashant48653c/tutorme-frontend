@@ -32,7 +32,7 @@ export default function ShopSlider() {
       <Carousel setApi={setApi} className="w-full h-[30rem]  ">
         <CarouselContent>
           {Array.from({ length: 5 }).map((_, index) => (
-            <CarouselItem className="basis-1/4 overflow-visible bg-black">
+            <CarouselItem key={index} className="basis-1/4 overflow-visible bg-black">
               <Card className="p-0 bg-black group relative border-none shadow-none">
                 <CardContent className="flex p-0 mt-9 relative flex-col">
                   <div className="transition-transform duration-300 group-hover:-translate-y-8 relative z-0">

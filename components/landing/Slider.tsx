@@ -18,22 +18,39 @@ export default function Slider() {
 
   React.useEffect(() => {
     if (!api) return;
+
     setCount(api.scrollSnapList().length);
     setCurrent(api.selectedScrollSnap() + 1);
+
     api.on("select", () => {
       setCurrent(api.selectedScrollSnap() + 1);
     });
   }, [api]);
 
+  // 🚀 Auto-slide useEffect
+  React.useEffect(() => {
+    if (!api) return;
+
+    const interval = setInterval(() => {
+      api.scrollNext();
+    }, 3000); // 3000ms = 3 seconds per slide
+if (api.selectedScrollSnap() === count - 1) {
+  api.scrollTo(0); // Go back to start
+} else {
+  api.scrollNext();
+}
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [api]);
+
   return (
     <div className="mx-[3rem] z-10 w-full">
-      <Carousel setApi={setApi} className="w-full ">
+      <Carousel setApi={setApi} className="w-full">
         <CarouselContent>
           {Array.from({ length: 5 }).map((_, index) => (
             <CarouselItem key={index} className="basis-1/2">
-              <Card className="">
-                <CardContent className="flex flex-col aspect-auto ">
-
+              <Card>
+                <CardContent className="flex flex-col aspect-auto">
                   <div className="bg-green-500 w-fit rounded-4xl flex gap-3 items-center px-3 py-2">
                     <Book color="white" />
                     <Box color="white" />
@@ -50,22 +67,15 @@ export default function Slider() {
                     the whole subject, you’ll find exactly what you need, right
                     when you need it.
                   </p>
-  <div>
-    
-  </div>
-                    <Button className=" w-[8rem] mt-3 flex items-center px-4 text-center rounded-3xl bg-green-400">
-                   
-                      Learn More 
-                       <ArrowUpRight color="white" />
-                    </Button>
-               
-                
+
+                  <Button className="w-[8rem] mt-3 flex items-center px-4 text-center rounded-3xl bg-green-400">
+                    Learn More <ArrowUpRight color="white" />
+                  </Button>
                 </CardContent>
               </Card>
             </CarouselItem>
           ))}
         </CarouselContent>
-        {/* Removed CarouselPrevious and CarouselNext */}
       </Carousel>
 
       <div className="mt-4 flex items-center justify-center gap-2">

@@ -40,7 +40,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <div className="flex relative justify-center w-[100%] min-h-screen">
+        <div className="flex bg-gray-100 relative justify-center w-[100%] min-h-screen">
           {/* Sidebar */}
           <div className="w-[18%]">
           <Sidebar links={links} />
@@ -48,8 +48,8 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
           </div>
 
           {/* Main Content */}
-          <main className="flex w-[82%] p-6 bg-gray-100">
-            <div className={`w-full  flex flex-col h-max `}>
+          <main className="flex w-[82%] px-6  bg-gray-100">
+            <div className={`w-full bg-gray-100 flex flex-col h-max `}>
               <Topbar />
               <div className="relative">
               {children}

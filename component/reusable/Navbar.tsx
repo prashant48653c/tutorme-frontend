@@ -136,25 +136,19 @@ const Navbar = () => {
             ) : (
               <div className="flex items-center gap-2">
                 <Button
-                  variant="outline"
-                  className="font-bold rounded-3xl px-6 bg-transparent border-green-400 text-green-400 hover:bg-green-400 hover:text-white"
+                 
+                  className="font-bold bg-green-400   py-4 hover:bg-green-600 cursor-pointer rounded-full text-white"
                   onClick={() => openModal("login")}
                 >
                   Login
                 </Button>
-                <Button
+                {/* <Button
                   className="font-bold rounded-3xl px-6 bg-green-400 hover:bg-green-500"
                   onClick={() => openModal("signup")}
                 >
                   Sign Up
-                </Button>
-                <Button
-                  variant="outline"
-                  className="font-bold rounded-3xl px-6 bg-transparent border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-white"
-                  onClick={() => openModal("instructor")}
-                >
-                  Become Instructor
-                </Button>
+                </Button> */}
+              
               </div>
             )}
           </div>
@@ -162,13 +156,11 @@ const Navbar = () => {
       </nav>
 
       {/* Modals */}
-      <SignUpModal isOpen={activeModal === "signup"} onClose={closeModal} onSwitchToLogin={() => openModal("login")} />
+      <SignUpModal isOpen={activeModal === "signup"} onClose={closeModal} onSwitchToLogin={() => openModal("login")} />  
+
+
       <LoginModal isOpen={activeModal === "login"} onClose={closeModal} onSwitchToSignUp={() => openModal("signup")} />
-      <InstructorModal
-        isOpen={activeModal === "instructor"}
-        onClose={closeModal}
-        onSwitchToLogin={() => openModal("login")}
-      />
+     
     </>
   )
 }

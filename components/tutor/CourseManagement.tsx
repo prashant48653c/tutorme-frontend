@@ -25,7 +25,6 @@ import { Chapter, Course } from "@/types/course";
 import { useCourseStore } from "@/store/useCourseStore";
 import { useGlobalCourseStore } from "@/store/useGlobalCourseStore";
 
- 
 function formatDate(dateString: string) {
   const date = new Date(dateString);
 
@@ -84,6 +83,8 @@ const getTabStatus = (tab: string) => {
 };
 
 export default function CourseManagement() {
+  const user = useAuthStore((state) => state.user);
+
   const [activeTab, setActiveTab] = useState("all");
   const [currentTutor, setCurrentTutor] = useState<any>({});
   const [isViewOpen, setIsViewOpen] = useState(false);
@@ -112,12 +113,11 @@ export default function CourseManagement() {
   const [totalCount, setTotalCount] = useState([
     { status: "UNDERREVIEW", count: 0 },
   ]);
-  const user = useAuthStore((state) => state.user);
-const setChapters = useCourseStore((state) => state.setChapters);
+  const setChapters = useCourseStore((state) => state.setChapters);
 
   const handleCourseSelection = (course: Course) => {
     setCurrentTutor(course);
-    
+
     let {
       id,
       title,
@@ -132,9 +132,9 @@ const setChapters = useCourseStore((state) => state.setChapters);
       targetUniversity,
       thumbnail,
     } = course;
- 
+
     if (!thumbnail) thumbnail = "";
-useGlobalCourseStore.getState().setCourse(course);
+    useGlobalCourseStore.getState().setCourse(course);
 
     useCourseStore.setState({
       courseDetails: {
@@ -144,22 +144,21 @@ useGlobalCourseStore.getState().setCourse(course);
         courseDepth,
         courseStatus,
         description,
-     duration: duration ?? "0",
-        durationUnit:"Weeks",
+        duration: duration ?? "0",
+        durationUnit: "Weeks",
         price,
         targetCourse,
         targetSem,
         targetUniversity,
         thumbnail,
       },
-      
+
       isDraftSaved: true, // optional
     });
-    if(course.chapters)
-      console.log(course)
-   setChapters(course.chapters as any[]); // if it's an array
+    if (course.chapters) console.log(course);
+    setChapters(course.chapters as any[]); // if it's an array
 
-router.push("mycourse/draft/edit")
+    router.push("mycourse/draft/edit");
   };
   const fetchTutors = useCallback(
     async (
@@ -390,7 +389,7 @@ router.push("mycourse/draft/edit")
           <Search size={18} />
           <input
             className="border-0 min-w-[20rem] outline-0 hover:outline-0 bg-transparent"
-            placeholder="Search tutors..."
+            placeholder="Search courses..."
             onChange={(e) => handleSearch(e.target.value)}
             defaultValue={searchQuery}
           />
@@ -472,7 +471,9 @@ router.push("mycourse/draft/edit")
                 </div>
               ) : (
                 tutors?.map((tutor) => {
-                  const statusConfig = getStatusBadge(tutor.courseStatus ?? "DRAFT");
+                  const statusConfig = getStatusBadge(
+                    tutor.courseStatus ?? "DRAFT"
+                  );
                   return (
                     <div
                       key={tutor.id}
@@ -493,8 +494,10 @@ router.push("mycourse/draft/edit")
                             {tutor.title}
                           </h3>
                           <p className="text-sm text-gray-500">
-                           Joined Date: {tutor.updatedAt ? formatDate(tutor.updatedAt) : "N/A"}
-
+                            Joined Date:{" "}
+                            {tutor.updatedAt
+                              ? formatDate(tutor.updatedAt)
+                              : "N/A"}
                           </p>
                           <Badge className={`mt-1 ${statusConfig.className}`}>
                             {tutor?.courseStatus || "UNKNOWN"}
@@ -508,8 +511,10 @@ router.push("mycourse/draft/edit")
                             <div className="flex gap-2 items-center justify-center">
                               <Button
                                 onClick={() =>
-                                  updateTutorStatus(tutor?.id ?? 0, "UNDERREVIEW")
-
+                                  updateTutorStatus(
+                                    tutor?.id ?? 0,
+                                    "UNDERREVIEW"
+                                  )
                                 }
                                 className=" text-white bg-primeGreen rounded-full flex items-center justify-center  "
                               >

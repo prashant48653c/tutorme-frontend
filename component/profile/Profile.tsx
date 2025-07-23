@@ -6,6 +6,7 @@ import { useState } from "react";
 import EditProfileForm from "./EditProfile";
 import { useAuthStore } from "@/store/useAuthStore";
 import KYCVerificationModal from "../auth/KycPop";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const Profile = () => {
   const progress = 60;
@@ -40,11 +41,13 @@ const Profile = () => {
       </div>
 
       <div>
-        {status && (
-          <div className="absolute z-10 left-1/2 top-40 transform -translate-x-1/2 p-2 text-xs text-gray-700">
-            <EditProfileForm />
-          </div>
-        )}
+       {status && (
+  <Dialog open={status} onOpenChange={() => setStatus(false)}>
+    <DialogContent className=" rounded-md">
+      <EditProfileForm setStatus={setStatus} />
+    </DialogContent>
+  </Dialog>
+)}
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2">

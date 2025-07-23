@@ -9,6 +9,8 @@ import { Resource } from '@/types/course';
 
 const ResourceManagement = () => {
   const course = useGlobalCourseStore(state => state.course);
+  const setCourse = useGlobalCourseStore(state => state.setCourse);
+
 console.log(course)
   const [expandedResources, setExpandedResources] = useState<Record<number, boolean>>({});
   const [resources, setResources] = useState<Resource[]>([]);
@@ -39,13 +41,15 @@ console.log(course)
   };
 
   const addResource = () => {
-    const newId = Date.now(); // temp unique id
-    const newResource: Resource = {
-      title: `Resource ${resources.length + 1}`,
-      description: '',
-      courseId: course?.id || 0,
-      
-    };
+  const newId = Math.random() * 100; // temporary unique ID
+  console.log(newId, "New ID")
+const newResource: Resource = {
+  id: newId , // ✅ Assign the ID
+  title: `Resource ${resources.length + 1}`,
+  description: '',
+  courseId: course?.id || 0,
+};
+
     setResources(prev => [...prev, newResource]);
     setExpandedResources(prev => ({ ...prev, [newId]: true }));
   };
@@ -57,7 +61,7 @@ console.log(course)
       )
     );
   };
-console.log(resources)
+ 
 const handleResourceUpload = async () => {
    const payload = resources.map(({ id, title, description, courseId }) => {
     return id
@@ -67,6 +71,7 @@ const handleResourceUpload = async () => {
 console.log(payload,"Pay")
   try {    
       const res = await api.post(`/course/resource/${course?.id}`, payload);
+     setCourse(res.data.data)
 
     console.log("Created resources:", res.data);
   } catch (err) {
@@ -115,7 +120,13 @@ console.log(payload,"Pay")
                   Resource Description
                 </label>
                 <div className="shadow-md">
-                  <SimpleEditor />
+                  <SimpleEditor
+  value={resource?.description || ""}
+  onChange={(value) =>
+    updateResource(resource.id!, "description", value)
+  }
+/>
+
                 </div>
               </div>
             </div>

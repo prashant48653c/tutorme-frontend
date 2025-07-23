@@ -49,14 +49,14 @@ export const CourseContentEditor = () => {
 const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 const router = useRouter();
 const [selectedItem, setSelectedItem] = useState<
-Chapter | SubHeading | SubTitle
+(Chapter | SubHeading | SubTitle) & { type: "chapter" | "subheading" | "subchapter", parentId: string } | null
 >();
 // Get everything from the store
 
-const handleSelection = (e: any, item: Chapter | SubHeading | SubTitle) => {
+const handleSelection = (e: any, item: Chapter | SubHeading | SubTitle, type: "chapter" | "subheading" | "subchapter", parentId: string) => {
 e.stopPropagation();
-setSelectedItem(item);
-console.log(selectedItem || item);
+setSelectedItem({ ...item, type, parentId });
+console.log(item);
 };
   const {
     courseDetails,
@@ -111,7 +111,7 @@ console.log(selectedItem || item);
 
   const handleUpload = async () => {
     if (!videoFile || !subtitleFile) {
-      alert("Please upload both video and subtitle.");
+      toast.error("Please upload both video and subtitle.");
       return;
     }
 
@@ -120,12 +120,18 @@ console.log(selectedItem || item);
     formData.append("subtitle", subtitleFile);
     formData.append("title",selectedItem?.title ?? "");
     formData.append("description","Yo");
+    formData.append("courseId",courseDetails?.id?.toString() ?? "");
+
+    formData.append("type",selectedItem?.type ?? "")
 
 
     try {
       const res = await api.patch(`/course/chapter/${selectedItem?.id}`, formData);
       console.log("Upload success:", res.data);
-      toast.success("Course has been updated!")
+      toast.success("Course has been updated!");
+      setSelectedItem(null)
+      setVideoFile(null);
+      setSubtitleFile(null);
     } catch (error) {
       toast.error("Course wasn't updated!")
 
@@ -161,7 +167,7 @@ sidebarCollapsed ? "w-0 invisible" : "w-[30%]"
                       <Draggable key={chapter.id} draggableId={chapter.id.toString()} index={chapterIndex}>
                         {(provided) => (
                           <div ref={provided.innerRef} {...provided.draggableProps} className="border p-2 my-2 bg-white">
-                            <div onClick={(e)=>handleSelection(e,chapter)} className="w-full justify-between flex gap-1 items-center bg-gray-200 rounded-sm p-2" {...provided.dragHandleProps}>
+                            <div onClick={(e)=>handleSelection(e,chapter,"chapter",courseDetails?.id?.toString() ?? "0")} className="w-full justify-between flex gap-1 items-center bg-gray-200 rounded-sm p-2" {...provided.dragHandleProps}>
                               <div className="flex gap-1 items-center">
                                 <GripVertical />
                                 <Input
@@ -214,7 +220,7 @@ sidebarCollapsed ? "w-0 invisible" : "w-[30%]"
                                       <Draggable key={sub.id.toString()} draggableId={sub.id.toString()} index={subIndex}>
                                         {(provided) => (
                                           <div ref={provided.innerRef} {...provided.draggableProps} className="border p-2 my-2 bg-gray-100 py-4 flex flex-col justify-center rounded">
-                                            <div onClick={(e)=>handleSelection(e,sub)}  className="flex items-center justify-between" {...provided.dragHandleProps}>
+                                            <div onClick={(e)=>handleSelection(e,sub,"subchapter",chapter.id.toString())}  className="flex items-center justify-between" {...provided.dragHandleProps}>
                                               <div className="flex gap-1 items-center">
                                                 <GripVertical />
                                                 <Input
@@ -267,7 +273,7 @@ sidebarCollapsed ? "w-0 invisible" : "w-[30%]"
                                                       <Draggable key={sh.id.toString()} draggableId={sh.id.toString()} index={shIndex}>
                                                         {(provided) => (
                                                           <li ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className="py-2 pl-2 my-1 bg-white list-none border-b">
-                                                            <div className="flex items-center justify-between">
+                                                            <div onClick={(e)=>handleSelection(e,sh,"subheading",sub.id.toString())}   className="flex items-center justify-between">
                                                               <div className="flex gap-1 items-center">
                                                                 <GripVertical />
                                                                 <Input
@@ -446,6 +452,8 @@ Chapter 2
       </div>
     </div>
 </div>
+
+
 </div>
 );
 };

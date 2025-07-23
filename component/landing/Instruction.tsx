@@ -1,9 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { HoveFont } from "@/constant/font";
 import Image from "next/image";
-import React from "react";
+import React, { useState } from "react";
+import InstructorModal from "@/component/auth/instructor-signup"
 
 const Instruction = () => {
+    const [activeModal, setActiveModal] = useState<string | null>(null)
+  
+  const openModal = (modalType: string) => {
+    setActiveModal(modalType)
+  }
+
+  const closeModal = () => {
+    setActiveModal(null)
+  }
   return (
     <div className="flex gap-4 my-[5rem] items-center justify-evenly">
       <div className="flex    items-center justify-end">
@@ -31,11 +41,16 @@ const Instruction = () => {
           subject expert, this is your chance to make a real impact.
         </p>
         <div>
-          <Button  className="bg-green-400 min-w-[10rem] py-4 mt-3 rounded-full text-white">
+          <Button   onClick={() => openModal("instructor")} className="bg-green-400 min-w-[10rem] py-4 mt-3 rounded-full text-white">
             {" "}
-            Apply now
+           Apply Now
           </Button>
         </div>
+          <InstructorModal  
+        isOpen={activeModal === "instructor"}
+        onClose={closeModal}
+        onSwitchToLogin={() => openModal("login")}
+      />
       </div>
     </div>
   );

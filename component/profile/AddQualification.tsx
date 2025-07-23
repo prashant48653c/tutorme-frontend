@@ -22,6 +22,7 @@ import {
 import { Upload } from "lucide-react";
 import api from "@/hooks/axios";
 import { useAuthStore } from "@/store/useAuthStore";
+import useEducationStore from "@/store/useEducationStore";
 
 interface AddQualificationModalProps {
   isOpen: boolean;
@@ -35,7 +36,7 @@ interface QualificationData {
   certificate: File | null;
 }
 
-export default function AddQualificationModal() {
+export default function AddQualificationModal({setStatus}:{setStatus:(status:boolean)=>void}) {
   const [qualification, setQualification] = useState("");
   const [graduationLocation, setGraduationLocation] = useState("");
   const [certificate, setCertificate] = useState<File | null>(null);
@@ -89,7 +90,12 @@ export default function AddQualificationModal() {
 
     return true;
   };
-const user=useAuthStore((state=>state.user))
+const user=useAuthStore((state=>state.user));
+console.log(user)
+
+const setEducation=useEducationStore((state=>state.setEducation))
+
+
  const handleSave = async () => {
   console.log("first")
   if (!qualification || !graduationLocation || !certificate) {
@@ -108,9 +114,7 @@ const user=useAuthStore((state=>state.user))
 
   try {
     const id=user?.id;
-
     const res = await api.patch(`/auth/tutor/edu/${id}`, formData);
-
     console.log("Successfully updated:", res.data);
 
     // Optional: Reset form and close modal
@@ -129,11 +133,12 @@ const user=useAuthStore((state=>state.user))
     setQualification("");
     setGraduationLocation("");
     setCertificate(null);
+    setStatus(false)
   };
 
   return (
     <div>
-      <div className="max-w min-w-[40rem] bg-white z-10 rounded-2xl w-full p-6">
+      <div className="max-w min-w-[40rem] bg-white rounded-2xl w-full p-6">
         <div>
           <h3 className="text-2xl text-black font-semibold mb-2">
             Add Qualification

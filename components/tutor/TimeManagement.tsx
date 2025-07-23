@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 
 const TimeManagement = () => {
   const course = useGlobalCourseStore(state => state.course);
+  const setCourse = useGlobalCourseStore(state => state.setCourse);
 
   const [time, setTime] = useState({
     isQueryClassAvailable: false,
@@ -33,12 +34,16 @@ const TimeManagement = () => {
 
       const res = await api.post(`/course/time/${courseId}`, time);
       toast.success("Time configuration saved!");
+      setCourse(res.data.data)
+
       console.log("Response:", res.data);
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong!");
     }
   };
+
+  
 
   return (
     <div className="w-full bg-white mx-auto">
@@ -70,7 +75,7 @@ const TimeManagement = () => {
               <input
                 type="radio"
                 name="liveClass"
-                value="no"
+                value={course?.isQueryClassAvailable ? "yes" : "no"}
                 checked={time.isQueryClassAvailable === false}
                 onChange={() => handleChange("isQueryClassAvailable", false)}
                 className="accent-emerald-500"
