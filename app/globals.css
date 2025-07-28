@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@custom-variant dark (&:is(.dark *));
 
 @font-face {
   font-family: 'Hove';
@@ -135,7 +136,6 @@ body {
   }
 }
 
-
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -145,7 +145,6 @@ body {
     scrollbar-width: none;
   }
 }
-
 
 .bg-primeGreen{
   background-color: #09C4AE;

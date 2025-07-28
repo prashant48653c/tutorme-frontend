@@ -16,6 +16,11 @@ const links = [
     icon: "icon1",
   },
   {
+    path: "/tutor/session",
+    name: "Session",
+    icon: "icon2",
+  },
+  {
     path: "/",
     name: "Accomplishments",
     icon: "icon2",

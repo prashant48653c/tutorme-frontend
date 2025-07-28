@@ -94,3 +94,26 @@ export interface CourseReview {
   comment?: string;
   // Add other fields as needed
 }
+
+
+
+
+export type SessionStatus = "SCHEDULED" | "COMPLETED" | "CANCELLED"; // adjust based on your enum
+
+export interface TimeSlot {
+  day: string;
+  startTime: string;  
+  endTime: string;   
+}
+
+export interface Session {
+  id: number;
+  description: string;
+  status: SessionStatus;
+  language: string[];
+  tutorProfileId: number;
+  duration: TimeSlot[];   
+  price: number;
+  updatedAt:string;
+ 
+}
