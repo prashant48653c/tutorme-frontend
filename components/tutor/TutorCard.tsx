@@ -4,7 +4,7 @@ import Image from "next/image"
 
 export default function TutorCard({tutor}:{tutor:any}) {
   return (
-    <Card className="w-[280px] bg-white rounded-2xl overflow-hidden  border-0">
+    <Card className="w-[18rem] bg-white rounded-2xl overflow-hidden  border-0">
       {/* Profile Image Section */}
       <div className="relative">
         <div className="aspect-[4/5] relative">
@@ -23,11 +23,11 @@ export default function TutorCard({tutor}:{tutor:any}) {
       </div>
 
       {/* Card Content */}
-      <div className="p-6 text-center">
+      <div className="px-6 text-center">
         {/* Star Rating */}
-        <div className="flex items-center justify-center gap-1 mb-3">
+        <div className="flex items-center justify-center gap-1 ">
           {[...Array(5)].map((_, i) => (
-            <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+            <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
           ))}
           <span className="text-gray-600 text-sm ml-1">(25)</span>
         </div>
@@ -36,7 +36,7 @@ export default function TutorCard({tutor}:{tutor:any}) {
         <h2 className="text-2xl font-bold text-gray-900 mb-1">{tutor?.name}</h2>
 
         {/* Specialization */}
-        <p className="text-gray-600 text-base">{tutor?.tutorProfile?.jobTitle}</p>
+        <p className="text-gray-600 font-semibold text-base">{tutor?.tutorProfile?.jobTitle}</p>
       </div>
     </Card>
   )

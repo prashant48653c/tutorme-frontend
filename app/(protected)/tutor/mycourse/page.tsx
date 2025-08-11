@@ -11,7 +11,7 @@ const page = () => {
       const [isPopupOpen,setIsPopupOpen]=useState(false);
     
   return (
-   <section className="flex  pl-4 flex-col gap-y-9">
+   <section className="flex py-10 pl-4 flex-col gap-y-9">
       <div className="flex  items-center justify-between">
         <h4 className="uppercase text-xl font-bold">Manage Course</h4>
         <div>

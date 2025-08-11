@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react"
 import type React from "react"
 
+import { SlidersHorizontal, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -70,6 +71,8 @@ function FilterSection({ title, data, showClearAll, onItemChange, onClearAll, ch
 }
 
 export function TutorSidebar() {
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  
   const {
     course,
     priceRange,
@@ -97,12 +100,12 @@ export function TutorSidebar() {
   ])
 
   const [ratingFilters, setRatingFilters] = useState<FilterItem[]>([
-    { id: "5-star", label: "5 Star", count: 387, checked: false },
-    { id: "4-star", label: "4 Star", count: 906, checked: false },
-    { id: "3-star", label: "3 Star", count: 906, checked: false },
-    { id: "2-star", label: "2 Star", count: 906, checked: false },
-    { id: "1-star", label: "1 Star", count: 906, checked: false },
-    { id: "not-rated", label: "Not Rated", count: 906, checked: false },
+    { id: "5", label: "5 Star", count: 387, checked: false },
+    { id: "4", label: "4 Star", count: 906, checked: false },
+    { id: "3", label: "3 Star", count: 906, checked: false },
+    { id: "2", label: "2 Star", count: 906, checked: false },
+    { id: "1", label: "1 Star", count: 906, checked: false },
+    { id: "0", label: "Not Rated", count: 906, checked: false },
   ])
 
   const [localPriceRange, setLocalPriceRange] = useState([priceRange.min, priceRange.max])
@@ -203,85 +206,144 @@ export function TutorSidebar() {
     console.log("Show more clicked");
   };
 
-  return (
-    <div className="w-64 p-4">
-      {/* Course Filter */}
-      <FilterSection
-        title="Course"
-        data={courseFilters}
-        showClearAll
-        onItemChange={handleCourseFilterChange}
-        onClearAll={handleClearAllFilters}
-      />
-
-      {/* Show More Button */}
-      <div className="mb-6">
+  const SidebarContent = () => (
+    <div className="w-full pr-3">
+      <div className="">
         <Button
-          variant="link"
+          variant="outline"
           size="sm"
-          className="h-auto p-0 text-sm text-teal-500 hover:text-teal-600"
-          onClick={showMore}
+          className="justify-start border border-green-400 px-5 gap-2 bg-transparent w-full"
+          onClick={getActiveFilters}
         >
-          Show More
+          Filter
+          <SlidersHorizontal className="h-4 w-4" />
         </Button>
       </div>
 
-      {/* Price Range Filter */}
-      <FilterSection title="Price">
-        <div className="space-y-4">
-          <Slider
-            value={localPriceRange}
-            onValueChange={handlePriceRangeChange}
-            max={3000}
-            min={0}
-            step={50}
-            className="w-full"
-          />
-          <div className="flex items-center gap-2">
-            <Input
-              type="number"
-              value={localPriceRange[0]}
-              onChange={handleMinPriceChange}
-              className="w-20 h-8 text-sm"
-              min={0}
-              max={3000}
-            />
-            <span className="text-sm text-gray-500">-</span>
-            <Input
-              type="number"
-              value={localPriceRange[1]}
-              onChange={handleMaxPriceChange}
-              className="w-20 h-8 text-sm"
-              min={0}
-              max={3000}
-            />
-          </div>
+      <div className="p-4 space-y-6">
+        {/* Course Filter */}
+        <FilterSection
+          title="Course"
+          data={courseFilters}
+          showClearAll
+          onItemChange={handleCourseFilterChange}
+          onClearAll={handleClearAllFilters}
+        />
+
+        {/* Show More Button */}
+        <div className="mb-6">
+          <Button
+            variant="link"
+            size="sm"
+            className="h-auto p-0 text-sm text-teal-500 hover:text-teal-600"
+            onClick={showMore}
+          >
+            Show More
+          </Button>
         </div>
-      </FilterSection>
 
-      {/* Language Filter */}
-      <FilterSection
-        title="Language"
-        data={languageFilters}
-        onItemChange={handleLanguageFilterChange}
-      />
+        {/* Price Range Filter */}
+        <FilterSection title="Price">
+          <div className="space-y-4">
+            <Slider
+              value={localPriceRange}
+              onValueChange={handlePriceRangeChange}
+              max={3000}
+              min={0}
+              step={50}
+              className="w-full"
+            />
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                value={localPriceRange[0]}
+                onChange={handleMinPriceChange}
+                className="w-20 h-8 text-sm"
+                min={0}
+                max={3000}
+              />
+              <span className="text-sm text-gray-500">-</span>
+              <Input
+                type="number"
+                value={localPriceRange[1]}
+                onChange={handleMaxPriceChange}
+                className="w-20 h-8 text-sm"
+                min={0}
+                max={3000}
+              />
+            </div>
+          </div>
+        </FilterSection>
 
-      {/* Rating Filter */}
-      <FilterSection
-        title="Rating"
-        data={ratingFilters}
-        onItemChange={handleRatingFilterChange}
-      />
+        {/* Language Filter */}
+        <FilterSection
+          title="Language"
+          data={languageFilters}
+          onItemChange={handleLanguageFilterChange}
+        />
+
+        {/* Rating Filter */}
+        <FilterSection
+          title="Rating"
+          data={ratingFilters}
+          onItemChange={handleRatingFilterChange}
+        />
+      </div>
 
       {/* Debug Section */}
-      <div className="border-t pt-4 mt-6">
+      <div className="p-4 border-t">
         <details className="text-xs">
-          <summary className="cursor-pointer text-gray-600">Debug: Current Filter State</summary>
+          <summary className="cursor-pointer text-gray-600">
+            Debug: Current Filter State
+          </summary>
           <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto">
             {JSON.stringify(getAllFilters(), null, 2)}
           </pre>
         </details>
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block w-64">
+        <SidebarContent />
+      </div>
+
+      {/* Mobile Filter Button */}
+      <button
+        onClick={() => setIsMobileFilterOpen(true)}
+        className="md:hidden fixed bottom-6 left-6 z-40 bg-teal-500 hover:bg-teal-600 text-white p-3 rounded-full shadow-lg"
+      >
+        <SlidersHorizontal className="h-5 w-5" />
+      </button>
+
+      {/* Mobile Overlay */}
+      {isMobileFilterOpen && (
+        <div 
+          className="md:hidden fixed inset-0 z-50 bg-black bg-opacity-50" 
+          onClick={() => setIsMobileFilterOpen(false)} 
+        />
+      )}
+
+      {/* Mobile Sidebar */}
+      <div className={`md:hidden fixed left-0 top-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ${
+        isMobileFilterOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="flex items-center justify-between p-4 border-b">
+          <h2 className="font-semibold">Tutor Filters</h2>
+          <button
+            onClick={() => setIsMobileFilterOpen(false)}
+            className="p-1 hover:bg-gray-100 rounded"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="overflow-y-auto h-full pb-20">
+          <SidebarContent />
+        </div>
+      </div>
+    </>
   )
 }

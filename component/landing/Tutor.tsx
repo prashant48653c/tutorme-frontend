@@ -10,22 +10,22 @@ const Tutor = () => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
 
   return (
-    <div className="w-full mt-[30rem] flex flex-col items-center">
-      <div className="w-max    my-6  text-center">
+    <div className="w-full lg:mt-[25rem] md:mt-[15rem]   mt-[10rem] flex flex-col items-center">
+      <div className="w-max  my-6  text-center">
         <div
-          className={`text-[4rem] flex w-full items-center justify-center leading-13 font-[800]  ${HoveFont.className}`}
+          className={`text-[4rem]   flex w-full items-center justify-center leading-13 font-[800]  ${HoveFont.className}`}
         >
-          <p className="max-w-[20rem] text-right leading-16">
+          <p className="max-w-[20rem] hidden md:block text-right leading-16">
             {" "}
-            Find the <br />
+            Find the <br  />
             <span className="text-green-400 "> Tutors </span>
           </p>
-          <section className="relative w-[13rem]">
+          <section className="relative lg:w-[13rem] ">
 
          
           <div className="text-sm ">
             <Image
-              className="z-50 rotate-3"
+              className="z-50   rotate-3"
               src={"/static/landing/tutor.svg"}
               alt="ai-image"
               width={200}
@@ -51,7 +51,7 @@ const Tutor = () => {
             />
           </div>
  </section>
-          <p className="max-w-[20rem] text-left leading-16">
+          <p className="max-w-[20rem] hidden md:block text-left leading-16">
             {" "}
             <span className="text-green-400 "> Best </span>
             <br />
@@ -60,7 +60,7 @@ const Tutor = () => {
         </div>
 
         <div className="">
-          <p className="max-w-[50rem] mt-9">
+          <p className="md:max-w-[50rem] max-w-[30rem]  mt-9">
             TutorMe is a platform designed to connect students with the right
             tutors for last-minute syllabus coverage. Whether you need
             one-to-one sessions or group discussions, we help you find online

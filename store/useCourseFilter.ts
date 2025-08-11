@@ -3,7 +3,7 @@ import { create } from 'zustand'
 interface FilterState {
   // Filter values
   categories: string[]
-  targetSem: number[]
+  targetSem: string[]
   language: string[]
   courseDepth: string[]
   duration: string[]
@@ -11,7 +11,7 @@ interface FilterState {
   
   // Actions
   setCategories: (categories: string[]) => void
-  setTargetSem: (targetSem: number[]) => void
+  setTargetSem: (targetSem: string[]) => void
   setLanguage: (language: string[]) => void
   setCourseDepth: (courseDepth: string[]) => void
   setDuration: (duration: string[]) => void
@@ -21,7 +21,7 @@ interface FilterState {
   // Computed getter for all filters
   getAllFilters: () => {
     categories: string[]
-    targetSem: number[]
+    targetSem: string[]
     language: string[]
     courseDepth: string[]
     duration: string[]

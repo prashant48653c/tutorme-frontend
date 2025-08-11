@@ -14,9 +14,9 @@ import React from "react";
 
 const Course = () => {
   return (
-    <section className="flex   w-full">
+    <section className="flex  w-full">
  <div className="flex  w-[100%]  gap-16">
-      <div className="  w-[55%]">
+      <div className="  md:w-[55%] w-[90%]">
         <div className="w-full flex flex-col items-start mx-20 ">
           <h4 className="text-[3rem]  text-left gap-y-5 leading-14 font-[800] ">
             Our Popular <br />
@@ -35,7 +35,7 @@ const Course = () => {
           </div>
         </div>
 
-        <div className="flex w-full   items-end mt-16 flex-col gap-y-3">
+        <div className="flex w-full items-center  md:items-end mt-16 flex-col gap-y-3">
           {Array.from({ length: 2 }).map((item,i) => {
             return (
               <div key={i} className="w-[25rem] my-2 pb-6 rounded-2xl bg-[#FFEEE2] flex flex-col gap-y-2 p-0">
@@ -67,7 +67,7 @@ const Course = () => {
         </div>
       </div>
 
-      <div className="w-[35%]  ">
+      <div className="md:w-[35%] hidden md:block ">
         <div className="flex items-start pt-9 w-full mt-5 flex-col gap-y-3">
           {Array.from({ length: 2 }).map((item,i) => {
             return (
@@ -99,6 +99,7 @@ const Course = () => {
           })}
         </div>
       </div>
+
     </div>
     </section>
    

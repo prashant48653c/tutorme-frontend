@@ -15,8 +15,8 @@ const Instruction = () => {
     setActiveModal(null)
   }
   return (
-    <div className="flex gap-4 my-[5rem] items-center justify-evenly">
-      <div className="flex    items-center justify-end">
+    <div className="flex flex-col md:flex-row gap-4 my-[5rem]  items-center justify-evenly">
+      <div className="flex items-center justify-end">
         <Image
           className="w-[25rem] rounded-t-2xl"
           src={"/static/landing/instructor.svg"}
@@ -25,7 +25,7 @@ const Instruction = () => {
           height={420}
         />
       </div>
-      <div className="w-[40%]  ">
+      <div className="md:w-[40%] w-[80%] ">
         <h2 className={`text-5xl leading-13 font-[800]  ${HoveFont.className}`}>
           Want to become an
           <br />

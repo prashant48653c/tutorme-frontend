@@ -33,7 +33,7 @@ export default function Home() {
       }
     }, [user]);
   return (
-    <div className={` ${OnestFont.className} w-full h-full `}>
+    <div className={` ${OnestFont.className} w-full flex flex-col items-center h-fit `}>
       <Navbar />
       <Hero />
       <Tutor />

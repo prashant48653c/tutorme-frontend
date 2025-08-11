@@ -48,7 +48,7 @@ if (api.selectedScrollSnap() === count - 1) {
       <Carousel setApi={setApi} className="w-full">
         <CarouselContent>
           {Array.from({ length: 5 }).map((_, index) => (
-            <CarouselItem key={index} className="basis-1/2">
+            <CarouselItem key={index} className="basis-1/2 ">
               <Card>
                 <CardContent className="flex flex-col aspect-auto">
                   <div className="bg-green-500 w-fit rounded-4xl flex gap-3 items-center px-3 py-2">

@@ -174,7 +174,7 @@ export default function CourseManagement() {
         console.log(id);
 
         const status = getTabStatus(tabValue);
-        const res = await api.get(`/course/${id}`, {
+        const res = await api.get(`/course/mycourse/${id}`, {
           params: {
             limit: limit,
             page: pageNum,
@@ -415,14 +415,14 @@ export default function CourseManagement() {
           <TabsList className="grid bg-[#F5F7F9] w-full grid-cols-5 border-b rounded-none h-[3rem] p-0">
             <TabsTrigger
               value="all"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+              className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
             >
               All Course (
               {totalCount.reduce((acc, item) => acc + item.count, 0)})
             </TabsTrigger>
             <TabsTrigger
               value="under-review"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+              className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
             >
               UnderReview (
               {totalCount.find((item) => item?.status === "UNDERREVIEW")
@@ -431,7 +431,7 @@ export default function CourseManagement() {
             </TabsTrigger>
             <TabsTrigger
               value="published"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+               className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
             >
               Published (
               {totalCount.find((item) => item.status === "PUBLISHED")?.count ||
@@ -440,7 +440,7 @@ export default function CourseManagement() {
             </TabsTrigger>
             <TabsTrigger
               value="rejected"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+              className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
             >
               Rejected (
               {totalCount.find((item) => item.status === "REJECTED")?.count ||
@@ -449,7 +449,7 @@ export default function CourseManagement() {
             </TabsTrigger>
             <TabsTrigger
               value="draft"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+             className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
             >
               Draft (
               {totalCount.find((item) => item.status === "DRAFT")?.count || 0})

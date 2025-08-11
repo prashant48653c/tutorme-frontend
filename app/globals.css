@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-
+ 
+ 
 @custom-variant dark (&:is(.dark *));
 
 @font-face {
@@ -49,6 +50,9 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 }
+html{
+  overflow-x: hidden;
+}
 
 body {
   padding: 0;
@@ -56,6 +60,8 @@ body {
   overflow-x: hidden;
   height: 100vh;
   box-sizing: border-box;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  width: 100%;
 }
 
 :root {
@@ -157,6 +163,7 @@ body {
   text-decoration: none;
 }
 
+
 @keyframes marquee {
   0% {
     transform: translateX(0%);
@@ -168,4 +175,24 @@ body {
 
 .animate-marquee {
   animation: marquee 30s linear infinite;
+}
+
+
+
+@media (max-width:660px) {
+  html{
+    font-size: 90%;
+  }
+}
+
+@media (max-width:500px) {
+  html{
+    font-size: 70%;
+  }
+}
+
+@media (max-width:400px) {
+  html{
+    font-size: 60%;
+  }
 }

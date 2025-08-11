@@ -4,14 +4,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { useAuthStore } from '@/store/useAuthStore';
 import api from '@/hooks/axios';
-import { useRouter } from 'next/navigation';
+import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 
 
 
 const Sidebar = ({links}:{links:any}) => {
 const router=useRouter()
-
+const params=usePathname();
+console.log(params)
   const {user,logout}=useAuthStore()
   
   const handleLogout=async()=>{
@@ -26,7 +27,7 @@ const router=useRouter()
   }
   return (
     <aside className="w-full border h-screen relative bg-gray-100 text-black   ">
-      <div className="flex w-[13rem] z-20 bg-gray-100  flex-col items-center  no-scrollbar  overflow-y-auto  fixed top-0 h-full pt-8 space-y-4">
+      <div className="flex lg:w-[18%] w-[25%] z-20 bg-gray-100  flex-col items-center  no-scrollbar  overflow-y-auto  fixed top-0 h-full pt-8 space-y-4">
         <div>
           <h1 className="font-extrabold text-3xl text-black">
             TUTOR<span className="text-primeGreen">ME</span>
@@ -54,10 +55,10 @@ const router=useRouter()
 
         <ul className="w-full decoration-0 no-underline px-2">
           {links.map((link:{path:string;icon:string;name:string}, index:number) => (
-            <li key={index} className="mb-2 hover:bg-[#09C4AE] rounded-3xl p-3 flex items-center hover:text-white">
+            <li key={index} className={`mb-2 ${params == link.path ? "bg-green-400 text-white ": "bg-transparent"} hover:bg-[#09C4AE] rounded-3xl p-3 flex items-center  hover:text-white`}>
               <Link
                 href={link.path}
-                className="flex  no-underline items-center hover:underline"
+                className="flex  no-underline items-center"
               >
                 <Image
                   src={`/static/icons/${link.icon}.svg`}

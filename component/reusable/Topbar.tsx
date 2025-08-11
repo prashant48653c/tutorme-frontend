@@ -9,22 +9,21 @@ import React from "react";
 const Topbar = () => {
   const user = useAuthStore((state) => state.user);
   return (
-    <div className="relative bg-gray-100 mb-16 ">
-      <nav className="w-[80%]  p-4 fixed top-0 z-50 bg-gray-100 items-center flex justify-between">
-        <div className="flex w-full flex-col items-start gap-1">
-          <h5 className="text-lg font-medium">
+  <>
+        <div className="flex w-full flex-col justify-center lg:items-start gap-1">
+          <h5 className="text-lg hidden lg:block font-medium">
             Hi! {user?.name?.split(" ")[0]}
           </h5>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm hidden lg:block  text-gray-500">
             Let’s do something new today!
           </p>
         </div>
 
-        <div className="flex items-center">
+        <div className="flex items-center  md:pr-0 pr-[4rem]">
           <div className="flex items-center border rounded-lg bg-[#F5F7F9] p-2 gap-2 justify-center">
             <Search size={18} />
             <input
-              className="border-0 min-w-[20rem] outline-0 hover:outline-0 bg-transparent"
+              className="border-0 md:min-w-[20rem] min-w-[10rem] outline-0 hover:outline-0 bg-transparent"
               placeholder="Search.."
             />
           </div>
@@ -45,8 +44,7 @@ const Topbar = () => {
             </div>
           </div>
         </div>
-      </nav>
-    </div>
+     </>
   );
 };
 

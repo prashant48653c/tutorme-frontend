@@ -8,7 +8,7 @@ import { Course } from "@/types/course";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { ArrowRight, Search, Star } from "lucide-react";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTutorFilter } from "@/store/useTutorFilter"; // Adjust path as needed
 import { useRouter } from "next/navigation";
 import Navbar from "@/component/reusable/Navbar";
@@ -24,6 +24,8 @@ const TutorPage = () => {
   const { searchQuery, setSearchQuery, getAllFilters } = useTutorFilter();
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const router = useRouter();
+  const observerRef = useRef<HTMLDivElement | null>(null);
+  const [mobileSidebar, setMobileSidebar] = useState(false);
 
   // Debounce search query
   useEffect(() => {
@@ -38,7 +40,7 @@ const TutorPage = () => {
     const filters = getAllFilters();
     console.log("Fetching tutors with filters:", filters);
     console.log("Page:", pageParam);
-    
+
     // Create request body with filters and search
     const requestBody = {
       page: 2,
@@ -49,13 +51,13 @@ const TutorPage = () => {
 
       language: filters.language,
       rating: filters.rating,
-      title: debouncedSearchQuery || ""
+      title: debouncedSearchQuery || "",
     };
 
     const res = await api.get(`/tutor`, {
-      params: requestBody
+      params: requestBody,
     });
- 
+
     return res.data.data;
   };
 
@@ -66,7 +68,7 @@ const TutorPage = () => {
     isFetchingNextPage,
     refetch,
     isLoading,
-    error
+    error,
   } = useInfiniteQuery<PaginatedTutors, Error>({
     queryKey: ["tutorsCount", debouncedSearchQuery, getAllFilters()],
     queryFn: fetchTutors,
@@ -75,24 +77,26 @@ const TutorPage = () => {
     },
   });
 
-  // Refetch when filters change
   useEffect(() => {
     refetch();
   }, [debouncedSearchQuery, refetch]);
 
+  // Intersection Observer for infinite scroll
   useEffect(() => {
-    const handleScroll = () => {
-      const bottom =
-        window.innerHeight + window.scrollY >=
-        document.documentElement.offsetHeight - 10;
+    if (!observerRef.current || !hasNextPage || isFetchingNextPage) return;
 
-      if (bottom && hasNextPage && !isFetchingNextPage) {
-        fetchNextPage();
-      }
-    };
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          console.log("Sentinel visible, fetching next page...");
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 } // Trigger when 10% of the sentinel is visible
+    );
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    observer.observe(observerRef.current);
+    return () => observer.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,7 +119,10 @@ const TutorPage = () => {
             <p className="text-gray-600 mb-4">
               {error.message || "Something went wrong"}
             </p>
-            <Button onClick={() => refetch()} className="bg-teal-500 hover:bg-teal-600">
+            <Button
+              onClick={() => refetch()}
+              className="bg-teal-500 hover:bg-teal-600"
+            >
               Try Again
             </Button>
           </div>
@@ -123,57 +130,56 @@ const TutorPage = () => {
       </main>
     );
   }
-  if(isLoading){
-    return "Loading"
-  }
-  console.log(data)
+  
+  console.log(data);
 
   return (
     <main className="w-full gap-4 px-8">
       <Navbar />
 
-      <section className="flex items-center gap-16 mb-10">
+      <section className="md:flex-row flex-col flex  items-center gap-16 mb-10">
         <h2 className="font-bold text-2xl min-w-fit">
-          TUTORME <span className="text-green-500">TUTORS</span>
+          TUTORME <span className="text-primeGreen">TUTORS</span>
         </h2>
         <div className="flex w-full items-center border rounded-lg bg-[#F5F7F9] p-2 gap-2 justify-start">
           <Search size={18} />
           <input
             className="border-0 min-w-[20rem] outline-0 hover:outline-0 bg-transparent"
-            placeholder="Search tutors..."
+            placeholder="Search.."
             value={searchQuery}
             onChange={handleSearchChange}
           />
         </div>
+        <Button
+          className="md:hidden block"
+          onClick={() => setMobileSidebar(!mobileSidebar)}
+        >
+          Filter
+        </Button>
       </section>
-      
+
       <div className="flex min-h-[90vh]">
-        <div className="w-[22%]">
+        <div className={`${mobileSidebar ? "block" : "hidden"} md:block `}>
           <TutorSidebar />
         </div>
-        <SidebarInset className="w-[75%]">
+        <SidebarInset className="w-full md:w-full">
           <section className="flex flex-col gap-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900">
-                Featured Tutors
-              </h2>
-              {data && (
-                <p className="text-sm text-gray-600">
-                  {/* {data.pages.reduce((total, page) => total + page.data.length, 0)} tutors found */}
-                </p>
-              )}
-            </div>
-
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Featured Courses
+            </h2>
             {isLoading ? (
-              <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
+              <div className="flex justify-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 justify-items-center md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {data?.pages.map((page, pageIndex) =>
                     page?.map((tutor: any, tutorIndex: number) => (
-                      <div onClick={()=>handleTutorSelect(tutor.id)} key={`${pageIndex}-${tutorIndex}`} >
+                      <div
+                        onClick={() => handleTutorSelect(tutor.id)}
+                        key={`${pageIndex}-${tutorIndex}`}
+                      >
                         <TutorCard tutor={tutor} />
                       </div>
                     ))
@@ -188,9 +194,9 @@ const TutorPage = () => {
                     <p className="text-gray-500 mb-4">
                       Try adjusting your search or filters to find tutors.
                     </p>
-                    <Button 
+                    <Button
                       onClick={() => {
-                        setSearchQuery('');
+                        setSearchQuery("");
                         // You might want to clear filters here too
                       }}
                       variant="outline"
@@ -200,12 +206,14 @@ const TutorPage = () => {
                   </div>
                 )}
 
-                {isFetchingNextPage && (
-                  <div className="flex justify-center py-4">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
-                  </div>
-                )}
+               
               </>
+            )}
+             <div ref={observerRef} className="h-10" />
+            {isFetchingNextPage && (
+              <div className="flex justify-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
+              </div>
             )}
           </section>
         </SidebarInset>

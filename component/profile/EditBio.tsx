@@ -22,8 +22,9 @@ export default function EditBio({setStatus}:{setStatus:(b:boolean)=>void}) {
       const res = await api.patch(`/auth/profile/${id}`, { bio: newBio });
       console.log(res.data.user);
       setUser(res.data.user);
-      toast.success("bio updated");
+      toast.success("Bio updated");
     } catch (error) {
+      console.log(error)
       toast.error("Something went wrong");
     }finally{
       setStatus(false)

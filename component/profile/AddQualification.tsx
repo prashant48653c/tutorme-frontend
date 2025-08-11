@@ -23,6 +23,7 @@ import { Upload } from "lucide-react";
 import api from "@/hooks/axios";
 import { useAuthStore } from "@/store/useAuthStore";
 import useEducationStore from "@/store/useEducationStore";
+import { toast } from "sonner";
 
 interface AddQualificationModalProps {
   isOpen: boolean;
@@ -36,9 +37,19 @@ interface QualificationData {
   certificate: File | null;
 }
 
-export default function AddQualificationModal({setStatus}:{setStatus:(status:boolean)=>void}) {
-  const [qualification, setQualification] = useState("");
-  const [graduationLocation, setGraduationLocation] = useState("");
+export default function AddQualificationModal({
+  setStatus,
+  initialData
+}: {
+  setStatus: (status: boolean) => void;
+  initialData?:{qualification:string;timePeriod:string;type:string;id:number;institutionName:string,certificationUrl:string} & any
+}) {
+  const [qualification, setQualification] = useState(initialData?.qualification ||"");
+  const [qualificationPeriod, setQualificationPeriod] = useState(initialData?.type||"");
+  const [startRange, setStartRange] = useState(initialData?.timePeriod?.split("-")[0]||"");
+  const [endRange, setendRange] = useState(initialData?.timePeriod?.split("-")[1]||"");
+
+  const [graduationLocation, setGraduationLocation] = useState(initialData?.institutionName||"");
   const [certificate, setCertificate] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
 
@@ -90,55 +101,52 @@ export default function AddQualificationModal({setStatus}:{setStatus:(status:boo
 
     return true;
   };
-const user=useAuthStore((state=>state.user));
-console.log(user)
+  const user = useAuthStore((state) => state.user);
+  console.log(user);
 
-const setEducation=useEducationStore((state=>state.setEducation))
+  const setEducation = useEducationStore((state) => state.setEducation);
 
+  const handleSave = async () => {
+    console.log("first");
+    
+    const formData = new FormData();
+    formData.append("qualification", qualification);
+    formData.append("institutionName", graduationLocation);
+   
+    formData.append("certificationUrl",  certificate as any);
+    formData.append("type", qualificationPeriod);
+    formData.append("timePeriod", `${startRange+"-"+endRange}`);
+    if(initialData.id)
+    formData.append("id",initialData?.id);
 
- const handleSave = async () => {
-  console.log("first")
-  if (!qualification || !graduationLocation || !certificate) {
-    alert("Please fill in all required fields");
-    return;
-  }
+    try {
+      const id = user?.id;
+      const res = await api.patch(`/auth/tutor/edu/${id}`, formData);
+      console.log("Successfully updated:", res.data);
 
-  const formData = new FormData();
-  formData.append("qualification", qualification);
-  formData.append("institutionName", graduationLocation);
-  formData.append("certificationUrl", certificate);
-  formData.append("type","FULL_TIME");
-  formData.append("timePeriod","2022-2025");
-
-  
-
-  try {
-    const id=user?.id;
-    const res = await api.patch(`/auth/tutor/edu/${id}`, formData);
-    console.log("Successfully updated:", res.data);
-
-    // Optional: Reset form and close modal
-    setQualification("");
-    setGraduationLocation("");
-    setCertificate(null);
-  } catch (error) {
-    console.error("Error uploading education:", error);
-    alert("Failed to upload qualification.");
-  }
-};
-
+      // Optional: Reset form and close modal
+      setQualification("");
+      setGraduationLocation("");
+      setCertificate(null);
+      toast.success("Qualification changed succesfully!")
+      setStatus(false)
+    } catch (error:any) {
+      console.error("Error uploading education:", error);
+      toast.error(error.response.data.message || "Failed to upload qualification.");
+    }
+  };
 
   const handleCancel = () => {
     // Reset form
     setQualification("");
     setGraduationLocation("");
     setCertificate(null);
-    setStatus(false)
+    setStatus(false);
   };
 
   return (
     <div>
-      <div className="max-w min-w-[40rem] bg-white rounded-2xl w-full p-6">
+      <div className="    bg-white rounded-2xl w-full p-6">
         <div>
           <h3 className="text-2xl text-black font-semibold mb-2">
             Add Qualification
@@ -176,6 +184,62 @@ const setEducation=useEducationStore((state=>state.setEducation))
                 onChange={(e) => setGraduationLocation(e.target.value)}
                 className="bg-gray-50 border-gray-200"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-gray-700">
+                Qualification
+              </Label>
+              <Select
+                value={qualificationPeriod}
+                onValueChange={setQualificationPeriod}
+              >
+                <SelectTrigger className="w-full bg-gray-50 border-gray-200">
+                  <SelectValue placeholder="Select duration type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="FULL_TIME">Full Time</SelectItem>
+                  <SelectItem value="PART_TIME">Part Time</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-gray-700">
+                Select time range
+              </Label>
+              <div className="grid grid-cols-2">
+                <Select value={startRange} onValueChange={setStartRange}>
+                  <SelectTrigger className="w-full bg-gray-50 border-gray-200">
+                    <SelectValue placeholder="Start Year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 2030 - 2000 + 1 }, (_, i) => {
+                      const year = 2030 - i;
+                      return (
+                        <SelectItem key={year} value={year.toString()}>
+                          {year}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+                <Select value={endRange} onValueChange={setendRange}>
+                  <SelectTrigger className="w-full bg-gray-50 border-gray-200">
+                    <SelectValue placeholder="End Year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                     {Array.from({ length: 2030 - 2000 + 1 }, (_, i) => {
+                      const year = 2030 - i;
+                      return (
+                        <SelectItem key={year} value={year.toString()}>
+                          {year}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 

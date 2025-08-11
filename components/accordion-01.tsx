@@ -42,14 +42,14 @@ export default function BioAccordion() {
       collapsible
       value={openItem || ""}
       onValueChange={(value) => setOpenItem(value)}
-      className="max-w-lg w-full "
+      className=" w-full  border "
     >
       {items.map(({ title, content }, index) => {
         const isOpen = openItem === `item-${index}`;
 
         return (
-          <AccordionItem key={index} value={`item-${index}`}>
-            <AccordionTrigger className="text-green-500 text-xl [&>svg]:hidden">
+          <AccordionItem key={index} className="" value={`item-${index}`}>
+            <AccordionTrigger className="text-green-500  text-xl [&>svg]:hidden">
               <div className="flex w-full justify-between items-center gap-2">
                 <span>{title}</span>
                 <div className="flex items-center gap-5">
@@ -81,8 +81,8 @@ export default function BioAccordion() {
 
       {status && (
         <Dialog open={status} onOpenChange={setStatus}>
-          <DialogOverlay className="bg-black/40 backdrop-blur-sm fixed inset-0 z-40" />
-          <DialogContent className="bg-white rounded-xl p-6 shadow-xl z-50 max-w-2xl w-[40rem]">
+          <DialogOverlay className=" " />
+          <DialogContent className="bg-white  rounded-xl p-6 shadow-xl z-50 max-w-2xl w-[40rem]">
             <EditBio setStatus={setStatus} />
           </DialogContent>
         </Dialog>
