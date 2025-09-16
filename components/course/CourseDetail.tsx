@@ -16,12 +16,24 @@ import {
   ExternalLink,
   ExternalLinkIcon,
 } from "lucide-react";
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
- 
-import { useState } from "react";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
+
+import { useEffect, useState } from "react";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/hooks/axios";
+import { checkKhaltiPayment } from "@/hooks/khalti";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function CourseInterface() {
   const params = useParams();
@@ -58,8 +70,30 @@ export default function CourseInterface() {
   const handleEnroll = (id: number) => {
     router.push(`/course/${id}/payment`);
   };
+  const searchParams = useSearchParams();
+  const user = useAuthStore((state) => state.user);
 
-  const SubHeadingCard = ({ subHeading, index }: { subHeading: any, index: number }) => (
+  const pidx = searchParams.get("pidx");
+  const [status, setStatus] = useState("Verifying...");
+
+  useEffect(() => {
+    console.log(user?.studentProfile.id,"is user profile")
+    if (pidx && user?.studentProfile?.id) {
+      checkKhaltiPayment({
+        studentProfileId: user?.studentProfile?.id,
+        courseId: id,
+        pidx,
+        
+      });
+    }
+  }, [pidx,user]);
+  const SubHeadingCard = ({
+    subHeading,
+    index,
+  }: {
+    subHeading: any;
+    index: number;
+  }) => (
     <Card className="ml-16 mt-2 border border-gray-200 hover:shadow-sm transition-shadow">
       <CardContent className="p-2">
         <div className="flex items-center gap-3">
@@ -99,14 +133,14 @@ export default function CourseInterface() {
     </Card>
   );
 
-  const ChapterCard = ({ 
-    chapter, 
-    isSubChapter = false, 
-    parentChapterId = null 
-  }: { 
-    chapter: any, 
-    isSubChapter: boolean, 
-    parentChapterId?: number | null 
+  const ChapterCard = ({
+    chapter,
+    isSubChapter = false,
+    parentChapterId = null,
+  }: {
+    chapter: any;
+    isSubChapter: boolean;
+    parentChapterId?: number | null;
   }) => (
     <Card
       className={`border border-gray-200 hover:shadow-sm transition-shadow ${
@@ -167,9 +201,11 @@ export default function CourseInterface() {
                 />
               </Button>
             )}
-            
+
             {/* Toggle buttons for chapters and subchapters */}
-            {!isSubChapter && chapter.subChapters && chapter.subChapters.length > 0 ? (
+            {!isSubChapter &&
+            chapter.subChapters &&
+            chapter.subChapters.length > 0 ? (
               <button
                 onClick={() => toggleChapter(chapter.id)}
                 className="flex items-center gap-1 p-1 hover:bg-gray-100 rounded transition-colors"
@@ -180,7 +216,9 @@ export default function CourseInterface() {
                   <ChevronRight className="w-4 h-4 text-teal-500" />
                 )}
               </button>
-            ) : isSubChapter && chapter.subHeadings && chapter.subHeadings.length > 0 ? (
+            ) : isSubChapter &&
+              chapter.subHeadings &&
+              chapter.subHeadings.length > 0 ? (
               <button
                 onClick={() => toggleSubChapter(chapter.id)}
                 className="flex items-center gap-1 p-1 hover:bg-gray-100 rounded transition-colors"
@@ -206,9 +244,7 @@ export default function CourseInterface() {
     <section className="mx-auto ">
       {/* Course Header */}
       <section className="flex items-center gap-16 mt-3 mb-10">
-        <h2 className="font-bold text-2xl min-w-fit ">
-          {data?.title}
-        </h2>
+        <h2 className="font-bold text-2xl min-w-fit ">{data?.title}</h2>
       </section>
 
       <div className="flex flex-col lg:flex-row gap-6 mb-8">
@@ -267,10 +303,13 @@ export default function CourseInterface() {
           </div>
 
           {/* Description */}
-          <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-            {data?.description || "Apply your new skills to real-world projects using the latest industry tools & techniques. Get job-ready for high-growth fields."}
-            {" "}
-            <span className="text-green-400">Read more</span>
+          <p
+            className="text-gray-600 text-sm mb-4 leading-relaxed 
+             max-h-[10rem] scrollbar-none overflow-y-auto pr-2"
+          >
+            {data?.description ||
+              "Apply your lorem  new skills to real-world projects using the latest industry tools & techniques. Get job-ready for high-growth fields."}{" "}
+            {/* <span className="text-green-400">Read more</span> */}
           </p>
 
           {/* Tags */}
@@ -293,7 +332,7 @@ export default function CourseInterface() {
               onClick={() => handleEnroll(data?.id)}
               className="bg-teal-500 w-full hover:bg-teal-600 text-white px-8"
             >
-              Enroll Course
+              Go to course
             </Button>
 
             <div className="flex my-3 justify-between gap-4">
@@ -321,7 +360,10 @@ export default function CourseInterface() {
       </div>
 
       {/* Tabs Section */}
-      <Tabs defaultValue="chapters" className="w-full">
+      <Tabs
+        defaultValue="chapters"
+        className="w-full border border-gray-200 p-2 rounded-2xl"
+      >
         <TabsList className="grid w-full grid-cols-5 bg-gray-50">
           <TabsTrigger
             value="chapters"
@@ -371,19 +413,23 @@ export default function CourseInterface() {
                             isSubChapter={true}
                             parentChapterId={chapter.id}
                           />
-                          
+
                           {/* SubHeadings */}
                           {openSubChapters[subChapter.id] &&
                             subChapter.subHeadings &&
                             subChapter.subHeadings.length > 0 && (
                               <div className="space-y-1">
-                                {subChapter.subHeadings.map((subHeading: any, index: number) => (
-                                  <SubHeadingCard
-                                    key={`subheading-${subHeading.id || index}`}
-                                    subHeading={subHeading}
-                                    index={index}
-                                  />
-                                ))}
+                                {subChapter.subHeadings.map(
+                                  (subHeading: any, index: number) => (
+                                    <SubHeadingCard
+                                      key={`subheading-${
+                                        subHeading.id || index
+                                      }`}
+                                      subHeading={subHeading}
+                                      index={index}
+                                    />
+                                  )
+                                )}
                               </div>
                             )}
                         </div>
@@ -397,49 +443,49 @@ export default function CourseInterface() {
 
         <TabsContent value="resources" className="mt-6">
           <div className="text-center py-1">
-           
-
             {data?.resource?.length > 0 ? (
               <Accordion type="single" collapsible className="w-full">
-      {data.resource.map((item: any, i: number) => (
-        <AccordionItem key={i} value={`item-${i}`}>
-          <AccordionTrigger className="font-medium hover:no-underline">
-            <div className="flex flex-col ">
-        <p className="text-lg font-medium" >Resource for Chapter {i + 1}</p>
-             <p className="text-primeGreen  text-sm">1 Resource</p>
-            </div>
-    
-          </AccordionTrigger>
-         <AccordionContent>
-            <div className="flex flex-col gap-3 p-3 border rounded-lg">
-             
-              <div className="flex gap-3 items-center justify-between">
-                <div className="flex gap-3 items-center">
-                  <div className="w-[50px] h-[50px] rounded-full overflow-hidden flex-shrink-0">
-                    <Image
-                      src="/icons/pdf.svg"
-                      width={50}
-                      height={50}
-                      alt="resource"
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="flex flex-col">
-                        <p className="text-left text-primeGreen font-semibold text-xs ">1 Resource</p>
-                  <p className="text-left text-md">{item.title}</p>
-              
-                  <p className="text-left font-semibold text-xs">2 Pages</p>
+                {data.resource.map((item: any, i: number) => (
+                  <AccordionItem key={i} value={`item-${i}`}>
+                    <AccordionTrigger className="font-medium hover:no-underline">
+                      <div className="flex flex-col ">
+                        <p className="text-lg font-medium">
+                          Resource for Chapter {i + 1}
+                        </p>
+                        <p className="text-primeGreen  text-sm">1 Resource</p>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="flex flex-col gap-3 p-3 border rounded-lg">
+                        <div className="flex gap-3 items-center justify-between">
+                          <div className="flex gap-3 items-center">
+                            <div className="w-[50px] h-[50px] rounded-full overflow-hidden flex-shrink-0">
+                              <Image
+                                src="/icons/pdf.svg"
+                                width={50}
+                                height={50}
+                                alt="resource"
+                                className="object-cover"
+                              />
+                            </div>
+                            <div className="flex flex-col">
+                              <p className="text-left text-primeGreen font-semibold text-xs ">
+                                1 Resource
+                              </p>
+                              <p className="text-left text-md">{item.title}</p>
 
-                  </div>
-
-                </div>
-                <ExternalLinkIcon className="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer" />
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      ))}
-    </Accordion>
+                              <p className="text-left font-semibold text-xs">
+                                2 Pages
+                              </p>
+                            </div>
+                          </div>
+                          <ExternalLinkIcon className="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer" />
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
             ) : (
               <p className="text-gray-500">Course resources not found.</p>
             )}
@@ -447,33 +493,68 @@ export default function CourseInterface() {
         </TabsContent>
 
         <TabsContent value="assignments" className="mt-6">
-          <div className="text-center py-12">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Assignments
-            </h3>
+          <div className="text-center py-1">
             {data?.assignment?.length > 0 ? (
-              <div className="space-y-3">
+              <Accordion type="single" collapsible className="w-full">
                 {data.assignment.map((item: any, i: number) => (
-                  <div key={i} className="p-3 border rounded-lg text-left">
-                    <h4 className="font-medium">{item.title}</h4>
-                    <p className="text-gray-600 text-sm">{item.description}</p>
-                  </div>
+                  <AccordionItem key={i} value={`item-${i}`}>
+                    <AccordionTrigger className="font-medium hover:no-underline">
+                      <div className="flex flex-col ">
+                        <p className="text-lg font-medium">
+                          Assignments for Chapter {i + 1}
+                        </p>
+                        <p className="text-primeGreen  text-sm">1 Resource</p>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="flex flex-col gap-3 p-3 border rounded-lg">
+                        <div className="flex gap-3 items-center justify-between">
+                          <div className="flex gap-3 items-center">
+                            <div className="w-[50px] h-[50px] rounded-full overflow-hidden flex-shrink-0">
+                              <Image
+                                src="/icons/pdf.svg"
+                                width={50}
+                                height={50}
+                                alt="resource"
+                                className="object-cover"
+                              />
+                            </div>
+                            <div className="flex flex-col">
+                              <p className="text-left text-primeGreen font-semibold text-xs ">
+                                1 Resource
+                              </p>
+                              <p className="text-left text-md">{item.title}</p>
+
+                              <p className="text-left font-semibold text-xs">
+                                2 Pages
+                              </p>
+                            </div>
+                          </div>
+                          <ExternalLinkIcon className="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer" />
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
                 ))}
-              </div>
+              </Accordion>
             ) : (
-              <p className="text-gray-500">Course assignments not found.</p>
+              <p className="text-gray-500">Course resources not found.</p>
             )}
           </div>
         </TabsContent>
 
         <TabsContent value="questions" className="mt-6">
-          <div className="text-center py-12">
+          <div className="text-left py-12">
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               Past Questions
             </h3>
-            <p className="text-gray-500">
-              {data?.qna || "Past questions will be displayed here."}
-            </p>
+            <div
+              className="text-gray-500 max-h-[30rem] overflow-y-auto hide-scrollbar p-2 prose prose-sm"
+              dangerouslySetInnerHTML={{
+                __html:
+                  data?.qna || "<p>Past questions will be displayed here.</p>",
+              }}
+            />
           </div>
         </TabsContent>
 

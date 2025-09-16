@@ -28,6 +28,12 @@ export interface Course {
   assignment?: Assignment[];
   courseReview?: CourseReview[];
 }
+export interface Enrollment{
+  id?:number;
+  courseId?:number;
+  studentProfileId?:number;
+  course: Course;
+}
 
 export interface Chapter {
   id?: number;

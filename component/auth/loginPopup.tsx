@@ -48,6 +48,8 @@ export default function LoginModal({
         router.push("/tutor/profile");
       } else if (res.data.user.role == "ADMIN") {
         router.push("/admin/dashboard");
+      }else{
+        router.push("/student/profile");
       }
       reset();
       onClose();

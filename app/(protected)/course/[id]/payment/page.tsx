@@ -7,23 +7,42 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/hooks/axios";
+import { initiateKhaltiPayment } from "@/hooks/khalti";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function CourseCheckout() {
   const params = useParams();
-  const id=params.id;
+  const id = params.id;
 
-  const {data,isLoading,error}=useQuery({
-    queryKey:['course'],
-    queryFn:async()=>{
-        const res=await api.get(`/course/${id}`);
-        console.log(res)
-        return res.data.data
-    }
-})
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["course"],
+    queryFn: async () => {
+      const res = await api.get(`/course/${id}`);
+      console.log(res);
+      return res.data.data;
+    },
+  });
   const [promoCode, setPromoCode] = useState("");
-if(isLoading){
-  return "Loading...."
-}
+  const user = useAuthStore((state) => state.user);
+
+  const handlePayment = async () => {
+    if (!id) {
+      return;
+    }
+    // const studentProfileId=user?.studentProfile.id;
+    await initiateKhaltiPayment(
+      +id,
+
+      data.courseName,
+      2,
+      123.23
+    );
+  };
+
+  if (isLoading) {
+    return "Loading....";
+  }
+
   return (
     <main className="w-full h-full px-8 pb-4">
       <section className="flex items-center gap-16 mt-3 mb-10">
@@ -56,7 +75,7 @@ if(isLoading){
                 </div>
                 <div className="flex-1">
                   <h2 className="text-lg font-semibold text-gray-900 mb-1">
-                   {data.title}
+                    {data.title}
                   </h2>
                   <p className="text-sm text-teal-500 mb-2">
                     By {data.tutor.user.name}
@@ -182,7 +201,10 @@ if(isLoading){
               </div>
 
               {/* Checkout Button */}
-              <Button className="w-full bg-teal-500 hover:bg-teal-600 text-white font-medium py-3 rounded-lg text-lg">
+              <Button
+                onClick={handlePayment}
+                className="w-full bg-teal-500 hover:bg-teal-600 text-white font-medium py-3 rounded-lg text-lg"
+              >
                 Check Out
               </Button>
             </CardContent>

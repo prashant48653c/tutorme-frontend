@@ -19,12 +19,14 @@ import ViewTutor from "../admin/ViewTutor";
 import api from "@/hooks/axios";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-import { Chapter, Course } from "@/types/course";
+import { Chapter, Course, Enrollment } from "@/types/course";
 import { useCourseStore } from "@/store/useCourseStore";
 import { useGlobalCourseStore } from "@/store/useGlobalCourseStore";
 import Image from "next/image";
+import { checkKhaltiPayment } from "@/hooks/khalti";
+import { stat } from "fs";
 
 function formatDate(dateString: string) {
   const date = new Date(dateString);
@@ -38,21 +40,13 @@ function formatDate(dateString: string) {
 
 const getStatusBadge = (status: string) => {
   const statusConfig = {
-    PUBLISHED: {
-      label: "Published",
+    ACTIVE: {
+      label: "Active",
       className: "bg-green-100 text-green-800 hover:bg-green-100",
     },
-    REJECTED: {
-      label: "Rejected",
-      className: "bg-purple-100 text-purple-800 hover:bg-purple-100",
-    },
-    DRAFT: {
-      label: "Draft",
-      className: "bg-red-100 text-red-800 hover:bg-red-100",
-    },
-    UNDERREVIEW: {
-      label: "Under Review",
-      className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
+    EXPIRED: {
+      label: "Expired",
+      className: "bg-red-100 text-purple-800 hover:bg-purple-100",
     },
   };
 
@@ -68,16 +62,11 @@ const getTabStatus = (tab: string) => {
   switch (tab) {
     case "all":
       return "";
-    case "published":
-      return "PUBLISHED";
-    case "approved":
-      return "APPROVED";
-    case "under-review":
-      return "UNDERREVIEW";
-    case "rejected":
-      return "REJECTED";
-    case "draft":
-      return "DRAFT";
+    case "active":
+      return "ACTIVE";
+    case "expired":
+      return "EXPIRED";
+
     default:
       return "";
   }
@@ -85,19 +74,18 @@ const getTabStatus = (tab: string) => {
 
 export default function CourseManagement() {
   const user = useAuthStore((state) => state.user);
+  console.log(user)
 
   const [activeTab, setActiveTab] = useState("all");
   const [currentTutor, setCurrentTutor] = useState<any>({});
   const [isViewOpen, setIsViewOpen] = useState(false);
-  const [tutors, setTutors] = useState<Course[]>([]);
+  const [tutors, setTutors] = useState<Enrollment[]>([]);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [counts, setCounts] = useState({
     all: 0,
-    published: 0,
-    rejected: 0,
-    underReview: 0,
-    draft: 0,
+    active: 0,
+    expired: 0,
   });
   const [pagination, setPagination] = useState({
     page: 1,
@@ -112,55 +100,9 @@ export default function CourseManagement() {
   );
 
   const [totalCount, setTotalCount] = useState([
-    { status: "UNDERREVIEW", count: 0 },
+    { status: "ACTIVE", count: 0 },
   ]);
-  const setChapters = useCourseStore((state) => state.setChapters);
 
-  const handleCourseSelection = (course: Course) => {
-    setCurrentTutor(course);
-
-    let {
-      id,
-      title,
-      tutorProfileId,
-      courseDepth,
-      courseStatus,
-      description,
-      duration,
-      price,
-      targetCourse,
-      targetSem,
-      targetUniversity,
-      thumbnail,
-    } = course;
-
-    if (!thumbnail) thumbnail = "";
-    useGlobalCourseStore.getState().setCourse(course);
-
-    useCourseStore.setState({
-      courseDetails: {
-        id,
-        title,
-        tutorProfileId,
-        courseDepth,
-        courseStatus,
-        description,
-        duration: duration ?? "0",
-        durationUnit: "Weeks",
-        price,
-        targetCourse,
-        targetSem,
-        targetUniversity,
-        thumbnail,
-      },
-
-      isDraftSaved: true, // optional
-    });
-    if (course.chapters) console.log(course);
-    setChapters(course.chapters as any[]); // if it's an array
-
-    router.push("mycourse/draft/edit");
-  };
   const fetchTutors = useCallback(
     async (
       tabValue: string,
@@ -171,13 +113,14 @@ export default function CourseManagement() {
     ) => {
       setLoading(true);
       try {
-        const id = user?.tutorProfile?.id;
+        const id = user?.studentProfile?.id;
+         
         console.log(id);
 
         const status = getTabStatus(tabValue);
-        const res = await api.get(`/course/mycourse/4`, {
+        const res = await api.get(`/course/enrolled/${id}`, {
           params: {
-            limit: limit,
+           
             page: pageNum,
             name: search || undefined,
             status: status || undefined,
@@ -204,20 +147,14 @@ export default function CourseManagement() {
           const statusSummary = res.data.statusSummary;
           const newCounts = {
             all: res.data.pagination.total || 0,
-
-            published:
-              statusSummary.find((s: any) => s.courseStatus === "PUBLISHED")
+            active:
+              statusSummary.find((s: any) => s.courseStatus === "ACTIVE")
                 ?.count || 0,
-            underReview:
-              statusSummary.find((s: any) => s.courseStatus === "UNDERREVIEW")
-                ?.count || 0,
-            draft:
-              statusSummary.find((s: any) => s.courseStatus === "DRAFT")
-                ?.count || 0,
-            rejected:
-              statusSummary.find((s: any) => s.courseStatus === "REJECTED")
+            expired:
+              statusSummary.find((s: any) => s.courseStatus === "EXPIRED")
                 ?.count || 0,
           };
+
           setCounts(newCounts);
         }
 
@@ -232,58 +169,6 @@ export default function CourseManagement() {
     []
   );
 
-  const updateTutorStatus = async (id: number, status: string) => {
-    try {
-      const res = await api.patch(`/course/status/${id}`, {
-        status: status,
-      });
-      console.log(res);
-      fetchTutors(
-        activeTab,
-        1,
-        pagination.limit,
-        searchQuery,
-        pagination.sortBy
-      );
-
-      toast.success("Status was updated!");
-    } catch (error) {
-      console.log(error);
-      toast.success("Failed to update status!");
-    }
-  };
-  //   const fetchCounts = useCallback(async () => {
-  //     try {
-  //       // Fetch counts from a single API call
-  //         const id=user?.tutorProfile?.id;
-
-  //       const res = await api.get(`/course/${id}`, {
-  //         params: { limit: 1, page: 1, status: "" },
-  //       });
-
-  //       if (res.data.statusSummary) {
-  //         const statusSummary = res.data.statusSummary;
-  //         setCounts({
-  //           all: res.data.pagination.total || 0,
-  //           rejected:
-  //  statusSummary.find((s: any) => s.status === "REJECTED")?.count || 0,
-
-  //           published:
-  //             statusSummary.find((s: any) => s.status === "PUBLISHED")?.count || 0,
-  //           underReview:
-  //             statusSummary.find((s: any) => s.status === "UNDERREVIEW")?.count ||
-  //             0,
-  //           draft:
-  //             (statusSummary.find((s: any) => s.status === "DRAFT")?.count ||
-  //               0)
-  //         });
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching counts:", error);
-  //     }
-  //   }, []);
-
-  // Debounced search function
   const handleSearch = useCallback(
     (query: string) => {
       if (searchTimeout) {
@@ -311,17 +196,16 @@ export default function CourseManagement() {
     fetchTutors(activeTab, 1, pagination.limit, searchQuery, sort);
   };
 
-  // useEffect(() => {
-  //   fetchCounts();
-  // }, [fetchCounts]);
+ 
 
   useEffect(() => {
+      if (!user?.studentProfile?.id) return;
     fetchTutors(
       activeTab,
       pagination.page,
       pagination.limit,
       searchQuery,
-      pagination.sortBy
+      pagination.sortBy,
     );
   }, [activeTab, pagination.page, fetchTutors]);
 
@@ -357,7 +241,7 @@ export default function CourseManagement() {
   const onClose = () => {
     setIsViewOpen(false);
   };
-
+console.log(tutors,"Data of course")
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
@@ -422,38 +306,20 @@ export default function CourseManagement() {
               {totalCount.reduce((acc, item) => acc + item.count, 0)})
             </TabsTrigger>
             <TabsTrigger
-              value="under-review"
+              value="active"
               className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
             >
-              UnderReview (
-              {totalCount.find((item) => item?.status === "UNDERREVIEW")
-                ?.count || 0}
+              Active (
+              {totalCount.find((item) => item?.status === "ACTIVE")?.count || 0}
               )
             </TabsTrigger>
             <TabsTrigger
-              value="published"
+              value="expired"
               className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
             >
               Published (
-              {totalCount.find((item) => item.status === "PUBLISHED")?.count ||
-                0}
+              {totalCount.find((item) => item.status === "EXPIRED")?.count || 0}
               )
-            </TabsTrigger>
-            <TabsTrigger
-              value="rejected"
-              className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
-            >
-              Rejected (
-              {totalCount.find((item) => item.status === "REJECTED")?.count ||
-                0}
-              )
-            </TabsTrigger>
-            <TabsTrigger
-              value="draft"
-              className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
-            >
-              Draft (
-              {totalCount.find((item) => item.status === "DRAFT")?.count || 0})
             </TabsTrigger>
           </TabsList>
 
@@ -482,24 +348,40 @@ export default function CourseManagement() {
                 </div>
               ) : (
                 tutors?.map((tutor) => {
-                  const statusConfig = getStatusBadge(
-                    tutor.courseStatus ?? "DRAFT"
-                  );
+                 
                   return (
                     <div
-                    onClick={()=>router.push(`/student/course/${tutor.id}`)}
-                      className="border-b-4 border-b-red-500 rounded-2xl  w-full max-w-[20.3rem]"
+                      onClick={() => router.push(`/student/course/${tutor.id}`)}
+                      className="border-b-4 border-b-red-500 rounded-2xl w-full max-w-[20.3rem]"
                       key={tutor.id}
                     >
-                      <Image
-                        src={tutor?.thumbnail || ""}
-                        width={300}
-                        height={300}
-                        className="object-fit h-[15rem] w-[20.3rem] rounded-t-2xl bg-white"
-                        alt="course image"
-                      />
-                      <div className="px-4 my-3 flex flex-col gap-2  ">
-                        <h4 className="text-xl font-bold">{tutor.title}</h4>
+                      <div className="relative group">
+                        <Image
+                          src={tutor?.course?.thumbnail || ""}
+                          width={300}
+                          height={300}
+                          className="object-fit h-[15rem] w-[20.3rem] rounded-t-2xl bg-white"
+                          alt="course image"
+                        />
+
+                        {/* Hover button */}
+                        <div
+                          className="absolute inset-0 flex items-center justify-center 
+                    bg-opacity-40 text-white font-semibold 
+                 opacity-0 group-hover:opacity-100 transition-opacity duration-300
+                 "
+                        >
+                          <p
+                            className="p-2 rounded-sm cursor-pointer text-sm font-medium 
+   border-2 border-white bg-gray-500/30"
+                          >
+                            Extend Course
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="px-4 my-3 flex flex-col gap-2">
+                        <h4 className="text-xl font-bold">{tutor.course.title}</h4>
                         <div className="w-full bg-gray-300 rounded-full h-1 overflow-hidden">
                           <div
                             className="bg-green-500 h-full transition-all duration-300"
@@ -507,7 +389,8 @@ export default function CourseManagement() {
                           ></div>
                         </div>
                         <p className="text-xs w-full flex items-center justify-end text-left">
-                          4/20 <span className="font-semibold pl-1"> Chapters</span>
+                          4/20{" "}
+                          <span className="font-semibold pl-1">Chapters</span>
                         </p>
                       </div>
                     </div>
