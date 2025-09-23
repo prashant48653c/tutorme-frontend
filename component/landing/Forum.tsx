@@ -6,8 +6,8 @@ import Comments from './Comments'
 const Forum = () => {
   return (
     <div className='w-full bg-[#F2F7FF] mt-20 py-20 flex flex-col'>
-        <div className="flex  mx-16 mb-5 justify-around">
-            <div className='w-[40%] flex justify-start px-4'>
+        <div className="flex md:flex-row flex-col mx-16 mb-5 justify-around">
+            <div className='w-[40%] flex justify-start md:px-4'>
  <h4 className="text-[3rem]  text-left gap-y-5 leading-14 font-[800] ">
             TUTOR
             <span className="text-green-400">ME</span><br /> Forum

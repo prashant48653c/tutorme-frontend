@@ -1,6 +1,5 @@
 "use client";
 
-import EditBio from "@/component/profile/EditBio";
 import {
   Accordion,
   AccordionContent,
@@ -10,104 +9,142 @@ import {
 import { ArrowDown, ArrowUp, Pencil, Plus, Trash } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import EditProfileForm from "./EditProfile";
 import AddQualificationModal from "./AddQualification";
 import { useAuthStore } from "@/store/useAuthStore";
 import { EducationType } from "@/types/auth";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import api from "@/hooks/axios";
+import { useQuery } from "@tanstack/react-query";
 
 export default function QualificationView() {
   const [openItem, setOpenItem] = useState<string | null>(null);
   const [status, setStatus] = useState(false);
+  const [selectedData,setSelectedData]=useState<EducationType>();
   const user = useAuthStore((state) => state.user);
-  console.log(user);
-  const education = user?.tutorProfile?.education;
 
-  const handleEdit = (index: number) => {
-    console.log("Editing item:", index);
+  const fetchEducation = async () => {
+    if (user?.tutorProfile?.id) {
+      const res = await api.get(`/auth/tutor/edu/${user.tutorProfile.id}`);
+      return res.data.data;
+    }
+    return [];
+  };
+
+  const {
+    data: education,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["userEducation", user?.tutorProfile.id],
+    queryFn: fetchEducation,
+    enabled: !!user?.tutorProfile?.id,
+  });
+
+  const handleEdit = (edu: any) => {
+    setSelectedData(edu)
     setStatus(true);
   };
 
-  const handleDelete = (index: number) => {
-    toast.success("Deleted Successfully");
+  const handleDelete = async (id: number) => {
+    try {
+      const res = await api.delete(`/auth/tutor/edu/${id}`);
+      console.log(res);
+      toast.success(res.data.message || "Deleted Successfully");
+      refetch()
+    } catch (error: any) {
+      console.log(error)
+      toast.error(error.response.data.message || "Something went wrong!");
+    }
+    // You could also call an API here and then refetch();
   };
 
+  // if (isLoading) return <>Loading...</>;
+
   return (
-    <Accordion
-      type="single"
-      collapsible
-      value={openItem || ""}
-      onValueChange={(value) => setOpenItem(value)}
-      className="max-w-lg w-full"
-    >
-      {education?.map((edu: EducationType, index: number) => {
-        const isOpen = openItem === `item-${index}`;
-
-        return (
-          <AccordionItem key={index} value={`item-${index}`}>
-            <AccordionTrigger className="text-primeGreen text-xl [&>svg]:hidden">
-              <div className="flex w-full justify-between items-center gap-2">
-                <span>Education</span>
-                <div className="flex items-center gap-5">
-                  <Plus
-                    size={18}
-                    className="text-primeGreen cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEdit(index);
-                    }}
-                  />
-                  {isOpen ? (
-                    <ArrowUp size={18} className="text-primeGreen" />
-                  ) : (
-                    <ArrowDown size={18} className="text-primeGreen" />
-                  )}
-                </div>
+    <>
+      <Accordion
+        type="single"
+        collapsible
+        value={openItem || ""}
+        onValueChange={(value) => setOpenItem(value)}
+        className="w-full"
+      >
+        <AccordionItem value="education">
+          <AccordionTrigger className="text-primeGreen text-xl [&>svg]:hidden">
+            <div className="flex w-full justify-between items-center gap-2">
+              <span>Education</span>
+              <div className="flex items-center gap-5">
+                <Plus
+                  size={18}
+                  className="text-primeGreen cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEdit(0); // or -1 to mean "new"
+                  }}
+                />
+                {openItem === "education" ? (
+                  <ArrowUp size={18} className="text-primeGreen" />
+                ) : (
+                  <ArrowDown size={18} className="text-primeGreen" />
+                )}
               </div>
-            </AccordionTrigger>
+            </div>
+          </AccordionTrigger>
 
-            <AccordionContent className="text-gray-500 justify-center text-sm flex flex-col gap-4">
-              <div className="flex justify-between items-center border-b pb-2">
-                <div>
-                  <p className="font-semibold text-md text-black">
-                    {edu.qualification}
-                  </p>
-                  <p className="font-semibold text-md text-black">
-                    {edu.institutionName}
-                  </p>
-                  <p>
-                    {edu.timePeriod} |{" "}
-                    {edu.type === "FULL_TIME" ? "Full Time" : "Part Time"}
-                  </p>
+          <AccordionContent className="text-gray-500 justify-center text-sm flex flex-col gap-4">
+            {education?.length > 0 ? (
+              education.map((edu: EducationType, index: number) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center border-b pb-2"
+                >
+                  <div>
+                    <p className="font-semibold text-md text-black">
+                      {edu.qualification}
+                    </p>
+                    <p className="font-semibold text-md text-black">
+                      {edu.institutionName}
+                    </p>
+                    <p>
+                      {edu.timePeriod} |{" "}
+                      {edu.type === "FULL_TIME" ? "Full Time" : "Part Time"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-x-4">
+                    <Pencil
+                      size={18}
+                      className="text-primeGreen cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(edu);
+                      }}
+                    />
+                    <Trash
+                      size={18}
+                      className="text-primeGreen cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(edu.id);
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="flex items-center gap-x-4">
-                  <Pencil
-                    size={18}
-                    className="text-primeGreen cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEdit(index);
-                    }}
-                  />
-                  <Trash
-                    size={18}
-                    className="text-primeGreen cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(index);
-                    }}
-                  />
-                </div>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        );
-      })}
+              ))
+            ) : (
+              <p>No education records yet.</p>
+            )}
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
       {status && (
-        <div className="absolute z-10 left-1/2 top-40 transform -translate-x-1/2 p-2 text-xs text-gray-400">
-          <AddQualificationModal />
-        </div>
+        <Dialog open={status} onOpenChange={() => setStatus(false)}>
+          <DialogContent className="bg-white p-0 backdrop-blur-none shadow-lg">
+            <AddQualificationModal  setStatus={setStatus} initialData={selectedData} />
+          </DialogContent>
+        </Dialog>
       )}
-    </Accordion>
+    </>
   );
 }

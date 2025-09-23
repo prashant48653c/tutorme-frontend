@@ -10,7 +10,8 @@ export interface User {
   bio:string;
   updatedAt?: string;
   googleId?: string | null;
-  tutorProfile?: any | null;
+  tutorProfile: any | null;
+  studentProfile: any | null;
 }
 
 export interface RegisterRequest {

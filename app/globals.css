@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-
+ 
+ 
 @custom-variant dark (&:is(.dark *));
 
 @font-face {
@@ -49,12 +50,18 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 }
+html{
+  overflow-x: hidden;
+}
 
 body {
   padding: 0;
   margin: 0;  
   overflow-x: hidden;
+  height: 100vh;
   box-sizing: border-box;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  width: 100%;
 }
 
 :root {
@@ -135,7 +142,6 @@ body {
   }
 }
 
-
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -146,7 +152,6 @@ body {
   }
 }
 
-
 .bg-primeGreen{
   background-color: #09C4AE;
 }
@@ -156,4 +161,38 @@ body {
 
 .a{
   text-decoration: none;
+}
+
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+
+
+@media (max-width:660px) {
+  html{
+    font-size: 90%;
+  }
+}
+
+@media (max-width:500px) {
+  html{
+    font-size: 70%;
+  }
+}
+
+@media (max-width:400px) {
+  html{
+    font-size: 60%;
+  }
 }

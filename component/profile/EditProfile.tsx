@@ -19,7 +19,7 @@ interface FormData {
   workplace?: string;
 }
 
-export default function EditProfileForm() {
+export default function EditProfileForm({setStatus}:{setStatus:(status:boolean)=>void}) {
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
 
@@ -79,11 +79,13 @@ export default function EditProfileForm() {
       toast.success("Update successful");
     } catch (err) {
       toast.error("Error updating profile");
+    }finally{
+      setStatus(false)
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+    <div className=" ">
       <h2 className="text-2xl font-semibold mb-6">Edit Profile</h2>
 
       <form className="space-y-5" onSubmit={handleSubmit}>
@@ -182,7 +184,7 @@ export default function EditProfileForm() {
 
         {/* Actions */}
         <div className="flex justify-end gap-3 mt-6">
-          <Button variant="outline" type="button">
+          <Button variant="outline" onClick={()=>setStatus(false)} type="button">
             Cancel
           </Button>
           <Button

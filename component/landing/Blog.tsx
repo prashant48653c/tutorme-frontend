@@ -1,6 +1,7 @@
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, ArrowUpRight } from "lucide-react"
+import Marquee from "react-fast-marquee";
 
 export default function Blog() {
   const blogPosts = [
@@ -42,9 +43,9 @@ export default function Blog() {
 
   return (
     <section className="py-16 pl-16 bg-gray-50">
-      <div className="max-w-7xl mx-auto">
+      <div className="lg:max-w-7xl md:max-w-3xl  mx-auto">
         {/* Header */}
-        <div className="flex pr-16 items-center justify-between mb-12">
+        <div className="flex md:flex-row flex-col pr-16 items-center justify-between mb-12">
           <div>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
               From Our <span className="text-teal-400">Blogs</span>
@@ -66,7 +67,9 @@ export default function Blog() {
         </div>
 
         {/* Scrollable Blog Cards */}
-        <div className="overflow-x-auto pb-4">
+        <div className="pb-4 overflow-x-hidden">
+            <Marquee pauseOnHover={true} gradient={false} speed={40}>
+
           <div className="flex gap-6 min-w-max">
             {blogPosts.map((post) => (
               <div
@@ -88,8 +91,11 @@ export default function Blog() {
                   </Button>
                 </div>
               </div>
+             
             ))}
           </div>
+            </Marquee>
+
         </div>
 
         {/* Mobile View All Button */}

@@ -6,8 +6,8 @@ import type { Metadata } from "next";
 import { ReactNode } from "react";
 
 export const metadata: Metadata = {
-  title: "Sidebar Layout App",
-  description: "A Next.js app with sidebar layout",
+  title: "Admin Dashboard",
+  description: "Dashboard for admin",
 };
 
 export default function ProtectedLayout({ children }: { children: ReactNode }) {

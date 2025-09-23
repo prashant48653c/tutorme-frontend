@@ -10,8 +10,9 @@ import api from "@/hooks/axios";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export default function EditBio({setStatus}:{setStatus:(b:boolean)=>void}) {
-  const [newBio, setNewBio] = useState("Your bio");
   const user = useAuthStore((state) => state.user);
+  const [newBio, setNewBio] = useState(user?.bio ||"Your bio");
+
   const setUser = useAuthStore((state) => state.setUser);
   const handleUpdate = async (e: React.FormEvent) => {
     try {
@@ -21,8 +22,9 @@ export default function EditBio({setStatus}:{setStatus:(b:boolean)=>void}) {
       const res = await api.patch(`/auth/profile/${id}`, { bio: newBio });
       console.log(res.data.user);
       setUser(res.data.user);
-      toast.success("bio updated");
+      toast.success("Bio updated");
     } catch (error) {
+      console.log(error)
       toast.error("Something went wrong");
     }finally{
       setStatus(false)
@@ -30,7 +32,7 @@ export default function EditBio({setStatus}:{setStatus:(b:boolean)=>void}) {
     }
   };
   return (
-    <div className="max-w-2xl min-w-[40rem] mx-auto bg-white p-6  rounded-2xl shadow-lg">
+    <div className="  bg-white p-2  rounded-2xl ">
       <h2 className="text-2xl text-gray-800 font-semibold mb-6">Edit Bio</h2>
 
       <form className="space-y-5">
@@ -39,8 +41,9 @@ export default function EditBio({setStatus}:{setStatus:(b:boolean)=>void}) {
           <div>
             <Textarea
               id="bio"
+              value={newBio}
               onChange={(e) => setNewBio(e.target.value)}
-              placeholder="Write a short bio or description..."
+              placeholder={user?.bio ||"Write a short bio or description..."}
               className="min-h-[10rem] "
             />
           </div>
@@ -48,7 +51,7 @@ export default function EditBio({setStatus}:{setStatus:(b:boolean)=>void}) {
 
         {/* Actions */}
         <div className="flex justify-end gap-3 mt-6">
-          <Button className="border-black" variant="outline">
+          <Button onClick={()=>  setStatus(false)} className="border-black" variant="outline">
             Cancel
           </Button>
           <Button

@@ -25,7 +25,7 @@ const ProfilePage = () => {
   return (
    
 
-      <div className={`grid mt-8 ${OnestFont.className} grid-cols-2 w-full gap-4`}>
+      <div className={`grid grid-cols-1 mt-8 ${OnestFont.className} lg:grid-cols-2 w-full gap-4`}>
         <div className="  h-full  pb-7 flex flex-col  p-4">
           <Profile/>
 

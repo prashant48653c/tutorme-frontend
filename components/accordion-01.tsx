@@ -10,6 +10,12 @@ import api from "@/hooks/axios";
 import { useAuthStore } from "@/store/useAuthStore";
 import { ArrowDown, ArrowUp, Pencil } from "lucide-react";
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogOverlay,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const items = [
   {
@@ -24,9 +30,9 @@ export default function BioAccordion() {
   const [status, setStatus] = useState(false);
   const user = useAuthStore((state) => state.user);
 
-  const handleEdit =async (index: number) => {
+  const handleEdit = async (index: number) => {
     console.log("Editing item:", user);
-     
+
     setStatus(true);
   };
 
@@ -36,14 +42,14 @@ export default function BioAccordion() {
       collapsible
       value={openItem || ""}
       onValueChange={(value) => setOpenItem(value)}
-      className="max-w-lg w-full "
+      className=" w-full  border "
     >
       {items.map(({ title, content }, index) => {
         const isOpen = openItem === `item-${index}`;
 
         return (
-          <AccordionItem key={index} value={`item-${index}`}>
-            <AccordionTrigger className="text-green-500 text-xl [&>svg]:hidden">
+          <AccordionItem key={index} className="" value={`item-${index}`}>
+            <AccordionTrigger className="text-green-500  text-xl [&>svg]:hidden">
               <div className="flex w-full justify-between items-center gap-2">
                 <span>{title}</span>
                 <div className="flex items-center gap-5">
@@ -74,9 +80,12 @@ export default function BioAccordion() {
       })}
 
       {status && (
-        <div className="absolute z-10 top-40 right-72 p-2 text-xs text-gray-400">
-          <EditBio  setStatus={setStatus} />
-        </div>
+        <Dialog open={status} onOpenChange={setStatus}>
+          <DialogOverlay className=" " />
+          <DialogContent className="bg-white  rounded-xl p-6 shadow-xl z-50 max-w-2xl w-[40rem]">
+            <EditBio setStatus={setStatus} />
+          </DialogContent>
+        </Dialog>
       )}
     </Accordion>
   );
