@@ -30,7 +30,7 @@ const CourseTab: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("Course Content");
   const course = useCourseStore((state) => state.courseDetails);
   const chapter = useCourseStore((state) => state.chapters);
-const {setCourse}=useGlobalCourseStore()
+  const { setCourse } = useGlobalCourseStore();
   console.log(course, chapter);
   type Qna = {
     id: number | string;
@@ -46,15 +46,16 @@ const {setCourse}=useGlobalCourseStore()
     );
   };
   const saveDraft = async () => {
-   try {
-   const res=  await api.post(`course/qna/${course?.id}`, {description: qnas[0].description});
-     console.log("Draft saved!");
-     setCourse(res.data.data)
-   } catch (error) {
-     console.error("Error saving draft:", error);
-   }
-   }
-  
+    try {
+      const res = await api.post(`course/qna/${course?.id}`, {
+        description: qnas[0].description,
+      });
+      console.log("Draft saved!");
+      setCourse(res.data.data);
+    } catch (error) {
+      console.error("Error saving draft:", error);
+    }
+  };
 
   // Resources
 
@@ -85,7 +86,10 @@ const {setCourse}=useGlobalCourseStore()
             ))}
             {/* Action Buttons */}
             <div className="flex gap-4 pt-6">
-              <button onClick={saveDraft} className="flex-1 bg-teal-500 text-white py-4 px-8 rounded-lg font-medium hover:bg-teal-600 transition-colors">
+              <button
+                onClick={saveDraft}
+                className="flex-1 bg-teal-500 text-white py-4 px-8 rounded-lg font-medium hover:bg-teal-600 transition-colors"
+              >
                 Save Draft
               </button>
               <button className="flex-1 bg-white border border-gray-300 text-gray-700 py-4 px-8 rounded-lg font-medium hover:bg-gray-50 transition-colors">

@@ -28,10 +28,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+          <script
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5597598848182147`}
+          crossOrigin="anonymous"
+        ></script>
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID">
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "949950176019-9sf5271jp00lq2bgqjr3ngarqhrigc0i.apps.googleusercontent.com"}>
           <ReactQueryProvider>{children}</ReactQueryProvider>
 
           <Toaster />

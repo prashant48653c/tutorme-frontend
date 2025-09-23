@@ -9,12 +9,12 @@ import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getUserData } from "@/lib/api";
 import { useAuthStore } from "@/store/useAuthStore";
- 
+
 const page = () => {
-  const Router=useRouter()
+  const Router = useRouter();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-const user=useAuthStore((state)=>state.user)
-  const data= getUserData(user?.id as number);
+  const user = useAuthStore((state) => state.user);
+  const data = getUserData(user?.id as number);
 
   return (
     <section className="flex py-10 pl-4 flex-col gap-y-9">

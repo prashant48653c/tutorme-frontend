@@ -59,7 +59,7 @@ const [mobileSidebar,setMobileSidebar]=useState(false)
     isFetchingNextPage,
     refetch,
     isLoading,
-  } = useInfiniteQuery<PaginatedCourses, Error>({
+  } = useInfiniteQuery<any, any>({
     queryKey: ["coursesCount", debouncedSearchQuery, getAllFilters()],
     queryFn: fetchCourses,
     getNextPageParam: (lastPage, pages) => {

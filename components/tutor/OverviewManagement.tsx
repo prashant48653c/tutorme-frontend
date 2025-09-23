@@ -25,7 +25,38 @@ const [thumbnail,setThumbnail]=useState<File>();
 const handleClick = () => {
 inputRef.current?.click();
 };
-
+ const semesterOptions = {
+    First: "FIRST",
+    Second: "SECOND",
+    Third: "THIRD",
+    Fourth: "FOURTH",
+    Fifth: "FIFTH",
+    Sixth: "SIXTH",
+    Seventh: "SEVENTH",
+    Eighth: "EIGHTH",
+  };
+ const durationOptions = [
+    { label: "Less than 2 Months", value: "LESS_THAN_2_MONTH" },
+    { label: "2–3 Hours", value: "TWO_THREE_HOUR" },
+    { label: "1–3 Months", value: "ONE_THREE_MONTH" },
+    { label: "3–6 Months", value: "THREE_SIX_MONTH" },
+  ];
+   const options = [
+    { value: "BBA", label: "BBA" },
+    { value: "BBS", label: "BBS" },
+    { value: "BCA", label: "BCA" },
+    { value: "BIT", label: "BIT" },
+    { value: "BSC CSIT", label: "BSC CSIT" },
+    { value: "BBM", label: "BBM" },
+    { value: "BIM", label: "BIM" },
+    { value: "BSC", label: "BSC" },
+    { value: "BA", label: "BA" },
+    { value: "BED", label: "BED" },
+    { value: "BPHARM", label: "BPHARM" },
+    { value: "BE", label: "BE" },
+    { value: "MBBS", label: "MBBS" },
+    { value: "BDS", label: "BDS" },
+  ];
 const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 const file = e.target.files?.[0];
 if (!file) return;
@@ -214,23 +245,26 @@ onValueChange={(value) => updateCourseDetails({ duration: value })}
 </Select>
 </div>
 
-<div className="flex flex-col gap-1 flex-1">
-<Label htmlFor="durationUnit">Duration </Label>
-<Select
-  value={courseDetails?.durationUnit?.toLowerCase() || "weeks"}
-  onValueChange={(value) => updateCourseDetails({ durationUnit: value })}
->
-  <SelectTrigger className="outline-0 border border-gray-400 rounded-md">
-    <SelectValue placeholder="Select Duration" />
-  </SelectTrigger>
-  <SelectContent>
-    <SelectItem value="days">Days</SelectItem>
-    <SelectItem value="weeks">Weeks</SelectItem>
-    <SelectItem value="months">Months</SelectItem>
-  </SelectContent>
-</Select>
-
-</div>
+   <div className="flex flex-col gap-1 flex-1">
+                <Label htmlFor="durationUnit">Duration Unit</Label>
+                <Select
+                  value={courseDetails?.durationUnit}
+                  onValueChange={(value) =>
+                    updateCourseDetails({ durationUnit: value })
+                  }
+                >
+                  <SelectTrigger className="outline-0 border border-gray-400 rounded-md">
+                    <SelectValue placeholder="Select Duration" />
+                  </SelectTrigger>
+                  <SelectContent defaultValue={durationOptions[1].value}>
+                    {durationOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 </div>
 </div>
 
@@ -265,32 +299,40 @@ onValueChange={(value) => updateCourseDetails({ targetUniversity: value })}
 </Select>
 <Select
 value={courseDetails?.targetCourse}
+defaultValue={courseDetails?.targetCourse}
 onValueChange={(value) => updateCourseDetails({ targetCourse: value })}
 >
 <SelectTrigger className="outline-0 w-full border border-gray-400 rounded-md">
 <SelectValue placeholder="Select Course" />
 </SelectTrigger>
 <SelectContent>
-<SelectItem value="bict">BICTE</SelectItem>
-<SelectItem value="bca">BCA</SelectItem>
-<SelectItem value="bit">BIT</SelectItem>
+  {
+                      options.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
 </SelectContent>
 </Select>
-<Select
-value={courseDetails?.targetSem}
-onValueChange={(value) => updateCourseDetails({ targetSem: value })}
->
-<SelectTrigger className="outline-0 w-full border border-gray-400 rounded-md">
-<SelectValue placeholder="Select Semester" />
-</SelectTrigger>
-<SelectContent>
-{[...Array(8)]?.map((_, i) => (
-<SelectItem key={i + 1} value={`sem-${i + 1}`}>
-  Semester {i + 1}
-</SelectItem>
-))}
-</SelectContent>
-</Select>
+
+ <Select
+ defaultValue={courseDetails?.targetSem}
+                  value={courseDetails?.targetSem}
+                  onValueChange={(value) =>
+                    updateCourseDetails({ targetSem: value })
+                  }
+                >
+                  <SelectTrigger className="outline-0 w-full border border-gray-400 rounded-md">
+                    <SelectValue defaultValue={courseDetails?.targetSem} placeholder="Select Semester" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(semesterOptions).map(([label, value]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 </div>
 </div>
 

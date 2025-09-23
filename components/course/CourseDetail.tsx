@@ -77,7 +77,7 @@ export default function CourseInterface() {
   const [status, setStatus] = useState("Verifying...");
 
   useEffect(() => {
-    console.log(user?.studentProfile.id,"is user profile")
+    console.log(user?.studentProfile?.id,"is user profile")
     if (pidx && user?.studentProfile?.id) {
       checkKhaltiPayment({
         studentProfileId: user?.studentProfile?.id,

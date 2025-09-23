@@ -29,7 +29,7 @@ console.log(params)
     <aside className="w-full border h-screen relative bg-gray-100 text-black   ">
       <div className="flex lg:w-[18%] w-[25%] z-20 bg-gray-100  flex-col items-center  no-scrollbar  overflow-y-auto  fixed top-0 h-full pt-8 space-y-4">
         <div>
-          <h1 className="font-extrabold text-3xl text-black">
+          <h1 onClick={() => router.push("/")} className="font-extrabold cursor-pointer text-3xl text-black">
             TUTOR<span className="text-primeGreen">ME</span>
           </h1>
         </div>

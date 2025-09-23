@@ -5,6 +5,7 @@ export interface Course {
   title?: string;
   description?: string;
   price?: number;
+  tags: string[];
   courseStatus?: Status;
   duration?: string;
   chapterCount?: number;

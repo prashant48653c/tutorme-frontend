@@ -35,15 +35,44 @@ import { useRef, useState } from "react";
 import api from "@/hooks/axios";
 import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "sonner";
+import {
+  MultiSelect,
+  MultiSelectContent,
+  MultiSelectGroup,
+  MultiSelectItem,
+  MultiSelectTrigger,
+  MultiSelectValue,
+} from "@/components/ui/multi-select";
+
+
+
 
 const AddCourse = ({ onClose }: { onClose: () => void }) => {
   const router = useRouter();
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [thumbnail, setThumbnail] = useState<File>();
   const handleClick = () => {
     inputRef.current?.click();
   };
+  const options = [
+    { value: "BBA", label: "BBA" },
+    { value: "BBS", label: "BBS" },
+    { value: "BCA", label: "BCA" },
+    { value: "BIT", label: "BIT" },
+    { value: "BSC CSIT", label: "BSC CSIT" },
+    { value: "BBM", label: "BBM" },
+    { value: "BIM", label: "BIM" },
+    { value: "BSC", label: "BSC" },
+    { value: "BA", label: "BA" },
+    { value: "BED", label: "BED" },
+    { value: "BPHARM", label: "BPHARM" },
+    { value: "BE", label: "BE" },
+    { value: "MBBS", label: "MBBS" },
+    { value: "BDS", label: "BDS" },
+  ];
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -88,7 +117,8 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
       formdata.append("description", courseDetails.description || "");
       formdata.append("duration", courseDetails.duration);
       formdata.append("durationUnit", courseDetails.durationUnit);
-
+      console.log(selectedSubjects)
+      formdata.append("tags", JSON.stringify(selectedSubjects));
       formdata.append("targetSem", courseDetails.targetSem || "");
       formdata.append("targetUniversity", courseDetails.targetUniversity || "");
       formdata.append("targetCourse", courseDetails.targetCourse || "");
@@ -233,7 +263,7 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
 
             <div className="flex gap-2">
               <div className="flex flex-col gap-1 flex-1">
-                <Label htmlFor="durationNumber">Duration Number</Label>
+                <Label htmlFor="durationNumber">Course Duration</Label>
                 <Select
                   value={
                     courseDetails.duration.toString()
@@ -268,7 +298,7 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
                   <SelectTrigger className="outline-0 border border-gray-400 rounded-md">
                     <SelectValue placeholder="Select Duration" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent defaultValue={durationOptions[1].value}>
                     {durationOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
@@ -291,6 +321,30 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
                 updateCourseDetails({ description: e.target.value })
               }
             />
+          </div>
+
+          <div className="w-full">
+            <Label htmlFor="tags">Tags</Label>
+            <div>
+              <MultiSelect 
+              
+               values={selectedSubjects}
+  onValuesChange={setSelectedSubjects}  >
+                <MultiSelectTrigger className="w-full my-2 max-w-full">
+                  <MultiSelectValue placeholder="Select tags..." />
+                </MultiSelectTrigger>
+                <MultiSelectContent>
+                  {/* Items must be wrapped in a group for proper styling */}
+                  <MultiSelectGroup >
+                    {options.map((option) => (
+                      <MultiSelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MultiSelectItem>
+                    ))}
+                  </MultiSelectGroup>
+                </MultiSelectContent>
+              </MultiSelect>
+            </div>
           </div>
 
           {/* Student Target & Course Depth */}
@@ -323,9 +377,12 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
                     <SelectValue placeholder="Select Course" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="BICTE">BICTE</SelectItem>
-                    <SelectItem value="BCA">BCA</SelectItem>
-                    <SelectItem value="BIT">BIT</SelectItem>
+                    {
+                      options.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
                 <Select

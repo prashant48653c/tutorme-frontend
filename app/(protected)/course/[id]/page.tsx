@@ -53,7 +53,7 @@ const courses = [
     badge: "Free",
   },
   {
-    id: 3,
+    id: 7,
     title: "Introduction to Basics",
     description:
       "This course is designed to provide students with basic principles of biology. We will be studying about the cell and its composition.",
@@ -102,9 +102,9 @@ const CourseDetailPage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {courses.map((course) => (
+            {courses.map((course,i) => (
               <Card
-                key={course.id}
+                key={i}
                 className="overflow-hidden p-0 hover:shadow-lg transition-shadow"
               >
                 <div className="relative">
