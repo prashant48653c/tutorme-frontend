@@ -36,7 +36,7 @@ const TutorPage = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const fetchTutors = async ({ pageParam = 1 }): Promise<PaginatedTutors> => {
+  const fetchTutors: any = async ({ pageParam = 1 }): Promise<any> => {
     const filters = getAllFilters();
     console.log("Fetching tutors with filters:", filters);
     console.log("Page:", pageParam);
@@ -69,9 +69,10 @@ const TutorPage = () => {
     refetch,
     isLoading,
     error,
-  } = useInfiniteQuery<PaginatedTutors, Error>({
+  } = useInfiniteQuery<any>({
     queryKey: ["tutorsCount", debouncedSearchQuery, getAllFilters()],
     queryFn: fetchTutors,
+    initialPageParam: 1,
     getNextPageParam: (lastPage, pages) => {
       return lastPage.hasMore ? pages.length + 1 : undefined;
     },
@@ -130,7 +131,7 @@ const TutorPage = () => {
       </main>
     );
   }
-  
+
   console.log(data);
 
   return (
@@ -205,11 +206,9 @@ const TutorPage = () => {
                     </Button>
                   </div>
                 )}
-
-               
               </>
             )}
-             <div ref={observerRef} className="h-10" />
+            <div ref={observerRef} className="h-10" />
             {isFetchingNextPage && (
               <div className="flex justify-center py-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>

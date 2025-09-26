@@ -13,9 +13,9 @@ import {
   Folder,
   FileImage,
 } from "lucide-react";
- 
+
 import Plyr from "plyr-react";
-import "plyr-react/plyr.css";
+
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
@@ -409,73 +409,77 @@ flex flex-col} px-1`}
         {/* Content Editor */}
         <div className="flex-1 p-6 mb-10 overflow-y-auto">
           <div className="max-w-4xl mx-auto space-y-6">
-             <Plyr
-      source={{
-        type: "video",
-        sources: [
-          {
-            src: "https://www.w3schools.com/html/mov_bbb.mp4",
-            type: "video/mp4",
-          },
-        ],
-        tracks: [
-          {
-            kind: "captions",
-            label: "English",
-            src: "/sub.vtt",  
-            srcLang: "en",
-            default: true,
-          }
-        ]
-      }}
-      options={{
-        controls: [
-          "play-large", // big play button in center
-          "rewind",     // ⏪ rewind (10s default)
-          "play", 
-          "fast-forward", // ⏩ fast-forward (10s default)
-          "progress", 
-          "current-time", 
-          "mute", 
-          "volume", 
-          "settings", 
-          "loop",        // toggle loop directly inside controls
-          "fullscreen"
-        ],
-        seekTime:5
-      }}
-    />
+            <Plyr
+              source={{
+                type: "video",
+                sources: [
+                  {
+                    src: "https://www.w3schools.com/html/mov_bbb.mp4",
+                    type: "video/mp4",
+                  },
+                ],
+                tracks: [
+                  {
+                    kind: "captions",
+                    label: "English",
+                    src: "/sub.vtt",
+                    srcLang: "en",
+                    default: true,
+                  },
+                ],
+              }}
+              options={{
+                controls: [
+                  "play-large", // big play button in center
+                  "rewind", // ⏪ rewind (10s default)
+                  "play",
+                  "fast-forward", // ⏩ fast-forward (10s default)
+                  "progress",
+                  "current-time",
+                  "mute",
+                  "volume",
+                  "settings",
+                  "loop", // toggle loop directly inside controls
+                  "fullscreen",
+                ],
+                seekTime: 5,
+              }}
+            />
 
-            
             <div className="w-full h-max">
-              <p
-                className="w-full h-full p-2 text-gray-700 border rounded "
-               
-              >
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur cupiditate quo in repudiandae architecto beatae doloribus reprehenderit aspernatur odio quos ipsa, veritatis, vitae consequatur dicta dolore quia ratione voluptatibus laborum. Aperiam, eum sapiente deleniti dicta itaque porro illo optio blanditiis, delectus possimus pariatur consequuntur ea quia sequi iste animi, iure exercitationem mollitia asperiores! Quidem, id?
-                </p>
+              <p className="w-full h-full p-2 text-gray-700 border rounded ">
+                Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                Pariatur cupiditate quo in repudiandae architecto beatae
+                doloribus reprehenderit aspernatur odio quos ipsa, veritatis,
+                vitae consequatur dicta dolore quia ratione voluptatibus
+                laborum. Aperiam, eum sapiente deleniti dicta itaque porro illo
+                optio blanditiis, delectus possimus pariatur consequuntur ea
+                quia sequi iste animi, iure exercitationem mollitia asperiores!
+                Quidem, id?
+              </p>
             </div>
 
- {/* Action Buttons */}
-          <div className="border-t grid grid-cols-2 gap-4 pt-4 space-y-3">
-            <Button
-              onClick={(e) => {
-                e.preventDefault();
-                addChapter();
-              }}
-              className="border py-5 bg-transparent text-black hover:bg-green-200 w-full border-green-400"
-              disabled={isLoading}
-            >
-Previous            </Button>
+            {/* Action Buttons */}
+            <div className="border-t grid grid-cols-2 gap-4 pt-4 space-y-3">
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  addChapter();
+                }}
+                className="border py-5 bg-transparent text-black hover:bg-green-200 w-full border-green-400"
+                disabled={isLoading}
+              >
+                Previous{" "}
+              </Button>
 
-            <Button
-              onClick={handleSaveDraft}
-              className="w-full py-5 bg-green-600 hover:bg-green-700"
-              disabled={isSaving}
-            >
-             Next
-            </Button>
-          </div>         
+              <Button
+                onClick={handleSaveDraft}
+                className="w-full py-5 bg-green-600 hover:bg-green-700"
+                disabled={isSaving}
+              >
+                Next
+              </Button>
+            </div>
           </div>
         </div>
       </div>

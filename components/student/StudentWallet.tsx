@@ -108,7 +108,7 @@ console.log(walletData)
   const startEntry = (currentPage - 1) * entriesPerPage + 1;
   const endEntry = Math.min(currentPage * entriesPerPage, totalTransactions);
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString:string) => {
     const date = new Date(dateString);
     return date.toLocaleString("en-US", {
       day: "numeric",
@@ -120,7 +120,7 @@ console.log(walletData)
     });
   };
 
-  const getTransactionIcon = (type, gateway) => {
+  const getTransactionIcon = (type: string, gateway: string) => {
     if (gateway?.toLowerCase().includes("esewa")) {
       return <span className="text-teal-600 font-bold text-sm">E</span>;
     } else if (gateway?.toLowerCase().includes("khalti")) {
@@ -274,7 +274,7 @@ console.log(walletData)
               No transactions found
             </div>
           ) : (
-            transactions.map((transaction) => (
+            transactions.map((transaction:any) => (
               <div
                 key={transaction.id}
                 className="p-4 flex items-center justify-between hover:bg-gray-50"

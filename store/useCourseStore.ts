@@ -24,6 +24,7 @@ export type CourseDetails = {
  id?: number;
   title?: string;
   description?: string;
+  tags: string[];
   price?: number;
   courseStatus?: string;
   duration: string;
@@ -104,7 +105,8 @@ const initialCourseDetails: CourseDetails = {
   targetSem: "",
   courseDepth: "beginner",
   thumbnail: "",
-  courseStatus:""
+  courseStatus:"",
+  tags:[""]
 }
 
 export const useCourseStore = create<CourseStore>()(

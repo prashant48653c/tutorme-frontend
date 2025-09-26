@@ -12,8 +12,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import api from "@/hooks/axios";
 import { useQuery } from "@tanstack/react-query";
+import { ParamValue } from "next/dist/server/request/params";
 
-export default function TutorProfile({id}:{id:string}) {
+export default function TutorProfile({id}:{id:ParamValue}) {
 
   const fetchTutor=async()=>{
 try {

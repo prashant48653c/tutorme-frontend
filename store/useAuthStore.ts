@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { User } from '@/types/auth';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { User } from "@/types/auth";
 
 interface AuthState {
   user: User | null;
@@ -30,11 +30,18 @@ export const useAuthStore = create<AuthState>()(
         }),
     }),
     {
-      name: 'auth-storage',
+      name: "auth-storage",
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      storage: typeof window !== "undefined" 
+        ? undefined // default = localStorage in browser
+        : {
+            getItem: () => null,
+            setItem: () => {},
+            removeItem: () => {},
+          },
     }
   )
 );
