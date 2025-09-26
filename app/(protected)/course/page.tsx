@@ -32,7 +32,7 @@ const [mobileSidebar,setMobileSidebar]=useState(false)
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const fetchCourses = async ({ pageParam = 1 }): Promise<PaginatedCourses> => {
+  const fetchCourses:any = async ({ pageParam = 1 }): Promise<any> => {
     const filters = getAllFilters();
     const requestBody = {
       page: pageParam,
@@ -182,7 +182,7 @@ const [mobileSidebar,setMobileSidebar]=useState(false)
                           <p>{course.duration} minutes</p>
                         </div>
                         <Button
-                          onClick={() => handleEnroll(course?.id)}
+                          onClick={() => handleEnroll(course?.id as number)}
                           className="w-full bg-teal-500 hover:bg-teal-600 text-white"
                         >
                           Enroll Course

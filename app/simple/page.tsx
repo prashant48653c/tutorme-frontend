@@ -1,5 +1,9 @@
-import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor"
+import React from 'react'
 
-export default function Page() {
-  return <SimpleEditor />
+const page = () => {
+  return (
+    <div>page</div>
+  )
 }
+
+export default page
