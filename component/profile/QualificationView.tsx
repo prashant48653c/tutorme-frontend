@@ -21,7 +21,7 @@ export default function QualificationView() {
   const [status, setStatus] = useState(false);
   const [selectedData,setSelectedData]=useState<EducationType>();
   const user = useAuthStore((state) => state.user);
-
+  const [isLoadingUpdate, setIsLoading] = useState(false);
   const fetchEducation = async () => {
     if (user?.tutorProfile?.id) {
       const res = await api.get(`/auth/tutor/edu/${user.tutorProfile.id}`);
@@ -36,7 +36,7 @@ export default function QualificationView() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["userEducation", user?.tutorProfile.id],
+    queryKey: ["userEducation", user?.tutorProfile?.id],
     queryFn: fetchEducation,
     enabled: !!user?.tutorProfile?.id,
   });
@@ -59,7 +59,7 @@ export default function QualificationView() {
     // You could also call an API here and then refetch();
   };
 
-  // if (isLoading) return <>Loading...</>;
+  if (isLoading) return <>Loading...</>
 
   return (
     <>
@@ -141,7 +141,7 @@ export default function QualificationView() {
       {status && (
         <Dialog open={status} onOpenChange={() => setStatus(false)}>
           <DialogContent className="bg-white p-0 backdrop-blur-none shadow-lg">
-            <AddQualificationModal  setStatus={setStatus} initialData={selectedData} />
+            <AddQualificationModal refetch={refetch} setStatus={setStatus} initialData={selectedData} />
           </DialogContent>
         </Dialog>
       )}

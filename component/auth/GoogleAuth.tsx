@@ -10,8 +10,8 @@ interface GoogleButtonProps {
 }
 
 export default function GoogleButton({ role }: GoogleButtonProps) {
-  const setUser=useAuthStore((state)=>state.setUser);
-  const router= useRouter()
+  const setUser = useAuthStore((state) => state.setUser);
+  const router = useRouter();
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse: any) => {
       try {
@@ -38,14 +38,15 @@ export default function GoogleButton({ role }: GoogleButtonProps) {
         });
         console.log(res.data);
         const { token, user } = res.data.data;
-        setUser(user)
-        if(user.role=="TUTOR"){
+        setUser(user);
+
+        if (user.role == "TUTOR") {
           router.push("/tutor/profile");
-        }else{
+        } else {
           router.push("/student/profile");
         }
 
-        // Store token
+       
         localStorage.setItem("authToken", token);
 
         console.log("Logged in user:", user);

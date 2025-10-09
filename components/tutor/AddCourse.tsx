@@ -43,11 +43,12 @@ import {
   MultiSelectTrigger,
   MultiSelectValue,
 } from "@/components/ui/multi-select";
+import { set } from "zod";
 
 
 
 
-const AddCourse = ({ onClose }: { onClose: () => void }) => {
+const AddCourse = ({ onClose,refetch }: { onClose: () => void, refetch: () => void }) => {
   const router = useRouter();
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
 
@@ -107,10 +108,13 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
       </SelectItem>
     ));
   }
-
+const[isLoading,setIsLoading]=useState(false);
   const user = useAuthStore((state) => state.user);
+  const [price,setPrice]=useState(0);
   const handleCourseUpload = async () => {
     try {
+      console.log(courseDetails)
+      setIsLoading(true);
       // Course basic datas
       const formdata = new FormData();
       formdata.append("title", courseDetails.title || "");
@@ -124,7 +128,7 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
       formdata.append("targetCourse", courseDetails.targetCourse || "");
       formdata.append("courseDepth", courseDetails.courseDepth || "");
 
-      formdata.append("price", "0.00");
+      formdata.append("price", price.toString());
       if (thumbnail) formdata.append("thumbnail", thumbnail);
       formdata.append("tutorProfileId", user?.tutorProfile.id);
       //Chapter data
@@ -142,9 +146,13 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
       const res = await api.post("/course", formdata);
       console.log(res);
       toast.success("Course has been saved!");
+      refetch();
+      onClose();
     } catch (error) {
       console.log(error);
       toast.success("Something went wrong!");
+    }finally{
+      setIsLoading(false);
     }
   };
 
@@ -154,7 +162,7 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
     chapters,
     openChapters,
     opensubChapters,
-    isLoading,
+    
     isSaving,
     setLoading,
     setSaving,
@@ -290,15 +298,16 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
               <div className="flex flex-col gap-1 flex-1">
                 <Label htmlFor="durationUnit">Duration Unit</Label>
                 <Select
-                  value={courseDetails?.durationUnit}
+                  value={courseDetails?.durationUnit }
+                 
                   onValueChange={(value) =>
                     updateCourseDetails({ durationUnit: value })
                   }
                 >
                   <SelectTrigger className="outline-0 border border-gray-400 rounded-md">
-                    <SelectValue placeholder="Select Duration" />
+                    <SelectValue placeholder="Select duration" />
                   </SelectTrigger>
-                  <SelectContent defaultValue={durationOptions[1].value}>
+                  <SelectContent >
                     {durationOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
@@ -322,6 +331,18 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
               }
             />
           </div>
+           <div className="flex flex-col gap-2">
+            <Label htmlFor="priceS">Price</Label>
+            <Input
+              id="price"
+              type="number"
+              value={price}
+              onChange={(e) =>
+               setPrice(parseFloat(e.target.value))
+              }
+            />
+          </div>
+          
 
           <div className="w-full">
             <Label htmlFor="tags">Tags</Label>
@@ -764,9 +785,9 @@ const AddCourse = ({ onClose }: { onClose: () => void }) => {
                 saveDraft();
               }}
               className="bg-green-600 hover:bg-green-700"
-              disabled={isSaving}
+              disabled={isLoading}
             >
-              {isSaving ? "Saving..." : "Save Draft"}
+              {isLoading ? "Saving..." : "Save Draft"}
             </Button>
           </div>
         </div>

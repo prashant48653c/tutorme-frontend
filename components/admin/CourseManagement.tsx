@@ -12,18 +12,30 @@ import {
   ChevronRight,
   ArrowUpAZ,
   Search,
-  Pencil,
-  Trash,
 } from "lucide-react";
-import ViewTutor from "../admin/ViewTutor";
+import ViewTutor from "./ViewTutor";
 import api from "@/hooks/axios";
 import toast from "react-hot-toast";
-import { useAuthStore } from "@/store/useAuthStore";
-import { useRouter } from "next/navigation";
-import CourseTab from "./CourseTab";
-import { Chapter, Course } from "@/types/course";
-import { useCourseStore } from "@/store/useCourseStore";
-import { useGlobalCourseStore } from "@/store/useGlobalCourseStore";
+import { count } from "console";
+
+interface Tutor {
+  id: number;
+  
+  title: string;
+
+  createdAt: string;
+  courseStatus: "PUBLISHED" | "REJECTED" | "BANNED" | "UNDERREVIEW"  ;
+  thumbnail: string;
+  tutorProfile: {
+    status:
+      | "APPROVED"
+      | "DISAPPROVED"
+      | "BANNED"
+      | "UNDERREVIEW"
+     
+    id: number;
+  };
+}
 
 function formatDate(dateString: string) {
   const date = new Date(dateString);
@@ -38,21 +50,22 @@ function formatDate(dateString: string) {
 const getStatusBadge = (status: string) => {
   const statusConfig = {
     PUBLISHED: {
-      label: "Published",
+      label: "Approved",
       className: "bg-green-100 text-green-800 hover:bg-green-100",
     },
     REJECTED: {
-      label: "Rejected",
+      label: "Disapproved",
       className: "bg-purple-100 text-purple-800 hover:bg-purple-100",
     },
-    DRAFT: {
-      label: "Draft",
+    BANNED: {
+      label: "Banned",
       className: "bg-red-100 text-red-800 hover:bg-red-100",
     },
     UNDERREVIEW: {
       label: "Under Review",
       className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
     },
+    
   };
 
   return (
@@ -64,39 +77,38 @@ const getStatusBadge = (status: string) => {
 };
 
 const getTabStatus = (tab: string) => {
+  console.log("Tab status:", tab);
   switch (tab) {
     case "all":
-      return "";
-    case "published":
+      return "ALL";
+   
+    case "registered":
       return "PUBLISHED";
-    case "approved":
-      return "APPROVED";
     case "under-review":
       return "UNDERREVIEW";
+    case "banned":
+      return "BANNED";
     case "rejected":
       return "REJECTED";
-    case "draft":
-      return "DRAFT";
     default:
       return "";
   }
 };
 
-export default function CourseManagement({refetchKey}: {refetchKey: number}) {
-  const user = useAuthStore((state) => state.user);
+export default function CourseManagement() {
 
   const [activeTab, setActiveTab] = useState("all");
+  console.log(activeTab)
   const [currentTutor, setCurrentTutor] = useState<any>({});
   const [isViewOpen, setIsViewOpen] = useState(false);
-  const [tutors, setTutors] = useState<Course[]>([]);
+  const [tutors, setTutors] = useState<Tutor[]>([]);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const [counts, setCounts] = useState({
-    all: 0,
-    published: 0,
-    rejected: 0,
-    underReview: 0,
-    draft: 0,
+    ALL: 0,
+    UNDERREVIEW:0,
+    PUBLISHED: 0,
+    REJECTED: 0,
+    BANNED: 0,
   });
   const [pagination, setPagination] = useState({
     page: 1,
@@ -109,59 +121,8 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
+ 
 
-  const [totalCount, setTotalCount] = useState([
-    { status: "UNDERREVIEW", count: 0 },
-  ]);
-  const setChapters = useCourseStore((state) => state.setChapters);
-
-  const handleCourseSelection = (course: Course) => {
-    setCurrentTutor(course);
-
-    let {
-      id,
-      title,
-      tutorProfileId,
-      courseDepth,
-      courseStatus,
-      tags,
-      description,
-      duration,
-      price,
-      targetCourse,
-      targetSem,
-      targetUniversity,
-      thumbnail,
-    } = course;
-
-    if (!thumbnail) thumbnail = "";
-    useGlobalCourseStore.getState().setCourse(course);
-
-    useCourseStore.setState({
-      courseDetails: {
-        id,
-        title,
-        tutorProfileId,
-        courseDepth,
-        courseStatus,
-        tags,
-        description,
-        duration: duration ?? "0",
-        durationUnit: "Weeks",
-        price,
-        targetCourse,
-        targetSem,
-        targetUniversity,
-        thumbnail,
-      },
-
-      isDraftSaved: true, // optional
-    });
-    if (course.chapters) console.log(course);
-    setChapters(course.chapters as any[]); // if it's an array
-
-    router.push("mycourse/draft/edit");
-  };
   const fetchTutors = useCallback(
     async (
       tabValue: string,
@@ -172,11 +133,9 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
     ) => {
       setLoading(true);
       try {
-        const id = user?.tutorProfile?.id;
-        console.log(id);
-
         const status = getTabStatus(tabValue);
-        const res = await api.get(`/course/mycourse/${id}`, {
+        console.log(status)
+        const res = await api.get("/course/all", {
           params: {
             limit: limit,
             page: pageNum,
@@ -185,11 +144,11 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
             sortBy: sortBy,
           },
         });
-        setTotalCount(res.data.data.statusCounts);
-        console.log(res.data.data.statusCounts);
+        console.log(res.data.data.statusCounts)
+        
         setTutors(res.data.data.data || []);
 
-        // Update paginain info
+        // Update pagination info
         if (res.data.data.pagination) {
           setPagination((prev) => ({
             ...prev,
@@ -200,28 +159,8 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
           }));
         }
 
-        // Update counts from statsSummary
-        if (res.data.data.statusCounts) {
-          const statusSummary = res.data.data.statusCounts;
-          const newCounts = {
-            all:   statusSummary.find((s: any) => s.courseStatus === "ALL")
-                ?.count || 0,
-
-            published:
-              statusSummary.find((s: any) => s.courseStatus === "PUBLISHED")
-                ?.count || 0,
-            underReview:
-              statusSummary.find((s: any) => s.courseStatus === "UNDERREVIEW")
-                ?.count || 0,
-            draft:
-              statusSummary.find((s: any) => s.courseStatus === "DRAFT")
-                ?.count || 0,
-            rejected:
-              statusSummary.find((s: any) => s.courseStatus === "REJECTED")
-                ?.count || 0,
-          };
-          setCounts(newCounts);
-        }
+        // Update counts from statusSummary
+     setCounts(res.data.data.statusCounts)
 
         console.log(res.data);
       } catch (error) {
@@ -251,39 +190,10 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
       toast.success("Status was updated!");
     } catch (error) {
       console.log(error);
-      toast.success("Failed to update status!");
+      toast.success("Failed to update Kyc!");
     }
   };
-  //   const fetchCounts = useCallback(async () => {
-  //     try {
-  //       // Fetch counts from a single API call
-  //         const id=user?.tutorProfile?.id;
-
-  //       const res = await api.get(`/course/${id}`, {
-  //         params: { limit: 1, page: 1, status: "" },
-  //       });
-
-  //       if (res.data.statusSummary) {
-  //         const statusSummary = res.data.statusSummary;
-  //         setCounts({
-  //           all: res.data.pagination.total || 0,
-  //           rejected:
-  //  statusSummary.find((s: any) => s.status === "REJECTED")?.count || 0,
-
-  //           published:
-  //             statusSummary.find((s: any) => s.status === "PUBLISHED")?.count || 0,
-  //           underReview:
-  //             statusSummary.find((s: any) => s.status === "UNDERREVIEW")?.count ||
-  //             0,
-  //           draft:
-  //             (statusSummary.find((s: any) => s.status === "DRAFT")?.count ||
-  //               0)
-  //         });
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching counts:", error);
-  //     }
-  //   }, []);
+ 
 
   // Debounced search function
   const handleSearch = useCallback(
@@ -313,20 +223,9 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
     fetchTutors(activeTab, 1, pagination.limit, searchQuery, sort);
   };
 
-  // useEffect(() => {
-  //   fetchCounts();
-  // }, [fetchCounts]);
+ 
 
-  useEffect(() => {
-    fetchTutors(
-      activeTab,
-      pagination.page,
-      pagination.limit,
-      searchQuery,
-      pagination.sortBy
-    );
-  }, [activeTab, pagination.page, fetchTutors,refetchKey]);
-
+ 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     setPagination((prev) => ({ ...prev, page: 1 })); // Reset to first page when changing tabs
@@ -360,6 +259,17 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
     setIsViewOpen(false);
   };
 
+
+   useEffect(() => {
+    fetchTutors(
+      activeTab,
+      pagination.page,
+      pagination.limit,
+      searchQuery,
+      pagination.sortBy
+    );
+  }, [activeTab, pagination.page, fetchTutors]);
+
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
@@ -368,7 +278,8 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
       }
     };
   }, [searchTimeout]);
-
+  
+console.log(counts)
   return (
     <>
       <div className="flex justify-between mb-4">
@@ -415,48 +326,47 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
           onValueChange={handleTabChange}
           className="w-full p-0"
         >
-          <TabsList className="grid bg-[#F5F7F9] w-full grid-cols-5 border-b rounded-none h-[3rem] p-0">
+          <TabsList className="grid bg-[#F5F7F9] w-full grid-cols-6 border-b rounded-none h-[3rem] p-0">
             <TabsTrigger
               value="all"
-              className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
             >
-              All Course (
-               {totalCount.find((item) => item.status === "ALL")?.count ||
-                0})
-            </TabsTrigger>
-            <TabsTrigger
-              value="under-review"
-              className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
-            >
-              UnderReview (
-              {totalCount.find((item) => item?.status === "UNDERREVIEW")
-                ?.count || 0}
+              All Courses (
+            {counts.ALL}
               )
             </TabsTrigger>
             <TabsTrigger
-              value="published"
-               className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
+              value="registered"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
             >
-              Published (
-              {totalCount.find((item) => item.status === "PUBLISHED")?.count ||
-                0}
+              Approved (
+              {counts.PUBLISHED}
+              )
+            </TabsTrigger>
+          
+            <TabsTrigger
+              value="under-review"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+            >
+              Under Review (
+             {counts.UNDERREVIEW}
+              )
+            </TabsTrigger>
+            <TabsTrigger
+              value="banned"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+            >
+              Banned (
+              {counts.BANNED || 0}
               )
             </TabsTrigger>
             <TabsTrigger
               value="rejected"
-              className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
             >
-              Rejected (
-              {totalCount.find((item) => item.status === "REJECTED")?.count ||
-                0}
+              Disapproved (
+             {counts.REJECTED}
               )
-            </TabsTrigger>
-            <TabsTrigger
-              value="draft"
-             className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
-            >
-              Draft (
-              {totalCount.find((item) => item.status === "DRAFT")?.count || 0})
             </TabsTrigger>
           </TabsList>
 
@@ -471,26 +381,27 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
                 <div className="text-center py-8 text-gray-500">
                   {searchQuery
                     ? `No course found matching "${searchQuery}"`
-                    : "No courses found"}
+                    : "No course found"}
                 </div>
               ) : (
-                tutors?.map((tutor) => {
-                  const statusConfig = getStatusBadge(
-                    tutor.courseStatus ?? "DRAFT"
-                  );
+                tutors.map((tutor) => {
+                  const statusConfig = getStatusBadge(tutor.courseStatus);
                   return (
                     <div
                       key={tutor.id}
                       className="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
                     >
                       <div className="flex items-center space-x-4">
-                        <Avatar className="h-12  w-12">
+                        <Avatar className="h-12 w-12">
                           <AvatarImage
-                            src={tutor.thumbnail || "/placeholder.svg"}
+                            src={tutor.thumbnail}
                             alt={tutor.title}
                           />
                           <AvatarFallback className="bg-gray-800 text-white text-xs">
-                            {tutor?.title}
+                            {tutor.title
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
                           </AvatarFallback>
                         </Avatar>
                         <div>
@@ -498,10 +409,7 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
                             {tutor.title}
                           </h3>
                           <p className="text-sm text-gray-500">
-                            Joined Date:{" "}
-                            {tutor.updatedAt
-                              ? formatDate(tutor.updatedAt)
-                              : "N/A"}
+                            Joined Date: {formatDate(tutor.createdAt)}
                           </p>
                           <Badge className={`mt-1 ${statusConfig.className}`}>
                             {tutor?.courseStatus || "UNKNOWN"}
@@ -510,68 +418,108 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
                       </div>
 
                       <div className="flex w-fit items-center space-x-2">
-                        {activeTab == "draft" ? (
-                          <>
-                            <div className="flex gap-2 items-center justify-center">
-                              <Button
-                                onClick={() =>
-                                  updateTutorStatus(
-                                    tutor?.id ?? 0,
-                                    "UNDERREVIEW"
-                                  )
-                                }
-                                className=" text-white bg-primeGreen rounded-full flex items-center justify-center  "
-                              >
-                                Send for approval
-                              </Button>
-                            </div>
+                        {activeTab == "under-review" && (
+                          <div className="flex gap-2 items-center justify-center">
                             <Button
-                              variant="ghost"
-                              onClick={() => handleCourseSelection(tutor)}
-                              size="icon"
-                              className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                              onClick={() =>
+                                updateTutorStatus(
+                                  tutor?.id,
+                                  "PUBLISHED"
+                                )
+                              }
+                              className=" text-white bg-primeGreen rounded-full flex items-center justify-center  "
                             >
-                              <Pencil className="h-4 w-4" />
+                              Approve
                             </Button>
                             <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                              onClick={() =>
+                                updateTutorStatus(
+                                  tutor?.id,
+                                  "REJECTED"
+                                )
+                              }
+                              className=" text-white bg-gray-500 rounded-full flex items-center justify-center  "
                             >
-                              <Trash color="red" className="h-4 w-4" />
+                              Disapprove
                             </Button>
-                          </>
-                        ) : (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                          </>
+                          </div>
                         )}
+
+                        {activeTab == "banned" && (
+                          <div className="flex gap-2 items-center justify-center">
+                            <Button
+                              onClick={() =>
+                                updateTutorStatus(
+                                  tutor?.id,
+                                  "PUBLISHED"
+                                )
+                              }
+                              className=" text-white bg-primeGreen rounded-full flex items-center justify-center  "
+                            >
+                              Unban
+                            </Button>
+                          </div>
+                        )}
+                        {activeTab == "registered" && (
+                          <div className="flex gap-2 items-center justify-center">
+                            <Button
+                              onClick={() =>
+                                updateTutorStatus(
+                                  tutor?.id,
+                                  "BANNED"
+                                )
+                              }
+                              className=" text-white bg-primeGreen rounded-full flex items-center justify-center  "
+                            >
+                              Ban
+                            </Button>
+                          </div>
+                        )}
+
+                        {activeTab == "rejected" && (
+                          <div className="flex gap-2 items-center justify-center">
+                            <Button
+                              onClick={() =>
+                                updateTutorStatus(
+                                  tutor?.id,
+                                  "PUBLISHED"
+                                )
+                              }
+                              className=" text-white bg-primeGreen rounded-full flex items-center justify-center  "
+                            >
+                              Approve
+                            </Button>
+                        
+                          </div>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            setCurrentTutor(tutor);
+                            setIsViewOpen(true);
+                          }}
+                          size="icon"
+                          className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   );
                 })
               )}
             </div>
+
+            {isViewOpen && (
+              <ViewTutor tutorProfile={currentTutor} onClose={onClose} />
+            )}
 
             {/* Pagination */}
             {tutors.length > 0 && (

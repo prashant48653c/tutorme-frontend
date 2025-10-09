@@ -31,6 +31,14 @@ export default function Home() {
         console.log("first");
         router.push("/tutor/profile");
       }
+      else if(user?.role === "STUDENT"){
+        console.log("second");
+        router.push("/student/profile");
+      }
+      else if(user?.role === "ADMIN"){
+        console.log("third");
+        router.push("/admin/dashboard");
+      }
     }, [user]);
   return (
     <div className={` ${OnestFont.className} w-full flex flex-col items-center h-fit `}>

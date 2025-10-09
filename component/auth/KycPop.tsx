@@ -156,6 +156,7 @@ export default function KYCVerificationModal() {
   const [currentStep, setCurrentStep] = useState(1);
   const [languageInput, setLanguageInput] = useState("");
   const [state, dispatch] = useReducer(formReducer, initialState);
+  const [loading,setLoading]=useState(false);
   const removeLanguage = (index: number) => {
     dispatch({ type: "REMOVE_LANGUAGE", index });
   };
@@ -165,6 +166,7 @@ const setUser=useAuthStore((state)=>state.setUser);
       toast.error("Bank account numbers do not match.");
       return;
     }
+    setLoading(true);
     const formData = new FormData();
 
     // Basic Information
@@ -219,6 +221,8 @@ const setUser=useAuthStore((state)=>state.setUser);
     console.log(error)
     toast.success("Something went wrong");
     
+  }finally{
+    setLoading(false)
   }
     };
 
@@ -493,6 +497,7 @@ const setUser=useAuthStore((state)=>state.setUser);
     Graduation Year
   </Label>
   <Select
+  
     value={state.graduationYear}
     onValueChange={(value) =>
       dispatch({
@@ -785,6 +790,10 @@ const setUser=useAuthStore((state)=>state.setUser);
                   Back
                 </Button>
                 <Button
+                  disabled={
+                    (loading) ||
+                    (currentStep === 4 && !state.confirmCorrect)
+                  }
                   onClick={currentStep === 4 ? handleSubmit : nextStep}
                   className="w-full sm:w-auto bg-teal-500 hover:bg-teal-600 px-6"
                 >

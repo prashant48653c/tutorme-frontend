@@ -55,6 +55,7 @@ const Shop = () => {
       <div className="w-full flex justify-between ">
         <ShopSlider />
       </div>
+      
     </div>
   );
 };
