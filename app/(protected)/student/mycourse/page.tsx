@@ -33,7 +33,6 @@ const page = () => {
       <div>
         <CourseManagement />
       </div>
-      {isPopupOpen && <AddCourse onClose={() => setIsPopupOpen(false)} />}
     </section>
   );
 };

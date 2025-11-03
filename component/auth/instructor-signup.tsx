@@ -50,6 +50,7 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToLogin }: SignUp
       password: data.password,
       role: "TUTOR",
       phoneNumber: data.phoneNumber,
+      fcmToken:""
     }
 
     try {

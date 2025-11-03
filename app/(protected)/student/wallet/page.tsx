@@ -26,7 +26,6 @@ const WalletPage = () => {
       <div>
         <StudentWallet />
       </div>
-      {isPopupOpen && <AddCourse onClose={() => setIsPopupOpen(false)} />}
     </section>
   );
 };
