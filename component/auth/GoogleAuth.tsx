@@ -4,7 +4,7 @@ import api from "@/hooks/axios";
 import { Button } from "@/button";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
-
+import { requestNotificationToken } from "@/firebase";
 interface GoogleButtonProps {
   role: string;
 }
@@ -27,14 +27,16 @@ export default function GoogleButton({ role }: GoogleButtonProps) {
         const data = await userInfo.json();
         console.log(data);
         const { email, name, picture: image, sub: googleId } = data;
-
+        const fcmToken = await requestNotificationToken();
         // Send to backend
+        
         const res = await api.post("/auth/google-auth", {
           email,
           name,
           image,
           googleId,
           role,
+          fcmToken,
         });
         console.log(res.data);
         const { token, user } = res.data.data;
@@ -46,7 +48,6 @@ export default function GoogleButton({ role }: GoogleButtonProps) {
           router.push("/student/profile");
         }
 
-       
         localStorage.setItem("authToken", token);
 
         console.log("Logged in user:", user);

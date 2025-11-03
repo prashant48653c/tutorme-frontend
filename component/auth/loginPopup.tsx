@@ -14,6 +14,7 @@ import { useLogin } from "@/hooks/useAuth";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
 import GoogleButton from "./GoogleAuth";
+import { requestNotificationToken } from "@/firebase";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -42,7 +43,8 @@ export default function LoginModal({
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const res = await loginMutation.mutateAsync(data);
+      const fcmToken = await requestNotificationToken();
+      const res = await loginMutation.mutateAsync({ ...data, fcmToken });
       console.log(res, "Login");
       setUser(res.data.user);
       if (res.data.user.role === "TUTOR") {

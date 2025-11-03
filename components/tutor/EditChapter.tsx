@@ -12,6 +12,7 @@ import {
   Video,
   Folder,
   FileImage,
+  Divide,
 } from "lucide-react";
 
 import { Input } from "../ui/input";
@@ -44,10 +45,43 @@ import { useRouter } from "next/navigation";
 import RichTextExample from "./TextEditor.jsx";
 import api from "@/hooks/axios";
 import toast from "react-hot-toast";
+import { useGlobalCourseStore } from "@/store/useGlobalCourseStore";
 
 export const CourseContentEditor = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const router = useRouter();
+
+
+
+
+  async function getVideoThumbnail(videoUrl:string, seekTo = 1.0) {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement("video");
+    video.src = videoUrl;
+    video.crossOrigin = "anonymous"; // needed if the video is from another domain
+    video.load();
+
+    video.addEventListener("loadeddata", () => {
+      video.currentTime = seekTo;
+    });
+
+    video.addEventListener("seeked", () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      const ctx:any = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const imageUrl = canvas.toDataURL("image/png");
+      resolve(imageUrl);
+    });
+
+    video.addEventListener("error", (e) => reject(e));
+  });
+}
+
+const [description,setDescription]=useState<string>("")
   const [selectedItem, setSelectedItem] = useState<
     | ((Chapter | SubHeading | SubTitle) & {
         type: "chapter" | "subheading" | "subchapter";
@@ -57,15 +91,34 @@ export const CourseContentEditor = () => {
   >();
   // Get everything from the store
 
-  const handleSelection = (
+  const handleSelection =async (
     e: any,
-    item: Chapter | SubHeading | SubTitle,
+    item: Chapter | SubHeading | SubTitle | any,
     type: "chapter" | "subheading" | "subchapter",
     parentId: string
   ) => {
     e.stopPropagation();
     setSelectedItem({ ...item, type, parentId });
-    console.log(item);
+    setSubtitleFile(null);
+    const thumbnails:any = await getVideoThumbnail(item.video);
+    console.log(item)
+    setThumbnail(thumbnails)
+    setVideoFile(null);
+    setDescription(item.description || "")
+    console.log(parentId);
+  };
+
+  const deleteSection=async(id:number,type:string)=>{
+    try {
+      const res = await api.delete(`/course/chapter/${id}?type=${type}`);
+      console.log("Delete success:", res.data);
+      toast.success("Section has been deleted!");
+      setSelectedItem(null);
+      fetchCourse();
+    } catch (error) {
+      toast.error("Section wasn't deleted!");
+      console.error("Delete failed:", error);
+    }
   };
   const {
     courseDetails,
@@ -114,43 +167,115 @@ export const CourseContentEditor = () => {
   };
 
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [thumbnail, setThumbnail] = useState<string | null>(null);
+  const [loading, setLoadingState] = useState(false);
   const [subtitleFile, setSubtitleFile] = useState<File | null>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const subtitleInputRef = useRef<HTMLInputElement>(null);
+  const { course, setCourse } = useGlobalCourseStore();
 
-  const handleUpload = async () => {
-    if (!videoFile || !subtitleFile) {
-      toast.error("Please upload both video and subtitle.");
-      return;
-    }
+  const fetchCourse = async () => {
+    const courseId = courseDetails?.id;
+    const res = await api.get("/course/" + courseId);
+    console.log(res);
+    updateCourseDetails(res.data.data);
+    setCourse(res.data.data);
+  };
+ 
+const handleUpload = async () => {
+  console.log(selectedItem?.video, selectedItem?.subtitle);
 
+  const videoSource = videoFile || selectedItem?.video;
+  const subtitleSource = subtitleFile || selectedItem?.subtitle;
+
+  const isValidVideo =
+    videoSource instanceof File || typeof videoSource === "string";
+  const isValidSubtitle =
+    subtitleSource instanceof File || typeof subtitleSource === "string";
+
+  if (!isValidVideo || !isValidSubtitle) {
+    toast.error("Both video and subtitle must be provided (file or URL).");
+    return;
+  }
+
+  setLoadingState(true);
+
+  try {
     const formData = new FormData();
-    formData.append("video", videoFile);
-    formData.append("subtitle", subtitleFile);
-    formData.append("title", selectedItem?.title ?? "");
-    formData.append("description", "Yo");
-    formData.append("courseId", courseDetails?.id?.toString() ?? "");
 
+    // Append video and subtitle — either File or string
+    formData.append("video", videoSource);
+    formData.append("subtitle", subtitleSource);
+
+    formData.append("title", selectedItem?.title ?? "");
+    formData.append("description", description);
+    formData.append("courseId", courseDetails?.id?.toString() ?? "");
+    formData.append("parentId", selectedItem?.parentId ?? "");
     formData.append("type", selectedItem?.type ?? "");
 
-    try {
-      const res = await api.patch(
-        `/course/chapter/${selectedItem?.id}`,
-        formData
-      );
-      console.log("Upload success:", res.data);
-      toast.success("Course has been updated!");
-      setSelectedItem(null);
-      setVideoFile(null);
-      setSubtitleFile(null);
-    } catch (error) {
-      toast.error("Course wasn't updated!");
+    const res = await api.patch(
+      `/course/chapter/${selectedItem?.id}`,
+      formData
+    );
 
-      console.error("Upload failed:", error);
-    }
+    console.log("Upload success:", res.data);
+    toast.success("Course has been updated!");
+
+    // Reset state
+    setSelectedItem(null);
+    setVideoFile(null);
+    setSubtitleFile(null);
+   await fetchCourse();
+  } catch (error) {
+    console.error("Upload failed:", error);
+    toast.error("Course wasn't updated!");
+  } finally {
+    setLoadingState(false);
+  }
+};
+
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setVideoFile(file);
+
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.src = URL.createObjectURL(file);
+    video.crossOrigin = "anonymous";
+    video.muted = true;
+    video.playsInline = true;
+
+    // Wait for metadata to load (we get duration & dimensions)
+    video.onloadedmetadata = () => {
+      // Seek to 1 second (or 0 if shorter)
+      const seekTime = Math.min(1, video.duration / 2);
+      video.currentTime = seekTime;
+    };
+
+    // Once we have the frame we want, draw it to canvas
+    video.onseeked = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      const ctx: CanvasRenderingContext2D | null = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      }
+      const imageUrl = canvas.toDataURL("image/png");
+      setThumbnail(imageUrl);
+
+      // Clean up
+      URL.revokeObjectURL(video.src);
+    };
   };
 
   const handleSaveDraft = async () => {};
+ useEffect(() => {
+    fetchCourse();
+  }, []);
 
   return (
     <div className="flex border relative justify-end  p-1  overflow-hidden   ">
@@ -229,6 +354,7 @@ export const CourseContentEditor = () => {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     deleteChapter(chapter.id.toString());
+                                    deleteSection(chapter.id,"chapter")
                                   }}
                                   size={15}
                                   color="red"
@@ -321,6 +447,7 @@ export const CourseContentEditor = () => {
                                                       deleteSubTitle(
                                                         sub.id.toString()
                                                       );
+                                                      deleteSection(sub.id,"subchapter")
                                                     }}
                                                     size={15}
                                                     color="red"
@@ -428,6 +555,7 @@ export const CourseContentEditor = () => {
                                                                         deleteSubHeading(
                                                                           sh.id.toString()
                                                                         );
+                                                                        deleteSection(sh.id,"chapter")
                                                                       }}
                                                                       size={15}
                                                                       color="red"
@@ -529,79 +657,111 @@ flex flex-col} px-1`}
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
         </div>
+        {selectedItem == null ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
+            <Video className="w-16 h-16 text-gray-400 mb-4" />
+            <h2 className="text-xl font-semibold mb-2">No Content Selected</h2>
+            <p className="text-gray-600">
+              Please select a chapter or section from the sidebar to edit its
+              content.
+            </p>
+          </div>
+        ) : (
+          <div className="flex-1 p-6 mb-28 overflow-y-auto">
+            <div className="max-w-4xl mx-auto space-y-6">
+              {/* Video Upload */}
+              <div>
+                <h3 className="text-lg font-medium mb-3">Content Video</h3>
+                <div
+                  className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer"
+                  onClick={() => videoInputRef.current?.click()}
+                >
+                  {(thumbnail) ? (
+                    <img
+                      src={thumbnail as string}
+                      alt="Video thumbnail"
+                      className="mx-auto rounded-lg bg-gray-300 max-h-48 object-cover mb-4"
+                    />
+                  ) :
+                   (
+                    <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  )}
 
-        {/* Content Editor */}
-        <div className="flex-1 p-6 mb-28 overflow-y-auto">
-          <div className="max-w-4xl mx-auto space-y-6">
-            {/* Video Upload */}
-            <div>
-              <h3 className="text-lg font-medium mb-3">Content Video</h3>
-              <div
-                className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer"
-                onClick={() => videoInputRef.current?.click()}
-              >
-                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-2">
-                  {videoFile ? videoFile.name : "Upload your Content Video"}
-                </p>
-                <p className="text-sm text-blue-500">
-                  mp4 or mov (less than 2GB)
-                </p>
-                <input
-                  type="file"
-                  ref={videoInputRef}
-                  accept="video/mp4,video/mov"
-                  onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
-                  className="hidden"
-                />
-              </div>
-            </div>
+                  <p className="text-gray-600 mb-2">
+                    {videoFile ? videoFile.name : "Upload your Content Video"}
+                  </p>
+                  <p className="text-sm text-blue-500">
+                    mp4 or mov (less than 2GB)
+                  </p>
 
-            {/* Subtitle Upload */}
-            <div>
-              <h3 className="text-lg font-medium mb-3">Content Subtitle</h3>
-              <div
-                className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer"
-                onClick={() => subtitleInputRef.current?.click()}
-              >
-                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-2">
-                  {subtitleFile
-                    ? subtitleFile.name
-                    : "Upload your Content Subtitle"}
-                </p>
-                <p className="text-sm text-blue-500">SRT (less than 1MB)</p>
-                <input
-                  type="file"
-                  ref={subtitleInputRef}
-                  accept=".srt"
-                  onChange={(e) => setSubtitleFile(e.target.files?.[0] || null)}
-                  className="hidden"
-                />
+                  <input
+                    type="file"
+                    ref={videoInputRef}
+                    accept="video/mp4,video/quicktime"
+                    onChange={handleVideoChange}
+                    className="hidden"
+                  />
+                </div>
               </div>
-            </div>
-            <div className="w-full h-[15rem]">
-              <textarea
-                className="w-full h-full p-2 text-gray-700 border rounded resize-none 
+
+              {/* Subtitle Upload */}
+              <div>
+                <h3 className="text-lg font-medium mb-3">Content Subtitle</h3>
+                <div
+                  className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer"
+                  onClick={() => subtitleInputRef.current?.click()}
+                >
+                  <p className="text-gray-600 mb-2">
+                    {subtitleFile ? (
+                      <>
+                        <FileImage className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        {subtitleFile.name}
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        "Upload your Content Subtitle"
+                      </>
+                    )}
+                  </p>
+                  <p className="text-sm text-blue-500">SRT (less than 1MB)</p>
+                  <input
+                    type="file"
+                    ref={subtitleInputRef}
+                    accept=".srt"
+                    onChange={(e) =>
+                      setSubtitleFile(e.target.files?.[0] || null)
+                    }
+                    className="hidden"
+                  />
+                </div>
+              </div>
+              <div className="w-full h-[15rem]">
+                <textarea
+                  className="w-full h-full p-2 text-gray-700 border rounded resize-none 
                focus:outline-none focus:ring-2 focus:ring-green-400"
-                placeholder="Write your description"
-              />
-            </div>
+                  placeholder="Write your description"
+                  onChange={(e)=>setDescription(e.target.value)}
+                  value={description}
+                />
+              </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-4 mt-8">
-              <button
-                onClick={handleUpload}
-                className="flex-1 bg-teal-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-teal-600"
-              >
-                Save Draft
-              </button>
-              <button className="flex-1 border border-gray-300 text-gray-700 py-3 px-6 rounded-lg font-medium hover:bg-gray-50">
-                Send for Approval
-              </button>
+              {/* Action Buttons */}
+              <div className="flex gap-4 mt-8">
+                <button
+                  onClick={handleUpload}
+                  className="flex-1 bg-teal-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-teal-600"
+                >
+                  {loading ? "Saving..." : "Save Draft"}
+                </button>
+                <button className="flex-1 border border-gray-300 text-gray-700 py-3 px-6 rounded-lg font-medium hover:bg-gray-50">
+                  Send for Approval
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+        {/* Content Editor */}
       </div>
     </div>
   );

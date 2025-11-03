@@ -131,6 +131,7 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
       targetCourse,
       targetSem,
       targetUniversity,
+      
       thumbnail,
     } = course;
 
@@ -146,11 +147,11 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
         courseStatus,
         tags,
         description,
-        duration: duration ?? "0",
-        durationUnit: "Weeks",
+        duration: duration?.toString() || "",
         price,
         targetCourse,
         targetSem,
+        durationUnit: course.durationUnit || "",
         targetUniversity,
         thumbnail,
       },

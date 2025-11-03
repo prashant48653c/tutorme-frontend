@@ -20,11 +20,13 @@ export interface RegisterRequest {
   password: string;
   role: "STUDENT" | "TUTOR";
   phoneNumber: string;
+  fcmToken:string | null;
 }
 
 export interface LoginRequest {
   email: string;
   password: string;
+  fcmToken:string | null;
 }
 
 export interface RegisterResponse {

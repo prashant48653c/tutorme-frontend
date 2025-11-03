@@ -1,21 +1,22 @@
-
 import { initializeApp } from "firebase/app";
-import { getMessaging, getToken, onMessage, isSupported } from "firebase/messaging";
+import {
+  getMessaging,
+  getToken,
+  onMessage,
+  isSupported,
+} from "firebase/messaging";
 
-
-const firebaseConfig={
-     apiKey: "AIzaSyC51CmmEpIzXpHBXDRfm9cQAu5ZTI6uhsY",
-  authDomain: "stylist-20cfc.firebaseapp.com",
-  projectId: "stylist-20cfc",
-  storageBucket: "stylist-20cfc.firebasestorage.app",
-  messagingSenderId: "949950176019",
-  appId: "1:949950176019:web:b45e62739148f9b3d558e6",
-  measurementId: "G-BTCD8E5ZWQ"
-}
+const firebaseConfig = {
+ apiKey: "AIzaSyBAIX8vEqJk0oWMiPeSs_dvX6MAJe77QZo",
+    authDomain: "movieapp-f8c83.firebaseapp.com",
+    projectId: "movieapp-f8c83",
+    storageBucket: "movieapp-f8c83.appspot.com",
+    messagingSenderId: "298929364643",
+    appId: "1:298929364643:web:1de3e5a07ae46d0052e916",
+    measurementId: "G-0B0PWCQWF1",
+};
 const app = initializeApp(firebaseConfig);
 let messaging;
-
-
 
 isSupported().then((supported) => {
   if (supported) {
@@ -32,7 +33,8 @@ export const requestNotificationToken = async () => {
     return null;
   }
   try {
-    const vapidKey ='BLvXwxqXkqdt4PCKExDQxPFfAiKJ_ptaIBWU48RaKfyVuXhs9h4o5jkqJ_kGpnwDqU4XWxD4shi0ojrpWrugzm8';
+   const vapidKey = "BI3OEeEep0zSSOzvjaUALV-H_p5PmlSur8Qy0bkJ7-aOg0cM6z9oo6KpRwv3Rb8qzkoLlU-dP96nMbI2W3rHkxU";
+      
     console.log("Requesting FCM token...");
     const token = await getToken(messaging, { vapidKey: vapidKey });
     if (token) {

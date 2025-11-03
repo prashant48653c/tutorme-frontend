@@ -7,7 +7,7 @@ import React, { useEffect, useState } from "react";
 interface Notification {
   id: string;
   message: string;
-  
+  createdAt: Date;
   isRead: boolean;
 }
 
@@ -51,7 +51,7 @@ const NotificationBar = () => {
             >
               <p>{n.message}</p>
               <span className="text-xs text-gray-400">
-              July 4
+            {n.createdAt.toLocaleString()}
               </span>
             </div>
           ))

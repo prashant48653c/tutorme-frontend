@@ -12,24 +12,20 @@ import React from "react";
 
 const Topbar = () => {
   const user = useAuthStore((state) => state.user);
-const [notifications, setNotifications] = React.useState<number>(0);
-const [isVisible, setIsVisible] = React.useState(false);
+  const [notifications, setNotifications] = React.useState<number>(0);
+  const [isVisible, setIsVisible] = React.useState(false);
 
-const fetchNotifications=async()=>{
-  try {
-    const res=await api.get(`/notifications/counts/${user?.id}`);
+  const fetchNotifications = async () => {
+    try {
+      const res = await api.get(`/notifications/counts/${user?.id}`);
 
-    console.log(res.data.data, "Counts")
-    setNotifications(res.data.data)
-  } catch (error) {
-    
-  }
-}
-
-
+      console.log(res.data.data, "Counts");
+      setNotifications(res.data.data);
+    } catch (error) {}
+  };
 
   React.useEffect(() => {
-    fetchNotifications()
+    fetchNotifications();
     if (!user?.id) return;
 
     const socket = initClientSocket(user.id.toString());
@@ -42,15 +38,13 @@ const fetchNotifications=async()=>{
     return () => {
       socket.off("notification");
     };
-  }, [user?.id,isVisible]);
+  }, [user?.id, isVisible]);
 
-  const handleBellClick=async()=>{
+  const handleBellClick = async () => {
     setIsVisible(!isVisible);
-  const t= await requestNotificationToken();
-  console.log(t)
-      setNotifications(0);   
-    
-  }
+   
+    setNotifications(0);
+  };
 
   return (
     <>
@@ -79,7 +73,7 @@ const fetchNotifications=async()=>{
         <div className="flex ml-6 items-center justify-center gap-2">
           {/* Bell + Notification Badge */}
           <div onClick={handleBellClick} className="relative">
-            <Bell  size={23} />
+            <Bell size={23} />
             {notifications > 0 && (
               <div className="bg-green-600 text-white rounded-full w-5 h-5 absolute -top-1 -right-1 border-2 border-white flex items-center justify-center text-[10px] leading-none">
                 {notifications}
@@ -99,9 +93,11 @@ const fetchNotifications=async()=>{
           </div>
         </div>
 
-        {
-          isVisible && <div className="absolute top-12 right-0"><NotificationBar /></div>
-        }
+        {isVisible && (
+          <div className="absolute top-12 right-0">
+            <NotificationBar />
+          </div>
+        )}
       </div>
     </>
   );

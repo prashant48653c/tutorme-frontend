@@ -98,7 +98,7 @@ const AddCourse = ({ onClose,refetch }: { onClose: () => void, refetch: () => vo
     Fifth: "FIFTH",
     Sixth: "SIXTH",
     Seventh: "SEVENTH",
-    Eighth: "EIGHTH",
+    Eighth: "EIGHT",
   };
 
   {

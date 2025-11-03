@@ -8,6 +8,8 @@ export interface Course {
   tags: string[];
   courseStatus?: Status;
   duration?: string;
+  durationUnit?: string;
+
   chapterCount?: number;
   targetUniversity?: string;
   targetCourse?: string;
