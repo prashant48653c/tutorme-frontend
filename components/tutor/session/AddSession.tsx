@@ -28,6 +28,7 @@ interface WeeklyAvailability {
 
 export default function SessionSetupModal() {
   const [isOpen, setIsOpen] = useState(true)
+  const [totalWeek,setTotalWeek]=useState("1")
   const [hourlyRate, setHourlyRate] = useState("")
   const [selectedLanguage, setSelectedLanguage] = useState("english")
   const [tags, setTags] = useState("")
@@ -133,7 +134,8 @@ const formatted = Object.entries(availability)
         price: hourlyRate,
         description,
         language: selectedLanguage,
-        tutorProfileId:user?.tutorProfile?.id
+        tutorProfileId:user?.tutorProfile?.id,
+        servedWeeks:totalWeek
       })
       console.log("Session setup successful:", res.data)
       toast.success("Session setup successful")
@@ -210,6 +212,22 @@ const formatted = Object.entries(availability)
                 placeholder="Start typing"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
+                className="w-full"
+              />
+              <div className="text-xs text-blue-400 mt-1">Separate tags with space or enter key</div>
+            </div>
+          </div>
+
+           <div className="space-y-2">
+            <Label htmlFor="weeks" className="text-sm font-medium text-gray-700">
+              Number of Weeks
+            </Label>
+            <div className="relative">
+              <Input
+                id="weeks"
+                placeholder="Start typing"
+                value={totalWeek}
+                onChange={(e) => setTotalWeek(e.target.value)}
                 className="w-full"
               />
               <div className="text-xs text-blue-400 mt-1">Separate tags with space or enter key</div>

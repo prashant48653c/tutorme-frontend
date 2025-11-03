@@ -21,7 +21,7 @@ export default function AdminGuard({
 
         const res = await api.get(`/auth/is-admin`, {
           params: { id },
-          withCredentials: true,
+          
         });
         console.log(res);
         if (res.data?.data?.isAdmin) {

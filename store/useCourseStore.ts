@@ -6,17 +6,26 @@ import { persist } from 'zustand/middleware'
 export type SubHeading = {
   id: number
   title: string
+  video?: string
+  subtitle?: string
+  description?:string
 }
 
 export type SubTitle = {
   id: number
   title: string
+  video?: string
+  subtitle?: string
+  description?:string
   subHeadings: SubHeading[]
 }
 
 export type Chapter = {
   id: number
   title: string
+  video?: string
+  subtitle?: string
+  description?:string
   subChapters: SubTitle[]
 }
 

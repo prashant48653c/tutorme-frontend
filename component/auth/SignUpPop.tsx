@@ -16,6 +16,7 @@ import { RegisterRequest } from "@/types/auth";
 import Image from "next/image";
 import api from "@/hooks/axios";
 import GoogleButton from "./GoogleAuth";
+import { requestNotificationToken } from "@/firebase";
 
 interface SignUpModalProps {
   isOpen: boolean;
@@ -50,13 +51,18 @@ export default function SignUpModal({
   const agreedToTerms = watch("agreedToTerms");
 
   const onSubmit = async (data: SignUpFormData) => {
+     const fcmToken = await requestNotificationToken();
+    console.log(fcmToken);
     const registerData: RegisterRequest = {
       name: `${data.firstName} ${data.lastName}`,
       email: data.email,
       password: data.password,
       role: "STUDENT",
       phoneNumber: data.phoneNumber,
+      fcmToken,
+       
     };
+    
 
     try {
       await registerMutation.mutateAsync(registerData);

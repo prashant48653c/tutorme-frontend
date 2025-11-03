@@ -13,6 +13,7 @@ import { toast } from "sonner";
 const Profile = () => {
   const progress = 60;
   const { user, setUser } = useAuthStore();
+  console.log(user);
   const [status, setStatus] = useState(false);
   const imageRef: any = useRef(null);
   const handleUserImageUpload = async () => {
@@ -23,7 +24,7 @@ const Profile = () => {
     formData.append("profile", fileInput.files[0]);
     console.log(fileInput.files);
 
-    const uploadPromise =  api.post(`/auth/user/pp/${user?.id}`, formData);
+    const uploadPromise = api.post(`/auth/user/pp/${user?.id}`, formData);
     toast.promise(uploadPromise, {
       loading: "Uploading your profile picture!",
       success: "Profile Picture has been updated",
@@ -34,7 +35,7 @@ const Profile = () => {
 
       setUser(res.data.data);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       toast.error("Something went wrong!");
     }
   };
@@ -52,7 +53,7 @@ const Profile = () => {
 
           <div className="absolute inset-[6px] rounded-full overflow-hidden bg-white">
             <Image
-              src={user?.image || "/static/landing/course.svg"}
+              src={user?.image || "/icons/profile.png"}
               alt="profile"
               width={96}
               height={96}
@@ -111,8 +112,7 @@ const Profile = () => {
           </div>
         </div>
 
-      <div className="grid mt-5 grid-cols-1 justify-center lg:grid-cols-2 gap-3">
-
+        <div className="grid mt-5 grid-cols-1 justify-center lg:grid-cols-2 gap-3">
           <div className="flex gap-2 flex-col">
             <div className="flex items-center h-fit  justify-start gap-2">
               <Image
@@ -122,15 +122,12 @@ const Profile = () => {
                 height={20}
               />
 
-         <p
-  className="text-sm break-words sm:truncate sm:max-w-[11rem]"
-  title={user?.email}
->
-  {user?.email}
- 
-
-</p>
-
+              <p
+                className="text-sm break-words sm:truncate sm:max-w-[11rem]"
+                title={user?.email}
+              >
+                {user?.email}
+              </p>
             </div>
 
             <div className="flex items-center justify-start gap-2">
@@ -189,9 +186,12 @@ const Profile = () => {
           </div>
         </div>
       </div>
-      <div className="absolute invisible">
-        <KYCVerificationModal />
-      </div>
+
+       
+        <div className="absolute invisible ">
+          <KYCVerificationModal />
+        </div>
+      
     </div>
   );
 };

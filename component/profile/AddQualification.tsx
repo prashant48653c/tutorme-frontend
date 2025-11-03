@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,8 @@ import api from "@/hooks/axios";
 import { useAuthStore } from "@/store/useAuthStore";
 import useEducationStore from "@/store/useEducationStore";
 import { toast } from "sonner";
+import Image from "next/image";
+import { init } from "next/dist/compiled/webpack/webpack";
 
 interface AddQualificationModalProps {
   isOpen: boolean;
@@ -39,20 +41,24 @@ interface QualificationData {
 
 export default function AddQualificationModal({
   setStatus,
-  initialData
+  initialData,
+  refetch
 }: {
   setStatus: (status: boolean) => void;
-  initialData?:{qualification:string;timePeriod:string;type:string;id:number;institutionName:string,certificationUrl:string} & any
+  initialData?:{qualification:string;timePeriod:string;type:string;id:number;institutionName:string,certificationUrl:string} & any;
+  refetch:()=>void;
+
 }) {
+  console.log(initialData)
   const [qualification, setQualification] = useState(initialData?.qualification ||"");
   const [qualificationPeriod, setQualificationPeriod] = useState(initialData?.type||"");
   const [startRange, setStartRange] = useState(initialData?.timePeriod?.split("-")[0]||"");
   const [endRange, setendRange] = useState(initialData?.timePeriod?.split("-")[1]||"");
-
+const [preview,setPreview]=useState(initialData?.certificationUrl)
   const [graduationLocation, setGraduationLocation] = useState(initialData?.institutionName||"");
   const [certificate, setCertificate] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
-
+const[isLoadingUpdate,setIsLoading]=useState(false)
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -81,6 +87,7 @@ export default function AddQualificationModal({
       const file = e.target.files[0];
       if (validateFile(file)) {
         setCertificate(file);
+        setPreview(URL.createObjectURL(file))
       }
     }
   };
@@ -107,7 +114,7 @@ export default function AddQualificationModal({
   const setEducation = useEducationStore((state) => state.setEducation);
 
   const handleSave = async () => {
-    console.log("first");
+   setIsLoading(true)
     
     const formData = new FormData();
     formData.append("qualification", qualification);
@@ -125,14 +132,18 @@ export default function AddQualificationModal({
       console.log("Successfully updated:", res.data);
 
       // Optional: Reset form and close modal
+      refetch()
       setQualification("");
       setGraduationLocation("");
       setCertificate(null);
       toast.success("Qualification changed succesfully!")
       setStatus(false)
+      
     } catch (error:any) {
       console.error("Error uploading education:", error);
       toast.error(error.response.data.message || "Failed to upload qualification.");
+    }finally{
+      setIsLoading(false)
     }
   };
 
@@ -143,6 +154,13 @@ export default function AddQualificationModal({
     setCertificate(null);
     setStatus(false);
   };
+
+  useEffect(()=>{
+    if(initialData?.certificationUrl){
+      console.log(initialData.certificationUrl)
+      setPreview(initialData?.certificationUrl)
+    }
+  },[initialData?.certificationUrl])
 
   return (
     <div>
@@ -249,7 +267,7 @@ export default function AddQualificationModal({
               Qualification Certificate
             </Label>
             <div
-              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+              className={`border-2 border-dashed rounded-lg p-2 text-center transition-colors ${
                 dragActive
                   ? "border-teal-500 bg-teal-50"
                   : certificate
@@ -269,20 +287,18 @@ export default function AddQualificationModal({
                 onChange={handleFileChange}
               />
 
-              <div className="flex flex-col items-center space-y-3">
-                <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
-                  <Upload className="w-6 h-6 text-teal-600" />
-                </div>
+              <div className="flex flex-col items-center space-y-1">
+               
 
-                {certificate ? (
+                {preview ? (
                   <div className="text-center">
-                    <p className="text-sm font-medium text-green-600">
-                      File uploaded successfully!
-                    </p>
-                    <p className="text-xs text-gray-500">{certificate.name}</p>
+                  <Image src={preview} alt="preview" width={400}  height={100} className="mx-auto rounded-lg h-[120px] w-[20rem] mb-2"/>
                   </div>
                 ) : (
                   <div className="text-center">
+                     <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
+                  <Upload className="w-6 h-6 text-teal-600" />
+                </div>
                     <p className="text-sm font-medium text-gray-700 mb-1">
                       Upload your Marksheet/Certificate
                     </p>
@@ -309,6 +325,7 @@ export default function AddQualificationModal({
             Cancel
           </Button>
           <Button
+          disabled={isLoadingUpdate}
             onClick={handleSave}
             className="bg-teal-500 hover:bg-teal-600 px-6"
           >
