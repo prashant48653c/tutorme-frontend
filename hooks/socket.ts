@@ -9,7 +9,7 @@ export const initClientSocket = (userId: string) => {
     });
 
     socket.on("connect", () => {
-      console.log("✅ Client connected:", socket.id);
+      console.log("✅ Client connected:", socket?.id);
       socket?.emit("register", userId);
     });
   }

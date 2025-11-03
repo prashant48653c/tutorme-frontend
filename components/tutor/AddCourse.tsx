@@ -48,7 +48,7 @@ import { set } from "zod";
 
 
 
-const AddCourse = ({ onClose,refetch }: { onClose: () => void, refetch: () => void }) => {
+const AddCourse = ({ onClose,refetch }: { onClose:any, refetch:any }) => {
   const router = useRouter();
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
 
