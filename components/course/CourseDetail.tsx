@@ -77,7 +77,9 @@ export default function CourseInterface() {
   const [status, setStatus] = useState("Verifying...");
 
   useEffect(() => {
+    console.log(user)
     console.log(user?.studentProfile?.id,"is user profile")
+
     if (pidx && user?.studentProfile?.id) {
       checkKhaltiPayment({
         studentProfileId: user?.studentProfile?.id,
@@ -99,7 +101,7 @@ export default function CourseInterface() {
         <div className="flex items-center gap-3">
           {/* SubHeading Thumbnail */}
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center flex-shrink-0">
-            <Play className="w-3 h-3 text-white" />
+            <Play onClick={()=>router.push(`/student/course/${id}/active`)} className="w-3 h-3 text-white" />
           </div>
 
           {/* SubHeading Info */}

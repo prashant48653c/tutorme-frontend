@@ -13,7 +13,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 export default function CourseCheckout() {
   const params = useParams();
   const id = params.id;
-
+  const discountAmount = 250; // Example discount amount
   const { data, isLoading, error } = useQuery({
     queryKey: ["course"],
     queryFn: async () => {
@@ -35,7 +35,7 @@ export default function CourseCheckout() {
 
       data.courseName,
       2,
-      123.23
+      data.price - discountAmount
     );
   };
 
@@ -168,17 +168,17 @@ export default function CourseCheckout() {
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">Course Price</span>
-                  <span className="font-medium text-gray-900">Rs. 3500</span>
+                  <span className="font-medium text-gray-900">Rs. {data.price}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">Coupon Applied</span>
-                  <span className="font-medium text-red-500">-250</span>
+                  <span className="font-medium text-red-500">-{discountAmount}</span>
                 </div>
                 <hr className="border-gray-200" />
                 <div className="flex justify-between items-center">
                   <span className="font-medium text-gray-900">Grand Total</span>
                   <span className="font-bold text-teal-500 text-lg">
-                    Rs. 3250
+                    Rs. {data.price - discountAmount}
                   </span>
                 </div>
               </div>

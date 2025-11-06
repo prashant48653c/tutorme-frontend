@@ -33,7 +33,7 @@ export default function Home() {
       }
       else if(user?.role === "STUDENT"){
         console.log("second");
-        router.push("/student/profile");
+        // router.push("/student/profile");
       }
       else if(user?.role === "ADMIN"){
         console.log("third");
