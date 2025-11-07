@@ -14,9 +14,9 @@ const Tutor = () => {
     <div className="w-full lg:mt-[5rem] md:mt-[15rem]   mt-[0rem] flex flex-col items-center">
       <div className="w-max  my-6  text-center">
         <div
-          className={`text-[4rem]  scale-125 flex w-full items-center justify-center leading-13 font-[800] w-fit`}
+          className={`text-[4rem]  scale-125 flex w-full items-center justify-center leading-[4rem] font-[800] w-fit`}
         >
-          <p className="genera block hidden md:block max-w-[20rem] text-right leading-[1.2] md:leading-[1.6]">
+          <p className="genera block hidden md:block max-w-[20rem] text-right leading-[4rem] md:leading-[4rem]">
             {" "}
             Find the <br  />
             <span className="text-green-400 "> Tutors </span>
@@ -30,7 +30,7 @@ const Tutor = () => {
           </p>
         </div>
 
-        <div className="">
+        <div className="mt-[6rem]">
           <p className="mt-6 md:mt-8 text-sm md:text-base text-gray-700 max-w-[48rem] mx-auto md:mx-0 sm:w-[40rem] w-[30rem] leading-7">
             TutorMe is a platform designed to connect students with the right
             tutors for last-minute syllabus coverage. Whether you need

@@ -43,13 +43,13 @@ export default function RotatingCards() {
       {[0, 1, 2].map((i) => (
         <div
           key={i}
-          className="absolute top-0 transition-transform duration-1000 ease-in-out"
+          className="absolute top-[-7rem] right-[2rem] transition-transform duration-1000 ease-in-out"
           style={{
             transform: `rotate(${rotations[i]}deg)`,
             zIndex: zIndices[i],
           }}
         >
-          <div className="relative w-[15rem] h-[20rem] rounded-xl overflow-hidden shadow-lg">
+          <div className="relative w-[9rem] h-[20rem] rounded-xl overflow-hidden ">
             <Image
               src={
                 zIndices[i] === 3

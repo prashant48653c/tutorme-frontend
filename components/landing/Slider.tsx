@@ -68,7 +68,7 @@ if (api.selectedScrollSnap() === count - 1) {
                     when you need it.
                   </p>
 
-                  <Button className="w-[8rem] mt-3 flex items-center px-4 text-center rounded-3xl bg-green-400">
+                  <Button className="w-[8rem] text-white mt-3 flex items-center px-4 text-center rounded-3xl bg-green-400">
                     Learn More <ArrowUpRight color="white" />
                   </Button>
                 </CardContent>
