@@ -14,7 +14,7 @@ const Offer = () => {
           sem.
         </p>
       </div>
-      <div className="bg-black relative h-[30rem] py-6 lg:w-[60%] flex items-center  rounded-tl-[6rem]">  
+      <div className="bg-black  relative h-[30rem] py-6 lg:w-[60%] flex items-center  rounded-tl-[6rem]">  
         <Slider />
         <Image
           className="absolute hidden lg:block z-0 top-[1rem] right-[14.5rem]"
