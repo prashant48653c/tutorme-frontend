@@ -150,7 +150,7 @@ const Navbar = () => {
             ) : (
               <div className="flex items-center gap-2">
                 <Button
-                  className="font-bold bg-green-400 py-4 hover:bg-green-600 cursor-pointer rounded-full text-white"
+                  className="font-bold bg-primaryGreen py-4 hover:bg-green-600 cursor-pointer rounded-full text-white"
                   onClick={() => openModal("login")}
                 >
                   Login
