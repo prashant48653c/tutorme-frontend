@@ -58,7 +58,14 @@ export const CourseContentViewer = () => {
     | null
   >();
   // Get everything from the store
-
+const fetchCourse = async () => {
+const courseId = 3  ;
+const res = await api.get("/course/" + courseId);
+console.log(res);
+updateCourseDetails(res.data.data);
+console.log(courseDetails,"Updated")
+ 
+};
   const handleSelection = (
     e: any,
     item: Chapter | SubHeading | SubTitle,
@@ -120,40 +127,13 @@ export const CourseContentViewer = () => {
   const videoInputRef = useRef<HTMLInputElement>(null);
   const subtitleInputRef = useRef<HTMLInputElement>(null);
 
-  const handleUpload = async () => {
-    if (!videoFile || !subtitleFile) {
-      toast.error("Please upload both video and subtitle.");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("video", videoFile);
-    formData.append("subtitle", subtitleFile);
-    formData.append("title", selectedItem?.title ?? "");
-    formData.append("description", "Yo");
-    formData.append("courseId", courseDetails?.id?.toString() ?? "");
-
-    formData.append("type", selectedItem?.type ?? "");
-
-    try {
-      const res = await api.patch(
-        `/course/chapter/${selectedItem?.id}`,
-        formData
-      );
-      console.log("Upload success:", res.data);
-      toast.success("Course has been updated!");
-      setSelectedItem(null);
-      setVideoFile(null);
-      setSubtitleFile(null);
-    } catch (error) {
-      toast.error("Course wasn't updated!");
-
-      console.error("Upload failed:", error);
-    }
-  };
+  
 
   const handleSaveDraft = async () => {};
 
+  useEffect(() => {
+    fetchCourse();
+  }, []);
   return (
     <div className="flex border relative justify-end  p-1  overflow-hidden   ">
       <div
@@ -408,79 +388,60 @@ flex flex-col} px-1`}
 
         {/* Content Editor */}
         <div className="flex-1 p-6 mb-10 overflow-y-auto">
-          <div className="max-w-4xl mx-auto space-y-6">
-            <Plyr
-              source={{
-                type: "video",
-                sources: [
-                  {
-                    src: "https://www.w3schools.com/html/mov_bbb.mp4",
-                    type: "video/mp4",
-                  },
-                ],
-                tracks: [
-                  {
-                    kind: "captions",
-                    label: "English",
-                    src: "/sub.vtt",
-                    srcLang: "en",
-                    default: true,
-                  },
-                ],
-              }}
-              options={{
-                controls: [
-                  "play-large", // big play button in center
-                  "rewind", // ⏪ rewind (10s default)
-                  "play",
-                  "fast-forward", // ⏩ fast-forward (10s default)
-                  "progress",
-                  "current-time",
-                  "mute",
-                  "volume",
-                  "settings",
-                  "loop", // toggle loop directly inside controls
-                  "fullscreen",
-                ],
-                seekTime: 5,
-              }}
-            />
+       <div className="max-w-4xl mx-auto space-y-6">
+  {/* Normal HTML video */}
+  <video
+    className="w-full rounded-lg"
+    controls
+    controlsList="nodownload"
+  >
+    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4" />
+    <track
+      kind="captions"
+      label="English"
+      src="/sub.vtt"
+      srcLang="en"
+      default
+    />
+    Your browser does not support the video tag.
+  </video>
 
-            <div className="w-full h-max">
-              <p className="w-full h-full p-2 text-gray-700 border rounded ">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                Pariatur cupiditate quo in repudiandae architecto beatae
-                doloribus reprehenderit aspernatur odio quos ipsa, veritatis,
-                vitae consequatur dicta dolore quia ratione voluptatibus
-                laborum. Aperiam, eum sapiente deleniti dicta itaque porro illo
-                optio blanditiis, delectus possimus pariatur consequuntur ea
-                quia sequi iste animi, iure exercitationem mollitia asperiores!
-                Quidem, id?
-              </p>
-            </div>
+  <div className="w-full h-max">
+    <p className="w-full h-full p-2 text-gray-700 border rounded">
+      Lorem ipsum dolor sit amet consectetur adipisicing elit.
+      Pariatur cupiditate quo in repudiandae architecto beatae
+      doloribus reprehenderit aspernatur odio quos ipsa, veritatis,
+      vitae consequatur dicta dolore quia ratione voluptatibus
+      laborum. Aperiam, eum sapiente deleniti dicta itaque porro illo
+      optio blanditiis, delectus possimus pariatur consequuntur ea
+      quia sequi iste animi, iure exercitationem mollitia asperiores!
+      Quidem, id?
+    </p>
+  </div>
 
-            {/* Action Buttons */}
-            <div className="border-t grid grid-cols-2 gap-4 pt-4 space-y-3">
-              <Button
-                onClick={(e) => {
-                  e.preventDefault();
-                  addChapter();
-                }}
-                className="border py-5 bg-transparent text-black hover:bg-green-200 w-full border-green-400"
-                disabled={isLoading}
-              >
-                Previous{" "}
-              </Button>
+  {/* Action Buttons */}
+  <div className="border-t grid grid-cols-2 gap-4 pt-4 space-y-3">
+    <Button
+      onClick={(e) => {
+        e.preventDefault();
+        addChapter();
+      }}
+      className="border py-5 bg-transparent text-black hover:bg-green-200 w-full border-green-400"
+      disabled={isLoading}
+    >
+      Previous
+    </Button>
 
-              <Button
-                onClick={handleSaveDraft}
-                className="w-full py-5 bg-green-600 hover:bg-green-700"
-                disabled={isSaving}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
+    <Button
+      onClick={handleSaveDraft}
+      className="w-full py-5 bg-green-600 hover:bg-green-700"
+      disabled={isSaving}
+    >
+      Next
+    </Button>
+  </div>
+</div>
+
         </div>
       </div>
     </div>

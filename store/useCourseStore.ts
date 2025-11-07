@@ -55,7 +55,7 @@ export type CourseDetails = {
 
 type CourseStore = {
   // State
-  courseDetails: CourseDetails
+  courseDetails: CourseDetails 
   chapters: Chapter[]
   openChapters: Record<string, boolean>
   opensubChapters: Record<string, boolean>
