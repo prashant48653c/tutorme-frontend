@@ -5,6 +5,7 @@ import { HoveFont } from "@/constant/font";
 import { PlayCircle } from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
+import RotatingCards from "./AnimatedCard";
 
 const Tutor = () => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
@@ -20,43 +21,13 @@ const Tutor = () => {
             Find the <br  />
             <span className="text-green-400 "> Tutors </span>
           </p>
-          <section className="relative lg:w-[13rem] sm:w-[10rem] w-[8rem]">
-
-         
-          <div className="text-sm ">
-            <Image
-              className="z-50   rotate-3"
-              src={"/static/landing/tutor.svg"}
-              alt="ai-image"
-              width={200}
-              height={120}
-            />
-          </div>
-           <div className="text-sm">
-            <Image
-              className="absolute z-10 rotate-[11deg] top-0"
-              src={"/static/landing/tutor.svg"}
-              alt="ai-image"
-              width={200}
-              height={120}
-            />
-          </div>
-           <div className="text-sm">
-            <Image
-              className="absolute z-10 rotate-[-3deg] top-0"
-              src={"/static/landing/tutor.svg"}
-              alt="ai-image"
-              width={200}
-              height={120}
-            />
-          </div>
- </section>
-          <p className="genera block hidden md:block max-w-[20rem] text-left leading-[1.2] md:leading-[1.6]">
-  <span className="text-green-400">Best</span>
-  <br />
-  <span className="pl-4">in Nepal</span>
-</p>
-
+          <RotatingCards/>
+          <p className="max-w-[20rem] hidden md:block text-left leading-16">
+            {" "}
+            <span className="text-green-400 "> Best </span>
+            <br />
+            <span className="pl-4"> in Nepal</span>{" "}
+          </p>
         </div>
 
         <div className="">
