@@ -79,8 +79,8 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="flex justify-center w-full  items-center relative">
-        <div className="w-[95%] md:w-[80%] shadow-xl bg-[#061826] items-center px-4 py-2 my-5 flex justify-between rounded-4xl relative">
+      <nav className="flex justify-center w-full  items-center relative ">
+        <div className="w-[85%] md:w-[80%] shadow-xl bg-[#061826] items-center px-4 py-2 my-5 flex justify-between rounded-4xl relative">
           {/* Logo */}
           <div>
             <h1 className="font-extrabold text-white">
@@ -181,7 +181,7 @@ const Navbar = () => {
 
           {/* Mobile Menu Overlay */}
           {isMobileMenuOpen && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-[#061826] rounded-lg shadow-xl border border-gray-700 z-50 mx-4">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-[#061826] rounded-lg shadow-xl border border-gray-700 z-999 mx-4">
               {/* Navigation Links */}
               <div className="py-2">
                 {links.map((link, i) => (

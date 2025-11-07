@@ -10,17 +10,17 @@ const Tutor = () => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
 
   return (
-    <div className="w-full lg:mt-[25rem] md:mt-[15rem]   mt-[10rem] flex flex-col items-center">
+    <div className="w-full lg:mt-[5rem] md:mt-[15rem]   mt-[0rem] flex flex-col items-center">
       <div className="w-max  my-6  text-center">
         <div
-          className={`text-[4rem]   flex w-full items-center justify-center leading-13 font-[800]  ${HoveFont.className}`}
+          className={`text-[4rem]  scale-125 flex w-full items-center justify-center leading-13 font-[800] w-fit`}
         >
-          <p className="max-w-[20rem] hidden md:block text-right leading-16">
+          <p className="genera block hidden md:block max-w-[20rem] text-right leading-[1.2] md:leading-[1.6]">
             {" "}
             Find the <br  />
             <span className="text-green-400 "> Tutors </span>
           </p>
-          <section className="relative lg:w-[13rem] ">
+          <section className="relative lg:w-[13rem] sm:w-[10rem] w-[8rem]">
 
          
           <div className="text-sm ">
@@ -51,16 +51,16 @@ const Tutor = () => {
             />
           </div>
  </section>
-          <p className="max-w-[20rem] hidden md:block text-left leading-16">
-            {" "}
-            <span className="text-green-400 "> Best </span>
-            <br />
-            <span className="pl-4"> in Nepal</span>{" "}
-          </p>
+          <p className="genera block hidden md:block max-w-[20rem] text-left leading-[1.2] md:leading-[1.6]">
+  <span className="text-green-400">Best</span>
+  <br />
+  <span className="pl-4">in Nepal</span>
+</p>
+
         </div>
 
         <div className="">
-          <p className="md:max-w-[50rem] max-w-[30rem]  mt-9">
+          <p className="mt-6 md:mt-8 text-sm md:text-base text-gray-700 max-w-[48rem] mx-auto md:mx-0 sm:w-[40rem] w-[30rem] leading-7">
             TutorMe is a platform designed to connect students with the right
             tutors for last-minute syllabus coverage. Whether you need
             one-to-one sessions or group discussions, we help you find online
@@ -70,12 +70,12 @@ const Tutor = () => {
           <div className="flex mt-5 items-center justify-center gap-8">
             <Button
               onClick={() => setIsVideoOpen(true)}
-              className=" min-w-[15rem] bg-transparent py-6 border-1 border-black hover:bg-green-200 hover:border-green-200 rounded-full text-black "
+              className=" min-w-[15rem] bg-transparent py-6 border-2 border-black hover:bg-green-200 hover:border-green-200 rounded-full text-black "
             >
               Watch Video
               <PlayCircle size={15} />
             </Button>
-            <Button className="bg-green-400 min-w-[15rem] py-6 rounded-full text-white">
+            <Button className="bg-green-400 hover:!bg-gray-900 min-w-[15rem] py-6 rounded-full text-white">
               {" "}
               Learn More
             </Button>

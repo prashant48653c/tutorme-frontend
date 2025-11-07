@@ -26,7 +26,7 @@ const Instruction = () => {
         />
       </div>
       <div className="md:w-[40%] w-[80%] ">
-        <h2 className={`text-5xl leading-13 font-[800]  ${HoveFont.className}`}>
+        <h2 className={`text-5xl genera leading-13 font-[800]  ${HoveFont.className}`}>
           Want to become an
           <br />
           <span className="text-green-400">Instructor? </span>
@@ -41,7 +41,7 @@ const Instruction = () => {
           subject expert, this is your chance to make a real impact.
         </p>
         <div>
-          <Button   onClick={() => openModal("instructor")} className="bg-green-400 min-w-[10rem] py-4 mt-3 rounded-full text-white">
+          <Button   onClick={() => openModal("instructor")} className="bg-green-400 min-w-[10rem] py-4 mt-3 rounded-full text-white  hover:!bg-gray-900 transition">
             {" "}
            Apply Now
           </Button>

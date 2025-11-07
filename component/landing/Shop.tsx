@@ -10,7 +10,7 @@ const Shop = () => {
     <div className=" bg-black rounded-br-[7rem] pt-16 pb-8 mb-5">
       <div className="flex md:flex-row  flex-col px-[5rem] items-center justify-between ">
         <div className="md:w-[50%] w-[100%] flex justify-start px-4">
-          <h4 className="text-[3rem] w-full text-white text-center md:text-left gap-y-5 leading-14 font-[800] ">
+          <h4 className="genera text-[3rem] w-full text-white text-center md:text-left gap-y-5 leading-14 font-[800] ">
             Explore <br className="md:block hidden" /> TUTOR
             <span className="text-green-400">ME</span> Shop
           </h4>

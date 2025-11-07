@@ -6,9 +6,12 @@ const Offer = () => {
   return (
     <div className="w-full lg:h-[33rem] mt-[3rem] flex lg:flex-row h-full flex-col items-center">
       <div className="lg:mx-24 text-center lg:text-left w-full lg:w-[45%]">
-        <h4 className="text-[4rem] flex flex-col gap-y-5 leading-13 font-[800] ">
-          What we <br /> <span className="text-green-400">Offer</span>
-        </h4>
+        <h4 className="genera text-[3rem] sm:text-[4rem] font-extrabold leading-tight text-center sm:text-left">
+  What we
+  <br className="inline md:hidden" />
+  <span className="text-green-400"> Offer</span>
+</h4>
+
         <p className="mt-4 lg:max-w-[20rem] lg:text-left text-center">
           Porttitor cursus leo tincidunt rutrum diam eleifend quam proin sed in
           sem.

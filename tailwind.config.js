@@ -15,9 +15,15 @@ module.exports = {
       colors: {
         primaryBlack: '#061826',
         primaryGreen: '#09C4AE',
+        green: {
+        400: '#09C4AE',
+      },
       },
       fontFamily: {
         hove: ['Hove', 'sans-serif'],
+      },
+      borderRadius: {
+        '4xl': '2rem',
       },
     },
   },
