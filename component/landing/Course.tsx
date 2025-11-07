@@ -44,19 +44,21 @@ export default function Course() {
               <span className="text-green-400">Course</span> Categories
             </h4>
             <p className="my-2 text-sm max-w-[29rem]">
-              Porttitor cursus leo tincidunt rutrum diam eleifend quam proin sed
-              in sem.
+              Explore a variety of subjects with our expert-led courses designed
+              for quick learning and effective understanding.
             </p>
             <div>
-              <Button className="bg-green-400 min-w-[10rem] flex gap-x-2 py-4 mt-3 rounded-full text-white hover:!bg-gray-900 transition">
+              <Button className="group bg-green-400 min-w-[10rem] flex gap-x-2 py-4 mt-3 rounded-full text-white hover:!bg-gray-900 transition">
                 Explore More
-                <ArrowUpRight color={"white"} size={15} />
+                <span className="icon-hover-rotate">
+                <ArrowUpRight color="white" size={15} />
+                </span>
               </Button>
             </div>
           </div>
 
           {/* DESKTOP: stacked cards (visible from md and up) */}
-          <div className="hidden md:flex w-full items-center md:items-end mt-16 flex-col gap-y-3">
+          <div className="hidden lg:flex w-full items-center md:items-end mt-16 flex-col gap-y-3">
             {courses.slice(0, 2).map((c) => (
               <div
                 key={c.id}
@@ -78,9 +80,12 @@ export default function Course() {
                     {c.title}
                   </CardTitle>
                   <div className="p-1 px-3">
-                    <Button className="min-w-[6rem] bg-white py-4 border border-black hover:!bg-green-200 hover:!border-green-200 rounded-full text-black">
+                    <Button className="group min-w-[6rem] bg-white py-4 border border-black hover:!bg-green-200 hover:!border-green-200 rounded-full text-black">
                       View More
-                      <ArrowUpRight size={15} />
+                      
+                      <span className="icon-hover-rotate">
+            <ArrowUpRight size={15} />
+            </span>
                     </Button>
                   </div>
                 </CardHeader>
@@ -90,7 +95,7 @@ export default function Course() {
         </div>
 
         {/* Right column (desktop-only side cards) */}
-        <div className="md:w-[35%] hidden md:block">
+        <div className="lg:w-[35%] hidden lg:block">
           <div className="flex items-start pt-9 w-full mt-5 flex-col gap-y-3">
             {courses.slice(2).map((c) => (
               <div
@@ -111,9 +116,11 @@ export default function Course() {
                     {c.title}
                   </CardTitle>
                   <div className="p-1 px-3">
-                    <Button className="min-w-[6rem] bg-transparent py-4 border border-black hover:!bg-green-200 hover:!border-green-200 rounded-full text-black">
+                    <Button className="group min-w-[6rem] bg-white py-4 border border-black hover:!bg-green-200 hover:!border-green-200 rounded-full text-black">
                       View More
-                      <ArrowUpRight size={15} />
+                      <span className="icon-hover-rotate">
+            <ArrowUpRight size={15} />
+            </span>
                     </Button>
                   </div>
                 </CardHeader>
@@ -123,11 +130,7 @@ export default function Course() {
         </div>
       </div>
 
-      {/* -------------------------
-          MOBILE SLIDER (shown only on small screens)
-         ------------------------- */}
-      <div className="md:hidden mt-8 relative">
-        {/* Prev/Next controls */}
+      <div className="lg:hidden mt-8 relative">
         <div className="absolute left-2 top-1/2 -translate-y-1/2 z-20">
           <button
             onClick={scrollPrev}
@@ -176,7 +179,9 @@ export default function Course() {
                   <div>
                     <Button className="min-w-[6rem] bg-transparent py-3 border border-black hover:!bg-green-200 hover:!border-green-200 rounded-full text-black">
                       View More
-                      <ArrowUpRight size={15} />
+                      <span className="icon-hover-rotate">
+            <ArrowUpRight size={15} />
+            </span>
                     </Button>
                   </div>
                 </div>

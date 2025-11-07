@@ -27,7 +27,7 @@ const Hero = () => {
         {/* heading */}
         <div className="my-6 text-center sm:my-8">
           <h2
-            className={`tracking-tight genera font-extrabold text-3xl sm:text-5xl lg:text-6xl leading-[1.1]`}
+            className={`tracking-tight genera font-extrabold text-3xl sm:text-5xl md:text-5xl lg:text-6xl leading-[1.1]`}
           >
             Connect with Verified Tutors &amp;
             <br className="hidden sm:block" />
@@ -39,11 +39,10 @@ const Hero = () => {
 
         {/* ctas */}
         <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-  <Button className=" w-[14rem] sm:w-auto md:mb-10 min-w-[10rem] py-6 rounded-full text-white bg-green-400 hover:!bg-gray-900 transition pointer-events-auto">
-    Explore our Courses
+<Button className="min-w-[10rem] md:mb-10 py-6 rounded-full text-white bg-green-400 hover:bg-gray-900 transition pointer-events-auto">    Explore our Courses
   </Button>
 
-  <Button className=" w-[14rem] sm:w-auto md:mb-10 min-w-[10rem] py-6 rounded-full border-2 text-black bg-gray-100 border-gray-700 hover:!bg-green-200 hover:!border-green-200 transition pointer-events-auto">
+  <Button className=" min-w-[10rem] md:mb-10  py-6 rounded-full border-2 text-black bg-gray-100 border-gray-700 hover:!bg-green-200 hover:!border-green-200 transition pointer-events-auto">
     Visit Shop
   </Button>
 </div>
@@ -51,15 +50,14 @@ const Hero = () => {
 
 
         {/* Responsive hero art */}
-<div className="relative -mt-24 sm:-mt-20 md:-mt-30 lg:-mt-40 z-10 pointer-events-none">
-          <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] overflow-hidden rounded-2xl ">
+<div className="relative -mt-28 sm:-mt-16 md:-mt-28 lg:-mt-30 z-10 pointer-events-none">     <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] overflow-hidden rounded-2xl ">
             <Image
               src="/static/landing/heros.png"
               alt="Hero illustration"
               fill
               priority
-              className="object-cover opacity-100 filter brightness-105 contrast-110 pointer-events-none"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1200px"
+              className="object-contain pointer-events-none "
+              sizes="(max-width: 640px) 100vw  , (max-width: 1024px) 90vw, 1200px"
             />
           </div>
         </div>

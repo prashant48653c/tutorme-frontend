@@ -49,8 +49,6 @@ export default function Comments() {
   const scrollBy = (dir = 1) => {
     const el = mobileRef.current;
     if (!el) return;
-    const step = Math.round(el.clientWidth * 0.85);
-    el.scrollBy({ left: step * dir, behavior: "smooth" });
   };
 
   return (

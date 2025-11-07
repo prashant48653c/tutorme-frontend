@@ -75,7 +75,7 @@ const Tutor = () => {
               Watch Video
               <PlayCircle size={15} />
             </Button>
-            <Button className="bg-green-400 hover:!bg-gray-900 min-w-[15rem] py-6 rounded-full text-white">
+            <Button className="group bg-green-400 hover:!bg-gray-900 min-w-[15rem] py-6 rounded-full text-white">
               {" "}
               Learn More
             </Button>

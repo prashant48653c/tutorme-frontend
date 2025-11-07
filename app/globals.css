@@ -16,10 +16,15 @@
 
 @font-face {
   font-family: "TT Hove";
-  src: url("/tutorme-frontend/public/fonts/TT\ Hoves\ Pro\ Trial\ Bold.ttf") format("truetype");
-
+  src: url("/fonts/TT\ Hoves\ Pro\ Trial\ Bold.ttf") format("truetype");
 }
 
+@font-face {
+  font-family: 'ADLaM Display';
+  src: url('/fonts/ADLaMDisplay-Regular.ttf') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
 
 @theme inline {
   --color-background: var(--background);
@@ -66,12 +71,18 @@ html {
 }
 
 body {
+  zoom: 1.5;
   padding: 0;
   margin: 0;  
   overflow-x: hidden;
   box-sizing: border-box;
   font-family: 'Hove',Verdana, Geneva, Tahoma, sans-serif;
   width: 100%;
+}
+@media (max-width: 920px) {
+  body {
+    zoom: 1;
+  }
 }
 
 :root {
@@ -200,4 +211,13 @@ body {
 .genera {
   font-family: "Genera", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-weight: 770;
+}
+.titleFont {
+  font-family: 'ADLaM Display', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.icon-hover-rotate {
+  transition: transform 0.3s ease;
+}
+.group:hover .icon-hover-rotate {
+  transform: rotate(45deg);
 }

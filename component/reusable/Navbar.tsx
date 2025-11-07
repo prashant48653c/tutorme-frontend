@@ -83,7 +83,7 @@ const Navbar = () => {
         <div className="w-[85%] md:w-[80%] shadow-xl bg-[#061826] items-center px-4 py-2 my-5 flex justify-between rounded-4xl relative">
           {/* Logo */}
           <div>
-            <h1 className="font-extrabold text-white">
+            <h1 className="titleFont text-white">
               TUTOR<span className="text-green-400">ME</span>
             </h1>
           </div>

@@ -16,13 +16,14 @@ const Shop = () => {
           </h4>
         </div>
         <div>
-          <Button className="border-green-400 flex justify-around text-center border w-min-[10rem] mt-4 px-1 py-6 text-lg font-semibold pl-3 rounded-full text-white ">
-            {" "}
-            View Shop
-            <div className="rounded-full p-3  bg-green-400">
-              <ArrowUpRight color="white" size={15} />
-            </div>
-          </Button>
+          <Button className="group hover:!bg-gray-900 transition border-green-400 flex items-center justify-between border min-w-[10rem] mt-4 px-4 py-6 text-lg font-semibold rounded-full text-white">
+  <span>View Shop</span>
+  <div className="rounded-full p-3 bg-green-400">
+    <span className="icon-hover-rotate">
+      <ArrowUpRight color="white" size={15} />
+    </span>
+  </div>
+</Button>
         </div>
       </div>
 
