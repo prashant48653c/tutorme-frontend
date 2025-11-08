@@ -47,7 +47,7 @@ export default function Blog() {
         {/* Header */}
         <div className="flex md:flex-row flex-col pr-16 items-center justify-between mb-12">
           <div>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h2 className="genera text-4xl md:text-5xl font-bold text-gray-900 mb-4">
               From Our <span className="text-teal-400">Blogs</span>
             </h2>
             <p className="text-gray-600 text-lg">
@@ -55,13 +55,17 @@ export default function Blog() {
             </p>
           </div>
           <div >
-                <Button className="border-green-400 bg-white flex justify-around text-center border w-min-[10rem] mt-4 px-1 py-6 text-lg font-semibold pl-3 rounded-full text-black ">
+                <Button className="group border-green-400 bg-white flex justify-around text-center border w-min-[10rem] mt-4 px-1 py-6 text-lg font-semibold pl-3 rounded-full text-black hover:bg-teal-50 transition">
               {" "}
               View all Blogs
+              <span className="icon-hover-rotate">
               <div className='rounded-full p-3  bg-green-400'>
+                
               <ArrowUpRight color='white'  size={15}/>
-
               </div>
+              </span>
+
+              
           </Button>
             </div>
         </div>

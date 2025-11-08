@@ -13,11 +13,13 @@ const Offer = () => {
 </h4>
 
         <p className="mt-4 lg:max-w-[20rem] lg:text-left text-center">
-          Porttitor cursus leo tincidunt rutrum diam eleifend quam proin sed in
-          sem.
+          At TutorMe, we specialize in connecting students with expert tutors
+          for last-minute syllabus coverage. Whether you need one-on-one
+          sessions or group discussions, our platform helps you find qualified
+          online tutors instantly. 
         </p>
       </div>
-      <div className="bg-black relative h-[30rem] py-6 lg:w-[60%] flex items-center  rounded-tl-[6rem]">  
+      <div className="bg-black  relative h-[30rem] py-6 lg:w-[60%] flex items-center  rounded-tl-[6rem]">  
         <Slider />
         <Image
           className="absolute hidden lg:block z-0 top-[1rem] right-[14.5rem]"

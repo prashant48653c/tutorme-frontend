@@ -44,14 +44,14 @@ if (api.selectedScrollSnap() === count - 1) {
   }, [api]);
 
   return (
-    <div className="mx-[3rem] z-10 w-full">
+    <div className="mx-[3rem]  z-10 w-full">
       <Carousel setApi={setApi} className="w-full">
         <CarouselContent>
           {Array.from({ length: 5 }).map((_, index) => (
             <CarouselItem key={index} className="basis-1/2 ">
-              <Card>
+              <Card className="bg-white">
                 <CardContent className="flex flex-col aspect-auto">
-                  <div className="bg-green-500 w-fit rounded-4xl flex gap-3 items-center px-3 py-2">
+                  <div className="bg-green-500 rounded-full w-fit rounded-4xl flex gap-3 items-center px-3 py-2">
                     <Book color="white" />
                     <Box color="white" />
                   </div>
@@ -68,8 +68,11 @@ if (api.selectedScrollSnap() === count - 1) {
                     when you need it.
                   </p>
 
-                  <Button className="w-[8rem] mt-3 flex items-center px-4 text-center rounded-3xl bg-green-400">
-                    Learn More <ArrowUpRight color="white" />
+                  <Button className="group w-[8rem] text-white mt-3 flex items-center px-4 text-center rounded-3xl bg-green-400 hover:!bg-gray-900">
+                    Learn More 
+                    <span className="icon-hover-rotate">
+                    <ArrowUpRight color="white" />
+                    </span>
                   </Button>
                 </CardContent>
               </Card>

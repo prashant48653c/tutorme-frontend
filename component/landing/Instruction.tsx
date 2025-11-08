@@ -15,8 +15,8 @@ const Instruction = () => {
     setActiveModal(null)
   }
   return (
-    <div className="flex flex-col md:flex-row gap-4 my-[5rem]  items-center justify-evenly">
-      <div className="flex items-center justify-end">
+    <div className="bg-[#F2F7FF] flex flex-col md:flex-row gap-4 my-[5rem]  items-center justify-evenly">
+      <div className="flex items-center justify-end ">
         <Image
           className="w-[25rem] rounded-t-2xl"
           src={"/static/landing/instructor.svg"}

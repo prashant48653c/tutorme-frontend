@@ -10,15 +10,31 @@ import {
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 
-const courses = Array.from({ length: 4 }).map((_, i) => ({
-  id: i,
-  title: "Computer Science with Artificial Intelligence",
-  desc: "Bsc (Third Year)",
-  img: "/static/landing/course.svg",
-}));
+const courses = [
+  {
+    subject: "BSc (Third Year)",
+    heading: "Computer Science with Artificial Intelligence",
+    image: "/static/landing/course.svg",
+  },
+  {
+    subject: "BSc (First Year)",
+    heading: "Data Science and Machine Learning",
+    image: "/static/landing/image 25.svg",
+  },
+  {
+    subject: "BMe (Fourth Year)",
+    heading: "Quantum Theory",
+    image: "/static/landing/image.svg",
+  },
+  {
+    subject: "MSc (Second Year)",
+    heading: "Cyber Security and Ethical Hacking",
+    image: "/static/landing/image 25 (1).svg",
+  },
+];
 
 export default function Course() {
-  const sliderRef = useRef(null);
+  const sliderRef = useRef<HTMLDivElement>(null);
 
   const scrollNext = () => {
     const el = sliderRef.current;
@@ -35,10 +51,10 @@ export default function Course() {
 
   return (
     <section className="w-full">
-      <div className="flex w-full gap-16">
-        {/* Left column (desktop) */}
-        <div className="md:w-[55%] w-[90%">
-          <div className="w-full flex flex-col items-start mx-20 ">
+      <div className="flex w-full gap-16 ">
+        {/* Left column */}
+        <div className="md:w-[55%] w-[90%]">
+          <div className="w-full flex flex-col items-start mx-20">
             <h4 className="genera text-[3rem] text-left gap-y-5 leading-14 font-[800]">
               Our Popular <br />
               <span className="text-green-400">Course</span> Categories
@@ -57,27 +73,26 @@ export default function Course() {
             </div>
           </div>
 
-          {/* DESKTOP: stacked cards (visible from md and up) */}
+          {/* Desktop left stack */}
           <div className="hidden lg:flex w-full items-center md:items-end mt-16 flex-col gap-y-3">
-            {courses.slice(0, 2).map((c) => (
+            {courses.slice(0, 2).map((item, i) => (
               <div
-                key={c.id}
+                key={i}
                 className="w-[25rem] my-2 pb-6 rounded-2xl bg-[#FFEEE2] flex flex-col gap-y-2 p-0"
               >
                 <CardHeader className="p-0">
                   <Image
                     className="w-[25rem] rounded-t-2xl"
-                    src={c.img}
-                    alt="ai-image"
+                    src={item.image}
+                    alt={item.heading}
                     width={400}
                     height={420}
                   />
-
                   <CardDescription className="p-1 px-3">
-                    {c.desc}
+                    {item.subject}
                   </CardDescription>
                   <CardTitle className="text-2xl px-3 font-extrabold">
-                    {c.title}
+                    {item.heading}
                   </CardTitle>
                   <div className="p-1 px-3">
                     <Button className="group min-w-[6rem] bg-white py-4 border border-black hover:!bg-green-200 hover:!border-green-200 rounded-full text-black">
@@ -97,23 +112,24 @@ export default function Course() {
         {/* Right column (desktop-only side cards) */}
         <div className="lg:w-[35%] hidden lg:block">
           <div className="flex items-start pt-9 w-full mt-5 flex-col gap-y-3">
-            {courses.slice(2).map((c) => (
+            {courses.slice(2).map((item, i) => (
               <div
-                key={c.id}
+                key={i}
                 className="w-[25rem] my-2 pb-6 rounded-2xl bg-[#FFEEE2] flex flex-col gap-y-2 p-0"
               >
                 <CardHeader className="p-0">
                   <Image
                     className="w-[25rem] rounded-t-2xl"
-                    src={c.img}
-                    alt="ai-image"
+                    src={item.image}
+                    alt={item.heading}
                     width={400}
                     height={420}
                   />
-
-                  <CardDescription className="p-1 px-3">{c.desc}</CardDescription>
+                  <CardDescription className="p-1 px-3">
+                    {item.subject}
+                  </CardDescription>
                   <CardTitle className="text-2xl px-3 font-extrabold">
-                    {c.title}
+                    {item.heading}
                   </CardTitle>
                   <div className="p-1 px-3">
                     <Button className="group min-w-[6rem] bg-white py-4 border border-black hover:!bg-green-200 hover:!border-green-200 rounded-full text-black">
@@ -150,22 +166,22 @@ export default function Course() {
           </button>
         </div>
 
-        {/* scroll container */}
+        {/* Scrollable cards */}
         <div
           ref={sliderRef}
           className="w-full overflow-x-auto snap-x snap-mandatory scroll-smooth touch-pan-x px-4 py-2 space-x-4 scrollbar-hide"
         >
           <div className="flex gap-4">
-            {courses.map((c) => (
+            {courses.map((item, i) => (
               <article
-                key={c.id}
+                key={i}
                 className="snap-start shrink-0 w-[80%] sm:w-[65%] rounded-2xl bg-[#FFEEE2] p-0"
                 aria-roledescription="slide"
               >
                 <div className="overflow-hidden rounded-t-2xl">
                   <Image
-                    src={c.img}
-                    alt={c.title}
+                    src={item.image}
+                    alt={item.heading}
                     width={600}
                     height={320}
                     className="w-full h-auto object-cover"
@@ -173,9 +189,10 @@ export default function Course() {
                 </div>
 
                 <div className="p-3">
-                  <p className="text-sm">{c.desc}</p>
-                  <h3 className="text-xl font-extrabold my-2">{c.title}</h3>
-
+                  <p className="text-sm">{item.subject}</p>
+                  <h3 className="text-xl font-extrabold my-2">
+                    {item.heading}
+                  </h3>
                   <div>
                     <Button className="min-w-[6rem] bg-transparent py-3 border border-black hover:!bg-green-200 hover:!border-green-200 rounded-full text-black">
                       View More

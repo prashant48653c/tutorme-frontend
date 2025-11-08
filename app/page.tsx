@@ -51,7 +51,6 @@ export default function Home() {
       <Forum />
       <Shop />
       <Blog />
-     
       <Footer />
 
       {/* <SignUpPopup/> */}
