@@ -11,17 +11,18 @@ const Tutor = () => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
 
   return (
-<div className="w-full mt-[12rem] sm:mt-[14rem] md:mt-[20rem] lg:mt-[5rem] flex flex-col items-center">      <div className="w-max  my-6  text-center">
+<div className="font-hove w-full mt-[12rem] sm:mt-[14rem] md:mt-[20rem] lg:mt-[5rem] flex flex-col items-center">      <div className="w-max  my-6  text-center">
         <div
           className={`text-[4rem]  mb-[10rem]  md:mb-0 scale-125 flex w-full items-center justify-center leading-[4rem] font-[800]`}
         >
-         <p className="genera md:block max-w-[20rem] text-right leading-[4rem] md:leading-[4rem] text-[2rem] sm:text-[1rem] md:text-[3rem]">
+         <p className=" md:block max-w-[20rem] text-right leading-[4rem] md:leading-[4rem] text-[2rem] sm:text-[1rem] md:text-[3rem]">
   Find the <br />
   <span className="text-green-400">Tutors</span>
 </p>
-<div className="scale-100 sm:scale-110 md:scale-125 mx-2 sm:mx-4 ml-[4rem]">
+<div className="scale-100 sm:scale-110 md:scale-125 ml-[5rem] sm:ml-[3rem] md:ml-[5rem] lg:ml-[3rem] mr-[1rem] sm:mr-[3rem] md:mr-[2rem] lg:mr-[3rem]">
   <RotatingCards />
-</div><p className="max-w-[20rem] md:block text-left leading-[3rem] sm:leading-[3.5rem] md:leading-[4rem] text-[2rem] sm:text-[1rem] md:text-[3rem]">
+</div>
+<p className="max-w-[20rem] md:block text-left leading-[3rem] sm:leading-[3.5rem] md:leading-[4rem] text-[2rem] sm:text-[1rem] md:text-[3rem]">
   <span className="text-green-400">Best</span>
   <br />
   <span className="pl-4">in Nepal</span>
@@ -29,7 +30,7 @@ const Tutor = () => {
         </div>
 
         <div className="mt-[8rem]">
-          <p className="mt-6 md:mt-8 text-sm md:text-base text-gray-700 max-w-[48rem] mx-auto md:mx-0 sm:w-[40rem] w-[30rem] leading-7">
+          <p className=" mt-6 md:mt-8 text-sm md:text-base text-gray-700 max-w-[48rem] mx-auto md:mx-0 sm:w-[40rem] w-[30rem] leading-7">
             TutorMe is a platform designed to connect students with the right
             tutors for last-minute syllabus coverage. Whether you need
             one-to-one sessions or group discussions, we help you find online

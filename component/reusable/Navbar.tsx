@@ -79,11 +79,11 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="flex justify-center w-full  items-center relative ">
-        <div className="w-[85%] md:w-[80%] shadow-xl bg-[#061826] items-center px-4 py-2 my-5 flex justify-between rounded-4xl relative">
+      <nav className=" sticky flex justify-center w-full  items-center ">
+        <div className="w-[85%] md:w-[80%] shadow-xl bg-[#061826] items-center px-4 py-2 my-5 flex justify-between rounded-4xl relative text-4xl">
           {/* Logo */}
           <div>
-            <h1 className="titleFont text-white">
+            <h1 className="titleFont text-white font-hove">
               TUTOR<span className="text-green-400">ME</span>
             </h1>
           </div>
@@ -92,7 +92,7 @@ const Navbar = () => {
           <ul className="hidden md:flex items-center justify-center gap-x-5">
             {links.map((link, i) => {
               return (
-                <li className="text-white text-sm" key={i}>
+                <li className="text-white text-xl" key={i}>
                   <Link href={link.path}>{link.name}</Link>
                 </li>
               )

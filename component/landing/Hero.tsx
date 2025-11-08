@@ -27,7 +27,7 @@ const Hero = () => {
         {/* heading */}
         <div className="my-6 text-center sm:my-8">
           <h2
-            className={`tracking-tight genera font-extrabold text-3xl sm:text-5xl md:text-5xl lg:text-6xl leading-[1.1]`}
+            className={`tracking-tight font-hove font-extrabold text-3xl sm:text-5xl md:text-5xl lg:text-6xl leading-[1.2]`}
           >
             Connect with Verified Tutors &amp;
             <br className="hidden sm:block" />

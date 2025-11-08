@@ -11,11 +11,11 @@ const Shop = () => {
       <div className="flex md:flex-row  flex-col px-[5rem] items-center justify-between ">
         <div className="md:w-[50%] w-full flex justify-start px-4">
   <h4 className="text-[2.5rem] sm:text-[3rem] w-full text-white text-center md:text-left leading-[3.5rem] font-extrabold">
-    <span className="titleText">Explore </span>
+    <span className="font-hove">Explore </span>
     <br className="md:block hidden" />
-    <span className="titleText">TUTOR</span>
-    <span className="titleText text-green-400">ME </span>
-    <span className="titleText">Shop</span>
+    <span className="titleFont">TUTOR</span>
+    <span className="titleFont text-green-400">ME </span>
+    <span className="font-hove">Shop</span>
   </h4>
 </div>
         <div>
@@ -44,8 +44,8 @@ const Shop = () => {
         </div>
         <div className="md:w-[50%] w-[100%] ">
           <p className="text-xl text-white my-3 font-bold">
-            Join TutorMe as an instructor and connect with learners who need
-            quick, effective guidance.{" "}
+           TutorMe Shop offers everything you need to boost your last-
+minute prep, all in one place.{" "}
           </p>
           <p className="text-gray-400">
             From overcoming challenges to achieving incredible milestones, these

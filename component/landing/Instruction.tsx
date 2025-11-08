@@ -26,7 +26,7 @@ const Instruction = () => {
         />
       </div>
       <div className="md:w-[40%] w-[80%] ">
-        <h2 className={`text-5xl genera leading-13 font-[800]  ${HoveFont.className}`}>
+        <h2 className={`text-5xl leading-13 font-[800]  font-hove`}>
           Want to become an
           <br />
           <span className="text-green-400">Instructor? </span>

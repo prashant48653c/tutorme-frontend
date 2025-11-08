@@ -51,13 +51,16 @@ if (api.selectedScrollSnap() === count - 1) {
             <CarouselItem key={index} className="basis-1/2 ">
               <Card className="bg-white">
                 <CardContent className="flex flex-col aspect-auto">
-                  <div className="bg-green-500 rounded-full w-fit rounded-4xl flex gap-3 items-center px-3 py-2">
+                  <div className="bg-green-500 rounded-full w-fit flex gap-3 items-center px-3 py-2">
                     <Book color="white" />
                     <Box color="white" />
                   </div>
 
                   <h1 className="font-extrabold my-2 text-black">
-                    TUTOR<span className="text-primeGreen">ME </span>COURSE
+                    <span className="titleFont">
+                    TUTOR<span className="text-primeGreen">ME </span>
+                    </span>
+                    COURSE
                   </h1>
 
                   <p className="text-sm">

@@ -55,7 +55,7 @@ export default function Course() {
         {/* Left column */}
         <div className="md:w-[55%] w-[90%]">
           <div className="w-full flex flex-col items-start mx-20">
-            <h4 className="genera text-[3rem] text-left gap-y-5 leading-14 font-[800]">
+            <h4 className="font-hove text-[3rem] text-left gap-y-5 leading-14 font-[800]">
               Our Popular <br />
               <span className="text-green-400">Course</span> Categories
             </h4>
