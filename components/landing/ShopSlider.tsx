@@ -28,38 +28,38 @@ export default function ShopSlider() {
   }, [api]);
 
   return (
-    <div className="z-10 w-full h-[30rem] justify-center flex flex-col ">
+    <div className="z-10 w-full   h-[30rem] justify-center flex flex-col ">
       <Carousel setApi={setApi} className="w-full h-[30rem]  ">
         <CarouselContent>
           {Array.from({ length: 5 }).map((_, index) => (
-      <CarouselItem className="basis-1/4 overflow-visible bg-black">
-  <Card className="p-0 bg-black group relative border-none shadow-none">
-    <CardContent className="flex p-0 mt-9 relative flex-col">
-      <div className="transition-transform duration-300 group-hover:-translate-y-8 relative z-0">
-        <Badge className="rounded-full absolute p-1 px-2 bg-amber-200 text-black top-4 left-2 z-10">
-          <BookA />
-          Books
-        </Badge>
-        <Image
-          src="/static/landing/shop.svg"
-          alt="Signup Illustration"
-          width={400}
-          height={400}
-          className="object-contain bg-black"
-        />
-      </div>
-      <div className="px-2 py-1 absolute bottom-0 left-0 w-full bg-black bg-opacity-80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-        <h3 className="text-white text-lg font-bold">Bsc. First Year (Physics)</h3>
-        <p className="text-gray-400 text-xs">
-          NPR 822/- <span className="text-sm font-semibold">NPR 4822/-</span>
-        </p>
-      </div>
-    </CardContent>
-  </Card>
-</CarouselItem>
-
-
-
+            <CarouselItem key={index} className="lg:basis-1/4 basis-1/2 overflow-visible bg-black">
+              <Card className="p-0 bg-black group relative border-none shadow-none">
+                <CardContent className="flex p-0 mt-9 relative flex-col">
+                  <div className="transition-transform duration-300 group-hover:-translate-y-8 relative z-0">
+                    <Badge className="rounded-full absolute p-1 px-2 bg-amber-200 text-black top-4 left-2 z-10">
+                      <BookA />
+                      Books
+                    </Badge>
+                    <Image
+                      src="/static/landing/shop.svg"
+                      alt="Signup Illustration"
+                      width={400}
+                      height={400}
+                      className="object-contain bg-black"
+                    />
+                  </div>
+                  <div className="px-2 py-1 absolute bottom-0 left-0 w-full bg-black bg-opacity-80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                    <h3 className="text-white text-lg font-bold">
+                      Bsc. First Year (Physics)
+                    </h3>
+                    <p className="text-gray-400 text-xs">
+                      NPR 822/-{" "}
+                      <span className="text-sm font-semibold">NPR 4822/-</span>
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </CarouselItem>
           ))}
         </CarouselContent>
         {/* Removed CarouselPrevious and CarouselNext */}

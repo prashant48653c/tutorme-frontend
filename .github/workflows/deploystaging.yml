@@ -1,0 +1,53 @@
+name: CI/CD for Next.js App
+
+on:
+  push:
+    branches:
+      - staging  
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH key
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_PRIVATE_KEY }} 
+
+      - name: Add hosts to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+
+      - name: Clone the repository and build the application
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} << 'EOF'
+          REPO_DIR="/root/Frontend-tutorme-staging"  # Directory where the app will be stored
+          REPO_URL="git@github.com:Technergy-Global/tutorme.git"
+          
+
+          # Check if the repository already exists
+          if [ -d "$REPO_DIR/.git" ]; then
+            echo "Repository exists. Pulling the latest changes."
+            cd $REPO_DIR
+            git pull origin staging
+          else
+            echo "Cloning the repository to the root directory."
+            git clone -b staging $REPO_URL $REPO_DIR
+            cd $REPO_DIR
+          fi
+
+          # Build new Docker images
+          docker compose build --no-cache
+
+          # Stop and remove existing containers
+          docker compose down
+
+          # Start new containers in detached mode
+          docker compose up -d
+          EOF

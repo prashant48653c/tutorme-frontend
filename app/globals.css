@@ -1,12 +1,28 @@
-@import "tailwindcss";
-@import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 
 @font-face {
-  font-family: 'Hove';
-  src: url('/fonts/hove.ttf') format('truetype');
-  font-weight: 400;
+    font-family: "Genera SemiBold";
+    src: url("https://db.onlinewebfonts.com/t/71ac940a089dbc8bc7de49f612ff041c.eot");
+    src: url("https://db.onlinewebfonts.com/t/71ac940a089dbc8bc7de49f612ff041c.eot?#iefix")format("embedded-opentype"),
+    url("https://db.onlinewebfonts.com/t/71ac940a089dbc8bc7de49f612ff041c.woff2")format("woff2"),
+    url("https://db.onlinewebfonts.com/t/71ac940a089dbc8bc7de49f612ff041c.woff")format("woff"),
+    url("https://db.onlinewebfonts.com/t/71ac940a089dbc8bc7de49f612ff041c.ttf")format("truetype"),
+    url("https://db.onlinewebfonts.com/t/71ac940a089dbc8bc7de49f612ff041c.svg#Genera SemiBold")format("svg");
+}
+
+@font-face {
+  font-family: "TT Hove";
+  src: url("/fonts/TT\ Hoves\ Pro\ Trial\ Bold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: 'ADLaM Display';
+  src: url('/fonts/ADLaMDisplay-Regular.ttf') format('woff2');
+  font-weight: normal;
   font-style: normal;
 }
 
@@ -50,11 +66,23 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
+  zoom: 1.2;
   padding: 0;
   margin: 0;  
   overflow-x: hidden;
   box-sizing: border-box;
+  font-family: 'Hove',Verdana, Geneva, Tahoma, sans-serif;
+  width: 100%;
+}
+@media (max-width: 920px) {
+  body {
+    zoom: 1;
+  }
 }
 
 :root {
@@ -126,11 +154,70 @@ body {
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.bg-primeGreen{
+  background-color: #09C4AE;
+}
+.text-primeGreen{
+  color: #09C4AE;
+}
+
+.a{
+  text-decoration: none;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
   }
-  body {
-    @apply bg-background text-foreground;
+  100% {
+    transform: translateX(-50%);
   }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+@media (max-width:660px) {
+  html{
+    font-size: 90%;
+  }
+}
+
+@media (max-width:500px) {
+  html{
+    font-size: 70%;
+  }
+}
+
+@media (max-width:400px) {
+  html{
+    font-size: 60%;
+  }
+}
+.hove {
+  font-family: "TT Hoove", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 800;
+}
+.genera {
+  font-family: "Genera", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 770;
+}
+.titleFont {
+  font-family: 'ADLaM Display', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.icon-hover-rotate {
+  transition: transform 0.3s ease;
+}
+.group:hover .icon-hover-rotate {
+  transform: rotate(45deg);
 }
