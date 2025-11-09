@@ -1,5 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { ArrowUpRight } from "lucide-react";
 import localFont from "next/font/local";
 import Image from "next/image";
 import React from "react";
@@ -39,11 +40,17 @@ const Hero = () => {
 
         {/* ctas */}
         <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-<Button className="min-w-[10rem] md:mb-10 py-6 rounded-full text-white bg-green-400 hover:bg-gray-900 transition pointer-events-auto">    Explore our Courses
+<Button className="group min-w-[10rem] md:mb-10 py-6 rounded-full text-white bg-green-400 hover:bg-gray-900 transition pointer-events-auto">    Explore our Courses
+  <span className="icon-hover-rotate">
+            <ArrowUpRight size={15} />
+            </span>
   </Button>
 
-  <Button className=" min-w-[10rem] md:mb-10  py-6 rounded-full border-2 text-black bg-gray-100 border-gray-700 hover:!bg-green-200 hover:!border-green-200 transition pointer-events-auto">
+  <Button className="group min-w-[10rem] md:mb-10  py-6 rounded-full border-2 text-black bg-gray-100 border-gray-700 hover:!bg-green-200 hover:!border-green-200 transition pointer-events-auto">
     Visit Shop
+    <span className="icon-hover-rotate">
+            <ArrowUpRight size={15} />
+            </span>
   </Button>
 </div>
 

@@ -11,18 +11,26 @@ const Tutor = () => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
 
   return (
-<div className="font-hove w-full mt-[12rem] sm:mt-[14rem] md:mt-[20rem] lg:mt-[5rem] flex flex-col items-center">      <div className="w-max  my-6  text-center">
+<div className="font-hove w-full mt-[5rem] sm:mt-[10rem] md:mt-[20rem] lg:mt-[5rem] flex flex-col items-center">      <div className="w-max  my-6  text-center">
         <div
-          className={`text-[4rem]  mb-[10rem]  md:mb-0 scale-125 flex w-full items-center justify-center leading-[4rem] font-[800]`}
-        >
-         <p className=" md:block max-w-[20rem] text-right leading-[4rem] md:leading-[4rem] text-[2rem] sm:text-[1rem] md:text-[3rem]">
+          className={`text-[4rem]  mb-[5rem]  md:mb-0 lg:mb[10rem] scale-125 flex w-full items-center justify-center leading-[4rem] font-[800]`}
+        ><p className="max-w-[20rem] text-center sm:text-right
+              leading-[3rem] sm:leading-[3.5rem] md:leading-[4rem]
+              text-[2rem] sm:text-[1rem] md:text-[3rem]
+              ml-[-.5rem] sm:ml-[3rem] md:ml-[5rem] lg:ml-[0rem]">
   Find the <br />
   <span className="text-green-400">Tutors</span>
 </p>
-<div className="scale-100 sm:scale-110 md:scale-125 ml-[5rem] sm:ml-[3rem] md:ml-[5rem] lg:ml-[3rem] mr-[1rem] sm:mr-[3rem] md:mr-[2rem] lg:mr-[3rem]">
+
+<div className="scale-80 sm:scale-90 md:scale-125 lg:scale-100
+                ml-[4rem] sm:ml-[5rem] md:ml-[5rem] lg:ml-[1rem]
+                mr-[-2rem] sm:mr-[-2.5rem] md:mr-[1rem] lg:mr-[1rem]">
   <RotatingCards />
 </div>
-<p className="max-w-[20rem] md:block text-left leading-[3rem] sm:leading-[3.5rem] md:leading-[4rem] text-[2rem] sm:text-[1rem] md:text-[3rem]">
+
+<p className="max-w-[20rem] text-center sm:text-center md:text-center lg:text-left
+              leading-[3rem] sm:leading-[3.5rem] md:leading-[4rem]
+              text-[2rem] sm:text-[1rem] md:text-[3rem]">
   <span className="text-green-400">Best</span>
   <br />
   <span className="pl-4">in Nepal</span>
@@ -30,7 +38,7 @@ const Tutor = () => {
         </div>
 
         <div className="mt-[8rem]">
-          <p className=" mt-6 md:mt-8 text-sm md:text-base text-gray-700 max-w-[48rem] mx-auto md:mx-0 sm:w-[40rem] w-[30rem] leading-7">
+          <p className=" mt-6 md:mt-8 lg:mt-6 text-sm md:text-base text-gray-700 max-w-[48rem] mx-auto md:mx-0 sm:w-[40rem] w-[30rem] leading-7">
             TutorMe is a platform designed to connect students with the right
             tutors for last-minute syllabus coverage. Whether you need
             one-to-one sessions or group discussions, we help you find online

@@ -12,7 +12,7 @@ const Offer = () => {
   <span className="text-green-400"> Offer</span>
 </h4>
 
-        <p className="mt-4 lg:max-w-[20rem] lg:text-left text-center">
+        <p className="mt-4 lg:max-w-[20rem] lg:text-left text-center mb-5 sm:mb-[10rem]">
           At TutorMe, we specialize in connecting students with expert tutors
           for last-minute syllabus coverage. Whether you need one-on-one
           sessions or group discussions, our platform helps you find qualified
