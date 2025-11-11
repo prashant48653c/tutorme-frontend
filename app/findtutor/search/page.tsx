@@ -139,10 +139,10 @@ const TutorPage = () => {
       <Navbar />
 
       <section className="md:flex-row flex-col flex  items-center gap-16 mb-10">
-        <h2 className="font-bold text-2xl min-w-fit">
+        <h2 className="titleFont font-bold text-2xl min-w-fit">
           TUTORME <span className="text-primeGreen">TUTORS</span>
         </h2>
-        <div className="flex w-full items-center border rounded-lg bg-[#F5F7F9] p-2 gap-2 justify-start">
+        <div className="flex w-full items-center border rounded-3xl bg-[#F5F7F9] p-2 gap-2 justify-start">
           <Search size={18} />
           <input
             className="border-0 min-w-[20rem] outline-0 hover:outline-0 bg-transparent"
@@ -165,9 +165,9 @@ const TutorPage = () => {
         </div>
         <SidebarInset className="w-full md:w-full">
           <section className="flex flex-col gap-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            {/* <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Featured Courses
-            </h2>
+            </h2> */}
             {isLoading ? (
               <div className="flex justify-center py-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>

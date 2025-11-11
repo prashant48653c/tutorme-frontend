@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { User, Settings, LogOut, BookOpen, CreditCard, Menu, X } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import SignUpModal from "@/component/auth/SignUpPop"
 import LoginModal from "@/component/auth/loginPopup"
 import InstructorModal from "@/component/auth/instructor-signup"
@@ -21,6 +22,9 @@ import { useAuthStore } from "@/store/useAuthStore"
 const Navbar = () => {
   const [activeModal, setActiveModal] = useState<string | null>(null)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const navRef = useRef<HTMLElement | null>(null)
+  const [navOffset, setNavOffset] = useState<number>(80) // fallback for top offset
   const { user, logout } = useAuthStore()
 
   const links = [
@@ -77,10 +81,31 @@ const Navbar = () => {
       .slice(0, 2)
   }
 
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Measure navbar bottom to position overlay/backdrop below it
+  useEffect(() => {
+    const measure = () => {
+      if (navRef.current) {
+        const rect = navRef.current.getBoundingClientRect()
+        setNavOffset(Math.max(0, Math.round(rect.bottom)))
+      }
+    }
+    measure()
+    window.addEventListener("resize", measure)
+    window.addEventListener("scroll", measure, { passive: true })
+    return () => {
+      window.removeEventListener("resize", measure)
+      window.removeEventListener("scroll", measure)
+    }
+  }, [])
+
   return (
     <>
-      <nav className=" sticky flex justify-center w-full  items-center ">
-        <div className="w-[85%] md:w-[80%] shadow-xl bg-[#061826] items-center px-4 py-2 my-5 flex justify-between rounded-4xl relative text-4xl">
+      <nav ref={navRef as any} className="fixed top-0 left-0 right-0 flex justify-center w-full items-center z-[12000]">
+        <div className="w-[85%] md:w-[80%] shadow-xl bg-[#061826] items-center px-4 py-2 my-5 flex justify-between rounded-4xl relative text-4xl z-[10050]">
           {/* Logo */}
           <div>
             <h1 className="titleFont text-white font-hove">
@@ -89,7 +114,7 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <ul className="hidden md:flex items-center justify-center gap-x-5">
+          <ul className="hidden md:flex items-center justify-center gap-x-5 z-[999]">
             {links.map((link, i) => {
               return (
                 <li className="text-white text-xl" key={i}>
@@ -100,7 +125,7 @@ const Navbar = () => {
           </ul>
 
           {/* Desktop Auth Section */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3 z-[999]">
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -180,82 +205,92 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Menu Overlay */}
-          {isMobileMenuOpen && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-[#061826] rounded-lg shadow-xl border border-gray-700 z-999 mx-4">
-              {/* Navigation Links */}
-              <div className="py-2">
-                {links.map((link, i) => (
-                  <Link 
-                    href={link.path} 
-                    key={i}
-                    onClick={closeMobileMenu}
-                    className="block px-4 py-3 text-white text-sm hover:bg-white/10 transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                ))}
-              </div>
-
-              {/* Mobile Auth Section */}
-              <div className="border-t border-gray-700 py-2">
-                {user ? (
-                  <>
-                    {/* User Info */}
-                    <div className="px-4 py-2 border-b border-gray-700">
-                      <p className="text-white text-sm font-medium">{user.name}</p>
-                      <p className="text-gray-400 text-xs">{user.email}</p>
-                    </div>
-                    
-                    {/* User Menu Items */}
-                    <div className="py-1">
-                      <button className="flex items-center w-full px-4 py-3 text-white text-sm hover:bg-white/10 transition-colors">
-                        <User className="mr-3 h-4 w-4" />
-                        Profile
-                      </button>
-                      <button className="flex items-center w-full px-4 py-3 text-white text-sm hover:bg-white/10 transition-colors">
-                        <BookOpen className="mr-3 h-4 w-4" />
-                        My Courses
-                      </button>
-                      <button className="flex items-center w-full px-4 py-3 text-white text-sm hover:bg-white/10 transition-colors">
-                        <CreditCard className="mr-3 h-4 w-4" />
-                        Billing
-                      </button>
-                      <button className="flex items-center w-full px-4 py-3 text-white text-sm hover:bg-white/10 transition-colors">
-                        <Settings className="mr-3 h-4 w-4" />
-                        Settings
-                      </button>
-                      <button 
-                        onClick={handleLogout}
-                        className="flex items-center w-full px-4 py-3 text-white text-sm hover:bg-white/10 transition-colors"
+          {mounted && isMobileMenuOpen &&
+            createPortal(
+              <>
+                <div
+                  className="fixed left-0 right-0 bg-[#061826] rounded-lg shadow-xl border border-gray-700 z-[11000] mx-4 md:hidden"
+                  style={{ top: navOffset }}
+                >
+                  {/* Navigation Links */}
+                  <div className="py-2 z-[999]">
+                    {links.map((link, i) => (
+                      <Link 
+                        href={link.path} 
+                        key={i}
+                        onClick={closeMobileMenu}
+                        className="block px-4 py-3 text-white text-sm hover:bg-white/10 transition-colors"
                       >
-                        <LogOut className="mr-3 h-4 w-4" />
-                        Log out
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <div className="px-4 py-3">
-                    <Button
-                      className="w-full font-bold bg-green-400 hover:bg-green-600 rounded-full text-white"
-                      onClick={() => openModal("login")}
-                    >
-                      Login
-                    </Button>
+                        {link.name}
+                      </Link>
+                    ))}
                   </div>
-                )}
-              </div>
-            </div>
-          )}
+
+                  {/* Mobile Auth Section */}
+                  <div className="border-t border-gray-700 py-2 z-[999]">
+                    {user ? (
+                      <>
+                        {/* User Info */}
+                        <div className="px-4 py-2 border-b border-gray-700 z-[999]">
+                          <p className="text-white text-sm font-medium">{user.name}</p>
+                          <p className="text-gray-400 text-xs">{user.email}</p>
+                        </div>
+                        
+                        {/* User Menu Items */}
+                        <div className="py-1 z-2">
+                          <button className="flex items-center w-full px-4 py-3 text-white text-sm hover:bg-white/10 transition-colors">
+                            <User className="mr-3 h-4 w-4" />
+                            Profile
+                          </button>
+                          <button className="flex items-center w-full px-4 py-3 text-white text-sm hover:bg-white/10 transition-colors">
+                            <BookOpen className="mr-3 h-4 w-4" />
+                            My Courses
+                          </button>
+                          <button className="flex items-center w-full px-4 py-3 text-white text-sm hover:bg-white/10 transition-colors">
+                            <CreditCard className="mr-3 h-4 w-4" />
+                            Billing
+                          </button>
+                          <button className="flex items-center w-full px-4 py-3 text-white text-sm hover:bg-white/10 transition-colors">
+                            <Settings className="mr-3 h-4 w-4" />
+                            Settings
+                          </button>
+                          <button 
+                            onClick={handleLogout}
+                            className="flex items-center w-full px-4 py-3 text-white text-sm hover:bg-white/10 transition-colors"
+                          >
+                            <LogOut className="mr-3 h-4 w-4" />
+                            Log out
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="px-4 py-3">
+                        <Button
+                          className="w-full font-bold bg-green-400 hover:bg-green-600 rounded-full text-white"
+                          onClick={() => openModal("login")}
+                        >
+                          Login
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div 
+                  className="fixed right-0 bottom-0 left-0  z-[10990] md:hidden" 
+                  style={{ top: navOffset }}
+                  onClick={closeMobileMenu}
+                />
+              </>,
+              document.body
+            )}
         </div>
       </nav>
+      {/* Spacer to offset fixed navbar height */}
+      <div aria-hidden className="w-full" style={{ height: navOffset }} />
 
       {/* Backdrop for mobile menu */}
-      {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/20 z-40 md:hidden" 
-          onClick={closeMobileMenu}
-        />
-      )}
+      {/* Backdrop moved to portal above */}
 
       {/* Modals */}
       <SignUpModal isOpen={activeModal === "signup"} onClose={closeModal} onSwitchToLogin={() => openModal("login")} />  

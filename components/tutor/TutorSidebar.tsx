@@ -30,12 +30,12 @@ function FilterSection({ title, data, showClearAll, onItemChange, onClearAll, ch
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-teal-500 font-medium text-md">{title}</h3>
+        <h3 className="text-primeGreen font-semibold text-md">{title}</h3>
         {showClearAll && (
           <Button
             variant="link"
             size="sm"
-            className="h-auto p-0 text-xs text-teal-500 hover:text-teal-600"
+            className="h-auto p-0 text-xs text-primeGreen hover:text-green-600"
             onClick={onClearAll}
           >
             Clear All Filters
@@ -45,7 +45,7 @@ function FilterSection({ title, data, showClearAll, onItemChange, onClearAll, ch
       {children ? (
         children
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {data?.map((item) => (
             <div key={item.id} className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -53,7 +53,7 @@ function FilterSection({ title, data, showClearAll, onItemChange, onClearAll, ch
                   id={item.id}
                   checked={item.checked}
                   onCheckedChange={(checked) => onItemChange?.(item.id, checked as boolean)}
-                  className="data-[state=checked]:bg-black data-[state=checked]:border-black"
+                  className="data-[state=checked]:bg-[#061826] data-[state=checked]:border-[#061826]"
                 />
                 <Label htmlFor={item.id} className="text-sm font-normal cursor-pointer">
                   {item.label}
@@ -208,19 +208,7 @@ export function TutorSidebar() {
 
   const SidebarContent = () => (
     <div className="w-full pr-3">
-      <div className="">
-        <Button
-          variant="outline"
-          size="sm"
-          className="justify-start border border-green-400 px-5 gap-2 bg-transparent w-full"
-          onClick={getActiveFilters}
-        >
-          Filter
-          <SlidersHorizontal className="h-4 w-4" />
-        </Button>
-      </div>
-
-      <div className="p-4 space-y-6">
+      <div className="rounded-2xl border shadow-sm p-4 bg-white space-y-6">
         {/* Course Filter */}
         <FilterSection
           title="Course"
@@ -235,7 +223,7 @@ export function TutorSidebar() {
           <Button
             variant="link"
             size="sm"
-            className="h-auto p-0 text-sm text-teal-500 hover:text-teal-600"
+            className="h-auto p-0 text-sm text-primeGreen hover:text-green-600"
             onClick={showMore}
           >
             Show More
@@ -252,13 +240,16 @@ export function TutorSidebar() {
               min={0}
               step={50}
               className="w-full"
+              trackClassName="bg-gray-300"
+              rangeClassName="bg-primeGreen"
+              thumbClassName="bg-[#061826] border-[#061826] hover:ring-[#061826]/30 focus-visible:ring-[#061826]/30"
             />
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Input
                 type="number"
                 value={localPriceRange[0]}
                 onChange={handleMinPriceChange}
-                className="w-20 h-8 text-sm"
+                className="w-24 h-9 text-sm rounded-md text-center"
                 min={0}
                 max={3000}
               />
@@ -267,7 +258,7 @@ export function TutorSidebar() {
                 type="number"
                 value={localPriceRange[1]}
                 onChange={handleMaxPriceChange}
-                className="w-20 h-8 text-sm"
+                className="w-24 h-9 text-sm rounded-md text-center"
                 min={0}
                 max={3000}
               />
