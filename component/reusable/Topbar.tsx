@@ -50,7 +50,7 @@ const Topbar = () => {
     <>
       {/* Left side greeting */}
       <div className="flex relative w-full flex-col justify-center lg:items-start gap-1">
-        <h5 className="text-lg hidden lg:block font-medium">
+        <h5 className="text-lg font-hove hidden lg:block  font-semibold">
           Hi! {user?.name?.split(" ")[0]}
         </h5>
         <p className="text-sm hidden lg:block text-gray-500">

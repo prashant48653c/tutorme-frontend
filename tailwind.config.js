@@ -15,6 +15,8 @@ module.exports = {
       colors: {
         primaryBlack: '#061826',
         primaryGreen: '#09C4AE',
+        background: '#F7FBFD',
+        popover: '#FFFFFF',
         green: {
         400: '#09C4AE',
         },

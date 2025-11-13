@@ -105,6 +105,7 @@ const TutorPage = () => {
   };
 
   const handleTutorSelect = (id: number) => {
+    setMobileSidebar(false);
     router.push(`/findtutor/${id}`);
   };
 
@@ -152,8 +153,11 @@ const TutorPage = () => {
           />
         </div>
         <Button
-          className="md:hidden block"
-          onClick={() => setMobileSidebar(!mobileSidebar)}
+          className="md:hidden block bg-amber-800"
+          onClick={(e) => {
+            e.stopPropagation();
+            setMobileSidebar(!mobileSidebar);
+          }}
         >
           Filter
         </Button>
@@ -163,7 +167,11 @@ const TutorPage = () => {
         <div className={`${mobileSidebar ? "block" : "hidden"} md:block `}>
           <TutorSidebar />
         </div>
-        <SidebarInset className="w-full md:w-full">
+        <SidebarInset className="w-full md:w-full" onClick={(e) => {
+          if (mobileSidebar && e.target === e.currentTarget) {
+            setMobileSidebar(false);
+          }
+        }}>
           <section className="flex flex-col gap-6">
             {/* <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Featured Courses
@@ -178,8 +186,12 @@ const TutorPage = () => {
                   {data?.pages.map((page, pageIndex) =>
                     page?.map((tutor: any, tutorIndex: number) => (
                       <div
-                        onClick={() => handleTutorSelect(tutor.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTutorSelect(tutor.id);
+                        }}
                         key={`${pageIndex}-${tutorIndex}`}
+                        className="cursor-pointer"
                       >
                         <TutorCard tutor={tutor} />
                       </div>
@@ -187,7 +199,7 @@ const TutorPage = () => {
                   )}
                 </div>
 
-                {data?.pages[0]?.data?.length === 0 && (
+                {data?.pages.flatMap(page => page).length === 0 && (
                   <div className="text-center py-12">
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
                       No tutors found

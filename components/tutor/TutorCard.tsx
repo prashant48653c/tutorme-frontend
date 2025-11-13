@@ -4,7 +4,7 @@ import Image from "next/image"
 
 export default function TutorCard({tutor}:{tutor:any}) {
   return (
-   <Card className="w-[18rem] rounded-2xl overflow-hidden border-0 shadow-none !important ">
+   <Card className="w-[18rem] sm:w-[10rem] md:w-[15rem] lg:w-[18rem]  rounded-2xl overflow-hidden border-0 shadow-none !important ">
   {/* Profile Image Section */}
   <div className="relative">
     

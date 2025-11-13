@@ -82,7 +82,10 @@ const getTabStatus = (tab: string) => {
   }
 };
 
-export default function CourseManagement({refetchKey}: {refetchKey: number}) {
+const tabTriggerClasses =
+  "flex items-center justify-center rounded-none px-2 py-2 text-center text-xs font-medium leading-tight text-gray-600 whitespace-normal transition data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-white data-[state=active]:text-teal-600 data-[state=active]:font-semibold sm:text-sm sm:py-3";
+
+export default function CourseManagement({ refetchKey }: { refetchKey: number }) {
   const user = useAuthStore((state) => state.user);
 
   const [activeTab, setActiveTab] = useState("all");
@@ -372,11 +375,11 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
 
   return (
     <>
-      <div className="flex justify-between mb-4">
-        <div className="flex gap-2 items-center">
+      <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-700">
           <span>Show</span>
           <select
-            className="border-gray-600 py-1 px-2 rounded border"
+            className="rounded border border-gray-300 bg-white px-2 py-1 text-sm"
             value={pagination.limit}
             onChange={(e) => handleLimitChange(Number(e.target.value))}
           >
@@ -389,25 +392,26 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
           <span>entries</span>
         </div>
 
-        <div className="flex items-center border rounded-lg bg-[#F5F7F9] p-2 gap-2 justify-center">
+        <div className="flex w-full flex-1 items-center justify-center gap-2 rounded-lg border bg-[#F5F7F9] p-2 md:max-w-sm lg:justify-end">
           <Search size={18} />
           <input
-            className="border-0 min-w-[20rem] outline-0 hover:outline-0 bg-transparent"
+            className="w-full border-0 bg-transparent text-sm outline-0 hover:outline-0"
             placeholder="Search courses..."
             onChange={(e) => handleSearch(e.target.value)}
             defaultValue={searchQuery}
           />
         </div>
 
-        <div
+        <button
+          type="button"
           onClick={() =>
             handleSortChange(pagination.sortBy == "asc" ? "desc" : "asc")
           }
-          className="flex gap-3 items-center"
+          className="flex items-center justify-center gap-2 text-sm text-gray-700 transition hover:text-teal-600"
         >
-          <span>Sort By (A-Z)</span>
-          <ArrowUpAZ />
-        </div>
+          <span className="font-medium">Sort By (A-Z)</span>
+          <ArrowUpAZ className="h-4 w-4" />
+        </button>
       </div>
 
       <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-sm">
@@ -416,18 +420,14 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
           onValueChange={handleTabChange}
           className="w-full p-0"
         >
-          <TabsList className="grid bg-[#F5F7F9] w-full grid-cols-5 border-b rounded-none h-[3rem] p-0">
-            <TabsTrigger
-              value="all"
-              className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
-            >
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 border-b bg-[#F5F7F9] p-0 text-xs sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            <TabsTrigger value="all" className={tabTriggerClasses}>
               All Course (
-               {totalCount.find((item) => item.status === "ALL")?.count ||
-                0})
+              {totalCount.find((item) => item.status === "ALL")?.count || 0})
             </TabsTrigger>
             <TabsTrigger
               value="under-review"
-              className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
+              className={tabTriggerClasses}
             >
               UnderReview (
               {totalCount.find((item) => item?.status === "UNDERREVIEW")
@@ -436,7 +436,7 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
             </TabsTrigger>
             <TabsTrigger
               value="published"
-               className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
+              className={tabTriggerClasses}
             >
               Published (
               {totalCount.find((item) => item.status === "PUBLISHED")?.count ||
@@ -445,7 +445,7 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
             </TabsTrigger>
             <TabsTrigger
               value="rejected"
-              className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
+              className={tabTriggerClasses}
             >
               Rejected (
               {totalCount.find((item) => item.status === "REJECTED")?.count ||
@@ -454,7 +454,7 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
             </TabsTrigger>
             <TabsTrigger
               value="draft"
-             className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
+              className={tabTriggerClasses}
             >
               Draft (
               {totalCount.find((item) => item.status === "DRAFT")?.count || 0})
@@ -482,10 +482,10 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
                   return (
                     <div
                       key={tutor.id}
-                      className="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                      className="flex flex-col gap-4 border-b border-gray-100 p-4 transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between"
                     >
-                      <div className="flex items-center space-x-4">
-                        <Avatar className="h-12  w-12">
+                      <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-left sm:space-x-4">
+                        <Avatar className="h-12 w-12">
                           <AvatarImage
                             src={tutor.thumbnail || "/placeholder.svg"}
                             alt={tutor.title}
@@ -494,7 +494,7 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
                             {tutor?.title}
                           </AvatarFallback>
                         </Avatar>
-                        <div>
+                        <div className="space-y-1">
                           <h3 className="font-semibold text-gray-900">
                             {tutor.title}
                           </h3>
@@ -504,40 +504,40 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
                               ? formatDate(tutor.updatedAt)
                               : "N/A"}
                           </p>
-                          <Badge className={`mt-1 ${statusConfig.className}`}>
+                          <Badge
+                            className={`mt-1 w-full sm:w-auto ${statusConfig.className}`}
+                          >
                             {tutor?.courseStatus || "UNKNOWN"}
                           </Badge>
                         </div>
                       </div>
 
-                      <div className="flex w-fit items-center space-x-2">
+                      <div className="flex w-full flex-wrap items-center justify-center gap-2 sm:w-auto sm:justify-end">
                         {activeTab == "draft" ? (
                           <>
-                            <div className="flex gap-2 items-center justify-center">
-                              <Button
-                                onClick={() =>
-                                  updateTutorStatus(
-                                    tutor?.id ?? 0,
-                                    "UNDERREVIEW"
-                                  )
-                                }
-                                className=" text-white bg-primeGreen rounded-full flex items-center justify-center  "
-                              >
-                                Send for approval
-                              </Button>
-                            </div>
+                            <Button
+                              onClick={() =>
+                                updateTutorStatus(
+                                  tutor?.id ?? 0,
+                                  "UNDERREVIEW"
+                                )
+                              }
+                              className="flex w-full items-center justify-center rounded-full bg-primeGreen px-4 py-2 text-white sm:w-auto"
+                            >
+                              Send for approval
+                            </Button>
                             <Button
                               variant="ghost"
                               onClick={() => handleCourseSelection(tutor)}
                               size="icon"
-                              className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                              className="h-9 w-9 shrink-0 text-teal-600 hover:bg-teal-50 hover:text-teal-700"
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                              className="h-9 w-9 shrink-0 text-teal-600 hover:bg-teal-50 hover:text-teal-700"
                             >
                               <Trash color="red" className="h-4 w-4" />
                             </Button>
@@ -547,21 +547,21 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                              className="h-9 w-9 shrink-0 text-teal-600 hover:bg-teal-50 hover:text-teal-700"
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                              className="h-9 w-9 shrink-0 text-teal-600 hover:bg-teal-50 hover:text-teal-700"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                              className="h-9 w-9 shrink-0 text-teal-600 hover:bg-teal-50 hover:text-teal-700"
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
@@ -576,8 +576,8 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
 
             {/* Pagination */}
             {tutors.length > 0 && (
-              <div className="flex p-3 items-center justify-between mt-6 pt-4 border-t border-gray-200">
-                <div className="text-sm text-gray-600">
+              <div className="mt-6 flex flex-col gap-4 border-t border-gray-200 p-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-center text-sm text-gray-600 sm:text-left">
                   Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
                   {Math.min(
                     (pagination.page - 1) * pagination.limit + pagination.limit,
@@ -590,11 +590,11 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
                     </span>
                   )}
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-teal-600 border-teal-300 hover:bg-teal-50 bg-transparent"
+                    className="border-teal-300 bg-transparent text-teal-600 hover:bg-teal-50"
                     onClick={handlePreviousPage}
                     disabled={pagination.page === 1}
                   >
@@ -603,7 +603,7 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
                   </Button>
 
                   {/* Page numbers */}
-                  <div className="flex items-center space-x-1">
+                  <div className="flex flex-wrap items-center justify-center gap-1">
                     {/* Show first page if not currently on it and there are more than 3 pages */}
                     {pagination.page > 2 && pagination.totalPages > 3 && (
                       <>
@@ -674,12 +674,12 @@ export default function CourseManagement({refetchKey}: {refetchKey: number}) {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-teal-600 border-teal-300 hover:bg-teal-50 bg-transparent"
+                    className="border-teal-300 bg-transparent text-teal-600 hover:bg-teal-50"
                     onClick={handleNextPage}
                     disabled={pagination.page >= pagination.totalPages}
                   >
                     Next
-                    <ChevronRight className="h-4 w-4 ml-1" />
+                    <ChevronRight className="ml-1 h-4 w-4" />
                   </Button>
                 </div>
               </div>

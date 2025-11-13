@@ -114,14 +114,16 @@ function StepIndicator({ currentStep, totalSteps }: StepIndicatorProps) {
         return (
           <div key={stepNumber} className="flex items-center">
             <div
-              className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold ${
+              className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${
                 isActive || isCompleted ? "bg-teal-500" : "bg-gray-300"
               }`}
             >
               {stepNumber}
             </div>
             {stepNumber < totalSteps && (
-              <div className="w-12 h-0.5 bg-gray-300 mx-2" />
+              <div className="w-12 mx-2">
+                <div className="h-[2px] w-full bg-gray-300 rounded" />
+              </div>
             )}
           </div>
         );
@@ -252,7 +254,7 @@ const setUser=useAuthStore((state)=>state.setUser);
               <Input
                 placeholder="First Name"
                 readOnly
-                className="bg-gray-50 border-0 w-full"
+                className="bg-[#F5F7F9] border-0 w-full h-11 rounded-xl"
                 value={user?.name.split(" ")[0]}
                 onChange={(e) =>
                   dispatch({
@@ -268,7 +270,7 @@ const setUser=useAuthStore((state)=>state.setUser);
 
               value={user?.name.split(" ")[1]}
                 readOnly
-                className="bg-gray-50 border-0 w-full"
+                className="bg-[#F5F7F9] border-0 w-full h-11 rounded-xl"
                 onChange={(e) =>
                   dispatch({
                     type: "SET_FIELD",
@@ -281,7 +283,7 @@ const setUser=useAuthStore((state)=>state.setUser);
 
             <Input
               placeholder="Email"
-              className="bg-gray-50 border-0 w-full"
+              className="bg-[#F5F7F9] border-0 w-full h-11 rounded-xl"
               value={user?.email}
               readOnly
               onChange={(e) =>
@@ -295,7 +297,7 @@ const setUser=useAuthStore((state)=>state.setUser);
             />
             <Input
               placeholder="Phone number"
-              className="bg-gray-50 border-0 w-full"
+              className="bg-[#F5F7F9] border-0 w-full h-11 rounded-xl"
               value={user?.phoneNumber}
               readOnly
               onChange={(e) =>
@@ -309,6 +311,7 @@ const setUser=useAuthStore((state)=>state.setUser);
 
             <Input
               placeholder="Location"
+              className="bg-[#F5F7F9] border-0 w-full h-11 rounded-xl"
               value={state.location}
               onChange={(e) =>
                 dispatch({
@@ -323,7 +326,7 @@ const setUser=useAuthStore((state)=>state.setUser);
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Languages
               </label>
-              <div className="border border-gray-300 rounded-lg p-2 flex flex-wrap gap-2">
+              <div className="border border-gray-200 bg-[#F5F7F9] rounded-xl p-2 flex flex-wrap gap-2">
                 {state.languages.map((lang, index) => (
                   <LanguageTag
                     key={index}
@@ -345,7 +348,7 @@ const setUser=useAuthStore((state)=>state.setUser);
                       setLanguageInput("");
                     }
                   }}
-                  placeholder="Add language and press Enter"
+                  placeholder="Add Language"
                   className="flex-1 border-none outline-none bg-transparent min-w-[120px]"
                 />
               </div>
@@ -363,6 +366,7 @@ const setUser=useAuthStore((state)=>state.setUser);
 
             <Input
               placeholder="Bank Name"
+              className="bg-[#F5F7F9] border-0 w-full h-11 rounded-xl"
               value={state.bankName}
               onChange={(e) =>
                 dispatch({
@@ -375,6 +379,7 @@ const setUser=useAuthStore((state)=>state.setUser);
 
             <Input
               placeholder="Bank Account Number"
+              className="bg-[#F5F7F9] border-0 w-full h-11 rounded-xl"
               value={state.bankAccount}
               onChange={(e) =>
                 dispatch({
@@ -387,6 +392,7 @@ const setUser=useAuthStore((state)=>state.setUser);
 
             <Input
               placeholder="Confirm Bank Account"
+              className="bg-[#F5F7F9] border-0 w-full h-11 rounded-xl"
               value={state.confirmAccount}
               onChange={(e) =>
                 dispatch({
@@ -479,7 +485,7 @@ const setUser=useAuthStore((state)=>state.setUser);
                     })
                   }
                 >
-                  <SelectTrigger className="bg-gray-50  w-full border-0">
+                  <SelectTrigger className="bg-[#F5F7F9] w-full border-0 h-11 rounded-xl">
                     <SelectValue placeholder="Select Qualification" />
                   </SelectTrigger>
                   <SelectContent>
@@ -507,7 +513,7 @@ const setUser=useAuthStore((state)=>state.setUser);
       })
     }
   >
-    <SelectTrigger className="bg-gray-50 border-0">
+    <SelectTrigger className="bg-[#F5F7F9] border-0 h-11 rounded-xl">
       <SelectValue placeholder="Select Year" />
     </SelectTrigger>
     <SelectContent>
@@ -573,7 +579,7 @@ const setUser=useAuthStore((state)=>state.setUser);
                     })
                   }
                 >
-                  <SelectTrigger className="bg-gray-50 border-0">
+                  <SelectTrigger className="bg-[#F5F7F9] border-0 h-11 rounded-xl">
                     <SelectValue placeholder="Experience in Years" />
                   </SelectTrigger>
                   <SelectContent>
@@ -660,7 +666,7 @@ const setUser=useAuthStore((state)=>state.setUser);
                     })
                   }
                 >
-                  <SelectTrigger className="bg-gray-50 border-0 w-full">
+                  <SelectTrigger className="bg-[#F5F7F9] border-0 w-full h-11 rounded-xl">
                     <SelectValue placeholder="Select Grade" />
                   </SelectTrigger>
                   <SelectContent>
@@ -752,15 +758,13 @@ const setUser=useAuthStore((state)=>state.setUser);
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-h-[90vh] w-full max-w-[95vw] md:max-w-[60rem] overflow-y-auto p-0 gap-0">
+        <DialogContent className="max-h-[90vh] w-full max-w-[95vw] md:max-w-[60rem] overflow-y-auto p-0 gap-0 rounded-2xl">
           <div className="flex flex-col md:flex-row">
             {/* Left side - Illustration */}
             <div className="w-full md:w-1/3 p-4 md:p-6">
-              <div className="bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl p-6 h-64 md:h-full flex items-center justify-center border-2 border-blue-300">
-                <div className="relative w-full h-full max-h-64 md:max-h-full">
-                  <div className="w-full h-full flex items-center justify-center text-blue-600 text-6xl font-bold">
-                    KYC
-                  </div>
+              <div className="rounded-2xl h-64 md:h-full flex items-center justify-center border border-gray-200 bg-white">
+                <div className="relative w-[85%] h-[85%]">
+                  <Image src="/static/landing/Sign Up Image.svg" alt="KYC Illustration" fill className="object-cover" />
                 </div>
               </div>
             </div>

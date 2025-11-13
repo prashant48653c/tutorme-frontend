@@ -44,10 +44,10 @@ console.log(params)
               className="w-full h-full object-cover"
             />
           </div>
-          <h5 className="mt-1 text-lg text-green-600 font-medium">
+          <h5 className="mt-1 text-lg text-green-600 font-hove font-semibold">
          {user?.name}
           </h5>
-          <p className="text-xs text-gray-500">
+          <p className="font-hove text-sm text-gray-500">
          {user?.tutorProfile?.jobTitle}
 
           </p>

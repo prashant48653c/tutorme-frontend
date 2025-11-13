@@ -41,7 +41,7 @@ const Navbar = () => {
       name: "Shop",
     },
     {
-      path: "/",
+      path: "/findtutor/search",
       name: "Find Tutors",
     },
     {
@@ -109,7 +109,9 @@ const Navbar = () => {
           {/* Logo */}
           <div>
             <h1 className="titleFont text-white font-hove">
+              <a href="/">
               TUTOR<span className="text-green-400">ME</span>
+              </a>
             </h1>
           </div>
 
