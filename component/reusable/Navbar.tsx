@@ -153,7 +153,9 @@ const Navbar = () => {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
                     <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
+                    <a href="/student/profile">
+                    <span >Profile</span>
+                    </a>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <BookOpen className="mr-2 h-4 w-4" />

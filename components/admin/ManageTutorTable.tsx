@@ -96,8 +96,7 @@ const getTabStatus = (tab: string) => {
 };
 
 const tabTriggerClasses =
-  "flex items-center justify-center rounded-none px-2 py-2 text-center text-xs font-medium leading-tight text-gray-600 whitespace-normal transition data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-white data-[state=active]:text-teal-600 data-[state=active]:font-semibold sm:text-sm sm:py-3";
-
+  "flex min-w-max flex-shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-none px-4 py-2 text-xs font-medium text-gray-400 shadow-none sm:text-sm data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-b-teal-500 data-[state=active]:bg-transparent data-[state=active]:text-black";
 export default function TutorManagement() {
   const [activeTab, setActiveTab] = useState("all");
   const [currentTutor, setCurrentTutor] = useState<any>({});
@@ -331,100 +330,128 @@ export default function TutorManagement() {
 
   return (
     <>
-      <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-700">
-          <span>Show</span>
-          <select
-            className="rounded border border-gray-300 bg-white px-2 py-1 text-sm"
-            value={pagination.limit}
-            onChange={(e) => handleLimitChange(Number(e.target.value))}
-          >
-            {[5, 10, 15, 20, 25, 30].map((num) => (
-              <option key={num} value={num}>
-                {num}
-              </option>
-            ))}
-          </select>
-          <span>entries</span>
-        </div>
+      <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+  {/* Left: Select dropdown */}
+  <div className="flex flex-wrap items-center gap-2 text-sm text-gray-700">
+    <span className="text-gray-500">Show</span>
+    <select
+      aria-label="Select number of tutors per page"
+      className="w-15 rounded border border-gray-300 bg-white px-2 py-1 text-sm focus:border-teal-500 focus:outline-none"
+      value={pagination.limit}
+      onChange={(e) => handleLimitChange(Number(e.target.value))}
+    >
+      {[5, 10, 15, 20, 25, 30].map((num) => (
+        <option key={num} value={num}>
+          {num}
+        </option>
+      ))}
+    </select>
+    <span className="text-gray-500">entries</span>
+  </div>
 
-        <div className="flex w-full flex-1 items-center justify-center gap-2 rounded-lg border bg-[#F5F7F9] p-2 md:max-w-sm lg:justify-end">
-          <Search size={18} />
-          <input
-            className="w-full border-0 bg-transparent text-sm outline-0 hover:outline-0"
-            placeholder="Search tutors..."
-            onChange={(e) => handleSearch(e.target.value)}
-            defaultValue={searchQuery}
-          />
-        </div>
+  {/* Right: Search + Sort */}
+  <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+    {/* Search input */}
+    <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-[#F5F7F9] px-4 py-2 md:max-w-sm lg:flex-1">
+      <Search size={18} className="text-gray-400" />
+      <input
+        aria-label="Search tutors"
+        className="w-full border-0 bg-transparent text-sm outline-none placeholder:text-gray-500"
+        placeholder="Search tutors..."
+        onChange={(e) => handleSearch(e.target.value)}
+        defaultValue={searchQuery}
+      />
+    </div>
 
-        <button
-          type="button"
-          onClick={() =>
-            handleSortChange(pagination.sortBy == "asc" ? "desc" : "asc")
-          }
-          className="flex items-center justify-center gap-2 text-sm text-gray-700 transition hover:text-teal-600"
-        >
-          <span className="font-medium">Sort By (A-Z)</span>
-          <ArrowUpAZ className="h-4 w-4" />
-        </button>
-      </div>
+    {/* Sort button */}
+    <Button
+      type="button"
+      variant="outline"
+      onClick={() =>
+        handleSortChange(pagination.sortBy === "asc" ? "desc" : "asc")
+      }
+      className="flex items-center justify-center gap-2 rounded-full border border-gray-200 text-sm font-medium text-gray-700 transition hover:border-teal-500 hover:text-teal-600"
+    >
+      <span>Sort {pagination.sortBy === "asc" ? "(A-Z)" : "(Z-A)"}</span>
+      <ArrowUpAZ className="h-4 w-4" />
+    </Button>
+  </div>
+</div>
 
-      <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-sm">
+      <div className="mx-auto w-full max-w-9xl rounded-lg bg-white shadow-sm">
         <Tabs
           value={activeTab}
           onValueChange={handleTabChange}
-          className="w-full p-0 mb-20"
+          className="mb-20 w-full p-0 text-gray-400"
         >
           <TabsList className="grid h-auto w-full grid-cols-2 gap-2 border-b bg-[#F5F7F9] p-0 text-xs sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             <TabsTrigger
               value="all"
               className={tabTriggerClasses}
             >
-              All Tutors
+              <span className="text-sm">
+                All Tutors
+              </span>
             </TabsTrigger>
             <TabsTrigger
               value="registered"
               className={tabTriggerClasses}
             >
-              Registered (
-              {totalCount.find((item) => item.status === "REGISTERED")?.count ||
-                0}
-              )
+              <span>Registered</span>
+              <span className="text-[11px] text-gray sm:text-xs">
+                (
+                {totalCount.find((item) => item.status === "REGISTERED")
+                  ?.count || 0}
+                )
+              </span>
             </TabsTrigger>
             <TabsTrigger
               value="kyc-approved"
               className={tabTriggerClasses}
             >
-              KYC Approved (
-              {totalCount.find((item) => item.status === "APPROVED")?.count ||
-                0}
-              )
+              <span>KYC Approved</span>
+              <span className="text-[11px] text-gray-500 sm:text-xs">
+                (
+                {totalCount.find((item) => item.status === "APPROVED")
+                  ?.count || 0}
+                )
+              </span>
             </TabsTrigger>
             <TabsTrigger
               value="under-review"
               className={tabTriggerClasses}
             >
-              Under Review (
-              {totalCount.find((item) => item.status === "UNDERREVIEW")
-                ?.count || 0}
-              )
+              <span>Under Review</span>
+              <span className="text-[11px] text-gray-500 sm:text-xs">
+                (
+                {totalCount.find((item) => item.status === "UNDERREVIEW")
+                  ?.count || 0}
+                )
+              </span>
             </TabsTrigger>
             <TabsTrigger
               value="banned"
               className={tabTriggerClasses}
             >
-              Banned (
-              {totalCount.find((item) => item.status === "BANNED")?.count || 0})
+              <span>Banned</span>
+              <span className="text-[11px] text-gray-500 sm:text-xs">
+                (
+                {totalCount.find((item) => item.status === "BANNED")?.count ||
+                  0}
+                )
+              </span>
             </TabsTrigger>
             <TabsTrigger
               value="disapproved"
               className={tabTriggerClasses}
             >
-              Disapproved (
-              {totalCount.find((item) => item.status === "DISAPPROVED")
-                ?.count || 0}
-              )
+              <span>Disapproved</span>
+              <span className="text-[11px] text-gray-500 sm:text-xs">
+                (
+                {totalCount.find((item) => item.status === "DISAPPROVED")
+                  ?.count || 0}
+                )
+              </span>
             </TabsTrigger>
           </TabsList>
 

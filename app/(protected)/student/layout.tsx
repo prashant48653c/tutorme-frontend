@@ -3,7 +3,6 @@ import Sidebar from "@/component/reusable/Sidebar";
 import Topbar from "@/component/reusable/Topbar";
 import type { Metadata } from "next";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
 import { ReactNode } from "react";
 
 const links = [
@@ -61,21 +60,23 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
               isSidebarVisible ? "block z-50 " : "hidden"
             } `}
           >
-            <Sidebar links={links} />
+            <Sidebar
+              links={links}
+              isOpen={isSidebarVisible}
+              onClose={() => setSidebarVisible(false)}
+            />
           </div>
-          <button
-            className="fixed bottom-6 left-4 z-50 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition"
-            onClick={() => setSidebarVisible((prev) => !prev)}
-          >
-            {isSidebarVisible ? <X size={20} /> : <Menu size={20} />}
-          </button>
-
           {/* Main Content */}
           <main className="flex lg:w-[82%] sm:w-[75%] w-[100%] flex-1 px-6  bg-gray-100">
             <div className={`w-full bg-gray-100 flex flex-col h-max `}>
               <div className="relative w-full  bg-gray-100 mb-16 ">
                 <nav className="p-4 fixed lg:w-[81%]    top-0 z-50 bg-gray-100 items-center flex lg:justify-between  justify-center ">
-                  <Topbar />
+                  <Topbar
+                    isSidebarVisible={isSidebarVisible}
+                    onToggleSidebar={() =>
+                      setSidebarVisible((prev) => !prev)
+                    }
+                  />
                 </nav>
               </div>
               <div className="relative mt-8">{children}</div>

@@ -20,9 +20,7 @@ module.exports = {
         green: {
         400: '#09C4AE',
         },
-        teal: {
-          500: '#F7FBFD',
-        }
+        
       
       },
       fontFamily: {

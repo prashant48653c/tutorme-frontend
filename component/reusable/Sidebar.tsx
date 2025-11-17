@@ -4,15 +4,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { useAuthStore } from '@/store/useAuthStore';
 import api from '@/hooks/axios';
-import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
+type SidebarProps = {
+  links: Array<{ path: string; icon: string; name: string }>;
+  isOpen?: boolean;
+  onClose?: () => void;
+};
 
-
-
-const Sidebar = ({links}:{links:any}) => {
-const router=useRouter()
-const params=usePathname();
-console.log(params)
+const Sidebar = ({ links, isOpen = true, onClose }: SidebarProps) => {
+  const router=useRouter()
+  const params=usePathname();
+  console.log(params)
   const {user,logout}=useAuthStore()
   
   const handleLogout=async()=>{
@@ -25,9 +28,19 @@ console.log(params)
       console.log(error)
     }
   }
+
+  const showMobileOverlay = Boolean(onClose) && isOpen;
+
   return (
-    <aside className="w-full border  relative bg-gray-100 text-black   ">
-      <div className="flex lg:w-[18%] w-[25%] z-20 bg-gray-100  flex-col items-center  no-scrollbar  overflow-y-auto  fixed top-0 h-full pt-8 space-y-4">
+    <aside className="w-full border  relative bg-gray-100 text-black">
+      <div className="lg:hidden">
+        <div
+          aria-hidden={!showMobileOverlay}
+          className={`fixed inset-0 z-[50] bg-black/70 transition-opacity duration-200 ${showMobileOverlay ? "opacity-100 pointer-events-auto" : "pointer-events-none opacity-0"}`}
+          onClick={() => onClose?.()}
+        />
+      </div>
+      <div className="flex  w-[40%] z-50 lg:z-[50] bg-gray-100  flex-col items-center  no-scrollbar  overflow-y-auto  fixed top-0 h-full pt-8 space-y-4 sm:w-[40%] md:w-[30%] lg:w-[15%]">
         <div>
           <h1 onClick={() => router.push("/")} className="font-extrabold cursor-pointer text-3xl text-black">
             TUTOR<span className="text-primeGreen">ME</span>
@@ -53,36 +66,38 @@ console.log(params)
           </p>
         </div>
 
-        <ul className="w-full decoration-0 no-underline px-2">
-          {links.map((link:{path:string;icon:string;name:string}, index:number) => (
-            <li key={index} className={`mb-2 ${params == link.path ? "bg-green-400 text-white ": "bg-transparent"} hover:bg-[#09C4AE] rounded-3xl p-3 flex items-center  hover:text-white`}>
-              <Link
-                href={link.path}
-                className="flex  no-underline items-center"
-              >
-                <Image
-                  src={`/static/icons/${link.icon}.svg`}
-                  width={25}
-                  height={25}
-                  alt="icon"
-                  className="mr-2"
-                />
-                {link.name}
-              </Link>
-            </li>
-          ))}
+        <ul className="w-full decoration-0 no-underline px-2 ml-5">
+  {links.map((link, index) => (
+    <li
+      key={index}
+      className={`group mb-2 ${
+        params === link.path ? "bg-green-400 text-white" : "bg-transparent"
+      } hover:bg-[#09C4AE] rounded-3xl p-3 flex items-center hover:text-white`}
+    >
+      <Link href={link.path} className="flex no-underline items-center">
+        <Image
+          src={`/static/icons/${link.icon}.svg`}
+          width={25}
+          height={25}
+          alt="icon"
+          className={`mr-2 transition group-hover:invert ${params === link.path ? "invert" : ""}`}
+        />
+        {link.name}
+      </Link>
+    </li>
+  ))}
 
-           <li onClick={handleLogout} className="mb-6 hover:bg-red-500 rounded-3xl p-3 flex items-center hover:text-white  mt-36  ">
+           <li onClick={handleLogout} className="mb-6 rounded-3xl p-3 flex items-center hover:bg-red-500 mt-36  ">
             <div
                
               className="flex items-center  hover:underline"
             >
-              <Image
+              <img
                 src="/static/icons/logout.svg"
                 width={25}
                 height={25}
                 alt="icon"
-                className="mr-2"
+                className="mr-2 hover:fill-red-500"
               />
               Logout
             </div>

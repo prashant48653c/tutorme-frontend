@@ -241,6 +241,10 @@ export default function CourseManagement() {
   const onClose = () => {
     setIsViewOpen(false);
   };
+
+  const tabTriggerClasses = `data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3 data-[state=active]:text-black`;
+
+
 console.log(tutors,"Data of course")
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -295,19 +299,19 @@ console.log(tutors,"Data of course")
         <Tabs
           value={activeTab}
           onValueChange={handleTabChange}
-          className="w-full p-0"
+          className="w-full p-0 text-gray-300"
         >
-          <TabsList className="grid bg-[#F5F7F9] w-full grid-cols-5 border-b rounded-none h-[3rem] p-0">
+          <TabsList className="grid bg-[#F5F7F9] w-full grid-cols-5 rounded-none h-[3rem] p-0">
             <TabsTrigger
               value="all"
-              className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
+              className= {tabTriggerClasses}
             >
               All Course (
               {totalCount.reduce((acc, item) => acc + item.count, 0)})
             </TabsTrigger>
             <TabsTrigger
               value="active"
-              className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
+              className={tabTriggerClasses}
             >
               Active (
               {totalCount.find((item) => item?.status === "ACTIVE")?.count || 0}
@@ -315,7 +319,7 @@ console.log(tutors,"Data of course")
             </TabsTrigger>
             <TabsTrigger
               value="expired"
-              className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
+              className={tabTriggerClasses}
             >
               Published (
               {totalCount.find((item) => item.status === "EXPIRED")?.count || 0}

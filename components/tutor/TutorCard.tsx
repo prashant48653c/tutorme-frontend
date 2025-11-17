@@ -8,7 +8,7 @@ export default function TutorCard({tutor}:{tutor:any}) {
   {/* Profile Image Section */}
   <div className="relative">
     
-<div className="absolute bottom-[-50%] left-0 w-full h-full overflow-visible bg-teal-500 z-[0] transform -translate-y-1/6 rounded-3xl" />
+<div className="absolute bottom-[-50%] left-0 w-full h-full overflow-visible cardcolor z-[0] transform -translate-y-1/6 rounded-3xl" />
     <div className="aspect-[4/5] scale-90 relative overflow-hidden z-[1]">
       <Image
         src={tutor?.image || "/static/landing/course.svg"}
@@ -27,17 +27,17 @@ export default function TutorCard({tutor}:{tutor:any}) {
   </div>
 
   {/* Card Content */}
-  <div className="px-6 text-center z-[2]">
+  <div className="px-6 text-center z-[2] font-hove">
     {/* Star Rating */}
-    <div className="flex items-center justify-center gap-1">
+    <div className="flex items-center justify-center gap-1 ">
       {[...Array(5)].map((_, i) => (
-        <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
+        <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400 " />
       ))}
       <span className="text-gray-600 text-sm ml-1">(25)</span>
     </div>
 
     {/* Name */}
-    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{tutor?.name}</h2>
+    <h2 className="text-xl sm:text-2xl font-hove font-bold text-gray-700 mb-1 ">{tutor?.name}</h2>
 
     {/* Specialization */}
     <p className="text-gray-600 font-semibold text-sm sm:text-base">

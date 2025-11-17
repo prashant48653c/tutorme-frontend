@@ -1,6 +1,6 @@
 "use client";
 
-import { MoveRight } from "lucide-react";
+import { Check, MoveRight } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import api from "@/hooks/axios";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -35,7 +35,7 @@ const NotificationBar = () => {
   }, [user?.id]);
 
   return (
-    <aside className="p-4 w-full">
+    <aside className="p-4 w-auto">
       <h4 className="text-xl font-semibold mb-4">Notifications</h4>
       <div className="flex flex-col  gap-4 h-[18rem] p-6 my-1 rounded-sm border border-gray-100 shadow-xl bg-white overflow-y-auto">
         {loading ? (
@@ -45,7 +45,7 @@ const NotificationBar = () => {
         ) : (
           notifications.map((n) => (
             <div key={n.id} className="flex items-start gap-3">
-              <MoveRight fill={n.isRead ? "#ccc" : "#09C4AE"} size={20} />
+              <Check fill={n.isRead ? "#ccc" : "#09C4AE"} size={20} />
               <div className="flex flex-col gap-1">
                 <h5 className="text-lg">{n.message}</h5>
                 <p className="text-sm font-light text-gray-400">
