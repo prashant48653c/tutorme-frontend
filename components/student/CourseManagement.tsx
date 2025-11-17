@@ -355,7 +355,7 @@ console.log(tutors,"Data of course")
                  
                   return (
                     <div
-                      onClick={() => router.push(`/student/course/${tutor?.course.id}`)}
+                      onClick={() => router.push(`/student/course/${tutor?.course.id}/active`)}
                       className="border-b-4 border-b-red-500 rounded-2xl w-full max-w-[20.3rem]"
                       key={tutor.id}
                     >

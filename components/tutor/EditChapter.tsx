@@ -722,7 +722,7 @@ onClick={() => subtitleInputRef.current?.click()}
 <input
 type="file"
 ref={subtitleInputRef}
-accept=".srt"
+ 
 onChange={(e) =>
 setSubtitleFile(e.target.files?.[0] || null)
 }
