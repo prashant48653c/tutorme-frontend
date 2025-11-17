@@ -13,7 +13,7 @@ import {
   Folder,
   FileImage,
 } from "lucide-react";
-
+import "plyr-react/plyr.css";
 import Plyr from "plyr-react";
 
 import { Input } from "../ui/input";
@@ -47,8 +47,10 @@ import { useRouter } from "next/navigation";
 import api from "@/hooks/axios";
 import toast from "react-hot-toast";
 
-export const CourseContentViewer = () => {
+export const CourseContentViewer = ({ courseId }: { courseId: string }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [course, setCourse] = useState<any>(null);
+  const [currentSection, setCurrentSection] = useState<any>([]);
   const router = useRouter();
   const [selectedItem, setSelectedItem] = useState<
     | ((Chapter | SubHeading | SubTitle) & {
@@ -58,14 +60,13 @@ export const CourseContentViewer = () => {
     | null
   >();
   // Get everything from the store
-const fetchCourse = async () => {
-const courseId = 3  ;
-const res = await api.get("/course/" + courseId);
-console.log(res);
-updateCourseDetails(res.data.data);
-console.log(courseDetails,"Updated")
- 
-};
+  const fetchCourse = async () => {
+    const res = await api.get("/course/" + courseId);
+    console.log(res);
+    setCourse(res.data.data);
+
+    console.log(courseDetails, "Updated");
+  };
   const handleSelection = (
     e: any,
     item: Chapter | SubHeading | SubTitle,
@@ -103,37 +104,16 @@ console.log(courseDetails,"Updated")
     saveDraft: saveMyDraft,
   } = useCourseStore();
 
-  // Handle drag and drop
-  const handleDragEnd = (result: DropResult) => {
-    if (!result.destination) return;
-
-    const { source, destination, type } = result;
-
-    setLoading(true);
-
-    if (type === "chapter") {
-      reorderChapters(source.index, destination.index);
-    } else if (type === "subTitle") {
-      reordersubChapters(source.droppableId, source.index, destination.index);
-    } else if (type === "subHeading") {
-      reorderSubHeadings(source.droppableId, source.index, destination.index);
-    }
-
-    setLoading(false);
-  };
-
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [subtitleFile, setSubtitleFile] = useState<File | null>(null);
-  const videoInputRef = useRef<HTMLInputElement>(null);
-  const subtitleInputRef = useRef<HTMLInputElement>(null);
-
-  
-
   const handleSaveDraft = async () => {};
 
   useEffect(() => {
     fetchCourse();
   }, []);
+  console.log("Selected item video:", selectedItem?.video);
+
+  if (!course) {
+    return <div>Loading...</div>;
+  }
   return (
     <div className="flex border relative justify-end  p-1  overflow-hidden   ">
       <div
@@ -150,7 +130,7 @@ console.log(courseDetails,"Updated")
 
           {/* Drag and Drop Course Structure */}
           <div className="flex flex-col items-start">
-            {chapters?.map((chapter, chapterIndex) => (
+            {course.chapters?.map((chapter: Chapter, chapterIndex: number) => (
               <div key={chapter.id} className="border p-2 my-2 bg-white">
                 {/* Chapter Header */}
                 <div
@@ -387,35 +367,56 @@ flex flex-col} px-1`}
         </div>
 
         {/* Content Editor */}
-        <div className="flex-1 p-6 mb-10 overflow-y-auto">
-       <div className="max-w-4xl mx-auto space-y-6">
-  {/* Normal HTML video */}
-  <video
-    className="w-full rounded-lg"
-    controls
-    controlsList="nodownload"
-  >
-    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4" />
-    <track
-      kind="captions"
-      label="English"
-      src="/sub.vtt"
-      srcLang="en"
-      default
+      <div className="flex-1 p-6 mb-10 overflow-y-auto">
+ <div className="max-w-4xl mx-auto space-y-6">
+  {/* Plyr Video Player */}
+  {selectedItem?.video && (
+    <Plyr
+      key={selectedItem?.id}
+      source={{
+        type: "video",
+        sources: [
+          {
+            src: selectedItem.video.replace(/^http:\/\//, "https://"),
+            type: "video/mp4",
+          },
+        ],
+        tracks: selectedItem?.subtitle
+          ? [
+              {
+                kind: "subtitles", // changed from captions
+                label: "English",
+                src: selectedItem.subtitle.replace(/^http:\/\//, "https://"),
+                srcLang: "en",
+                default: true,
+              },
+            ]
+          : [],
+      }}
+      options={{
+        controls: [
+          "play-large",
+          "play",
+          "progress",
+          "current-time",
+          "mute",
+          "volume",
+          "captions",
+          "settings",
+          "pip",
+          "airplay",
+          "fullscreen",
+        ],
+        captions: { active: true, language: "en", update: true },
+        autoplay: false,
+        resetOnEnd: true,
+      }}
     />
-    Your browser does not support the video tag.
-  </video>
+  )}
 
   <div className="w-full h-max">
     <p className="w-full h-full p-2 text-gray-700 border rounded">
-      Lorem ipsum dolor sit amet consectetur adipisicing elit.
-      Pariatur cupiditate quo in repudiandae architecto beatae
-      doloribus reprehenderit aspernatur odio quos ipsa, veritatis,
-      vitae consequatur dicta dolore quia ratione voluptatibus
-      laborum. Aperiam, eum sapiente deleniti dicta itaque porro illo
-      optio blanditiis, delectus possimus pariatur consequuntur ea
-      quia sequi iste animi, iure exercitationem mollitia asperiores!
-      Quidem, id?
+      {selectedItem?.description}
     </p>
   </div>
 
@@ -442,7 +443,7 @@ flex flex-col} px-1`}
   </div>
 </div>
 
-        </div>
+</div>
       </div>
     </div>
   );
