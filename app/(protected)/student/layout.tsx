@@ -9,7 +9,7 @@ const links = [
     {
     path: "/student/profile",
     name: "Dashboard",
-    icon: "icon1",
+    icon: "icon3",
   },
   {
     path: "/student/mycourse",
@@ -19,17 +19,17 @@ const links = [
   {
     path: "/student/session",
     name: "Sessions",
-    icon: "icon2",
+    icon: "icon6",
   },
   {
     path: "/student/products",
     name: "Products",
-    icon: "icon2",
+    icon: "icon7",
   },
   {
     path: "/student/accomplishments",
     name: "Accomplishments",
-    icon: "icon3",
+    icon: "icon2",
   },
   {
     path: "/student/wallet",
@@ -39,7 +39,7 @@ const links = [
   {
     path: "/student/settings",
     name: "Settings",
-    icon: "icon5",
+    icon: "icon8",
   },
   {
     path: "/student/support",
@@ -55,11 +55,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
       <body className="relative">
         <div className="flex bg-gray-100 relative justify-center w-[100%] min-h-screen">
           {/* Sidebar */}
-          <div
-            className={`lg:w-[18%]  sm:w-[25%] w-[30%] ${
-              isSidebarVisible ? "block z-50 " : "hidden"
-            } `}
-          >
+          <div className="w-0 sm:w-0 lg:w-[18%]">
             <Sidebar
               links={links}
               isOpen={isSidebarVisible}

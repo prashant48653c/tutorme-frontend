@@ -32,15 +32,19 @@ const Sidebar = ({ links, isOpen = true, onClose }: SidebarProps) => {
   const showMobileOverlay = Boolean(onClose) && isOpen;
 
   return (
-    <aside className="w-full border  relative bg-gray-100 text-black">
-      <div className="lg:hidden">
+    <aside className="w-full border  relative bg-white text-black">
+      <div className=" lg:hidden">
         <div
           aria-hidden={!showMobileOverlay}
-          className={`fixed inset-0 z-[50] bg-black/70 transition-opacity duration-200 ${showMobileOverlay ? "opacity-100 pointer-events-auto" : "pointer-events-none opacity-0"}`}
+          className={`fixed inset-0 z-[50] bg-black/70 transition-opacity duration-900 ${showMobileOverlay ? "opacity-100 pointer-events-auto" : "pointer-events-none opacity-0"}`}
           onClick={() => onClose?.()}
         />
       </div>
-      <div className="flex  w-[40%] z-50 lg:z-[50] bg-gray-100  flex-col items-center  no-scrollbar  overflow-y-auto  fixed top-0 h-full pt-8 space-y-4 sm:w-[40%] md:w-[30%] lg:w-[15%]">
+      <div
+        className={`flex w-[40%] z-50 lg:z-[50] bg-white flex-col items-center no-scrollbar overflow-y-auto fixed top-0 h-full pt-8 space-y-4 xs:w-[55%] sm:w-[40%] md:w-[30%] lg:static lg:w-full lg:flex-shrink-0 transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         <div>
           <h1 onClick={() => router.push("/")} className="font-extrabold cursor-pointer text-3xl text-black">
             TUTOR<span className="text-primeGreen">ME</span>
@@ -87,10 +91,10 @@ const Sidebar = ({ links, isOpen = true, onClose }: SidebarProps) => {
     </li>
   ))}
 
-           <li onClick={handleLogout} className="mb-6 rounded-3xl p-3 flex items-center hover:bg-red-500 mt-36  ">
+           <li onClick={handleLogout} className="group mb-6 rounded-3xl p-3 flex items-center hover:bg-red-500 mt-28 w-fit !important">
             <div
                
-              className="flex items-center  hover:underline"
+              className="flex items-center transition group-hover:invert"
             >
               <img
                 src="/static/icons/logout.svg"

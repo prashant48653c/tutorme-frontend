@@ -66,7 +66,7 @@ const Topbar = ({ onToggleSidebar, isSidebarVisible }: TopbarProps) => {
                 {isSidebarVisible ? <X size={18} /> : <Menu size={18} color="green" className="hover:text-white" />}
               </button>
             )}
-            <div className={`flex flex-col ${isSidebarVisible ? "ml-[182px]" : "ml-0"} justify-center lg:items-start gap-1`}>
+            <div className={`flex flex-col justify-center lg:items-start gap-1 transition-all duration-300 ease-in-out ${isSidebarVisible ? "lg:ml-[182px]" : "lg:ml-0"}`}>
               <h5 className="text-lg font-hove hidden lg:block font-semibold">
                 Hi! {user?.name?.split(" ")[0]}
               </h5>
