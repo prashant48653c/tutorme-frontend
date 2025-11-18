@@ -48,7 +48,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
         <div className="flex pb-5 bg-gray-100 overflow-y-hidden relative justify-center w-[100%]">
           {/* Sidebar */}
           <div
-            className={`w-[30%] sm:w-[25%] lg:w-[20%] md:[25%]   ${
+            className={`w-[30%] sm:w-[25%] lg:w-[15%] md:[25%]   ${
               isSidebarVisible ? "block z-50 " : "hidden"
             } `}
           >
@@ -59,7 +59,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
             />
           </div>
           {/* Main Content */}
-          <main className="flex lg:w-[80%] sm:w-[75%] w-[100%] flex-1 px-6  bg-gray-100">
+          <main className="flex lg:w-[85%] sm:w-[75%] w-[100%] flex-1 px-6  bg-gray-100">
             <div className={`w-full bg-gray-100 flex flex-col h-max `}>
               <div className="relative w-full  bg-gray-100 mb-16 ">
                 <nav className="p-4 fixed lg:w-[81%] top-0 z-50 bg-gray-100 items-center flex lg:justify-between md:justify-between  justify-center ">

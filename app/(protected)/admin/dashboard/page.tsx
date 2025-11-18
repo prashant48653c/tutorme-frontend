@@ -13,7 +13,7 @@ const AdminDashboard = () => {
       <div className="flex  items-center justify-between">
         <h4 className="uppercase text-xl font-bold">Manage Tutors</h4>
         <div>
-          <Button onClick={() => setIsPopupOpen(true)}  className="bg-primeGreen rounded-full px-9">Add Tutor</Button>
+          <Button onClick={() => setIsPopupOpen(true)}  className="bg-primaryGreen rounded-full px-9 hover:bg-teal-400 text-white">Add Tutor</Button>
         </div>
       </div>
       

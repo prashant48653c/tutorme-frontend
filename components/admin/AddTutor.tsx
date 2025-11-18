@@ -700,7 +700,7 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
           {/* Submit Button */}
           <Button
             type="submit"
-            className="w-full bg-teal-500 hover:bg-teal-600"
+            className="w-full bg-teal-500 hover:bg-teal-600 text-white"
             disabled={!state.isInformationCorrect}
           >
             Add Tutor

@@ -66,7 +66,7 @@ const Sidebar = ({ links, isOpen = true, onClose }: SidebarProps) => {
           </p>
         </div>
 
-        <ul className="w-full decoration-0 no-underline px-2 ml-5">
+        <ul className="w-full decoration-0 no-underline px-2 ml-5 mr-5">
   {links.map((link, index) => (
     <li
       key={index}

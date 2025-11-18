@@ -273,6 +273,7 @@ console.log(tutors,"Data of course")
           </select>
           <span>entries</span>
         </div>
+  <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
 
         <div className="flex items-center border rounded-lg bg-[#F5F7F9] p-2 gap-2 justify-center">
           <Search size={18} />
@@ -283,13 +284,14 @@ console.log(tutors,"Data of course")
             defaultValue={searchQuery}
           />
         </div>
-
         <div
           onClick={() =>
             handleSortChange(pagination.sortBy == "asc" ? "desc" : "asc")
           }
           className="flex gap-3 items-center"
         >
+          </div>
+
           <span>Sort By (A-Z)</span>
           <ArrowUpAZ />
         </div>
