@@ -1,69 +1,187 @@
 "use client";
+
+import type { ComponentProps } from "react";
+
 import {
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Rectangle,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from "recharts";
 
-const HoursSpentChart = () => {
-  const data = [
-    { date: "2024-09-01", studyhr: 25, testhr: 15 },
-    { date: "2024-10-01", studyhr: 30, testhr: 20 },
-    { date: "2024-11-01", studyhr: 35, testhr: 18 },
-    { date: "2024-12-01", studyhr: 28, testhr: 22 },
-    { date: "2025-01-01", studyhr: 32, testhr: 25 },
-    { date: "2025-02-01", studyhr: 27, testhr: 15 },
-    { date: "2025-03-01", studyhr: 40, testhr: 20 },
-    { date: "2025-04-01", studyhr: 20, testhr: 10 },
-    { date: "2025-05-01", studyhr: 45, testhr: 30 },
-    { date: "2025-06-01", studyhr: 35, testhr: 25 },
-    { date: "2025-07-01", studyhr: 50, testhr: 35 },
-    { date: "2025-08-01", studyhr: 45, testhr: 30 },
-  ];
+type ChartData = {
+  month: string;
+  study: number;
+  onlineTest: number;
+};
 
-  const sortedData = [...data].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
-  const last12Data = sortedData.slice(Math.max(sortedData.length - 12, 0));
+const CHART_DATA: ChartData[] = [
+  { month: "Jan", study: 48, onlineTest: 22 },
+  { month: "Feb", study: 36, onlineTest: 18 },
+  { month: "Mar", study: 52, onlineTest: 28 },
+  { month: "Apr", study: 35, onlineTest: 17 },
+  { month: "May", study: 18, onlineTest: 9 },
+  { month: "Jun", study: 46, onlineTest: 32 },
+  { month: "Jul", study: 28, onlineTest: 15 },
+  { month: "Aug", study: 44, onlineTest: 21 },
+  { month: "Sep", study: 30, onlineTest: 16 },
+  { month: "Oct", study: 38, onlineTest: 19 },
+];
 
-  const chartData = last12Data.map((item) => ({
-    month: new Date(item.date).toLocaleString("default", { month: "short" }),
-    Study: item.studyhr,
-    "Online Test": item.testhr,
-  }));
+const LEGEND_ITEMS = [
+  { label: "Study", color: "#15BFC7" },
+  { label: "Online Test", color: "#DDF7E9" },
+];
+
+type SeriesKey = "study" | "onlineTest";
+
+const SERIES_SWATCH: Record<SeriesKey, string> = {
+  study: "linear-gradient(180deg,#50E3C2 0%,#10B0C4 100%)",
+  onlineTest: "linear-gradient(180deg,#F2FFF3 0%,#CFF7E0 100%)",
+};
+
+type RectangleShapeProps = ComponentProps<typeof Rectangle> & {
+  payload?: ChartData;
+};
+
+const STACK_RADIUS: [number, number, number, number] = [14, 14, 0, 0];
+
+type TooltipItem = {
+  name?: string;
+  value?: number;
+  color?: string;
+  dataKey?: string | number;
+};
+
+type HoursTooltipProps = {
+  active?: boolean;
+  payload?: TooltipItem[];
+  label?: string;
+};
+
+const getSeriesStyle = (dataKey?: string | number) => {
+  if (typeof dataKey === "string" && dataKey in SERIES_SWATCH) {
+    return { backgroundImage: SERIES_SWATCH[dataKey as SeriesKey] };
+  }
+  return { backgroundColor: "#9EA7B7" };
+};
+
+const CustomTooltip = ({ active, payload, label }: HoursTooltipProps) => {
+  if (!active || !payload?.length) return null;
 
   return (
-    <div  style={{ width: "80%", height: 400 }}>
-      <h3 className="my-10 mx-3">Hours Spent</h3>
-      <ResponsiveContainer>
-        <BarChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis tickFormatter={(value) => `${value} Hr`} />
-
-          <Tooltip />
-          <Legend />
-          <Bar
-            dataKey="Study"
-            stackId="a"
-            fill="#09C4AE"
-           
+    <div className="rounded-2xl bg-[#211B3F] px-4 py-3 text-xs text-white shadow-lg">
+      <p className="mb-2 text-sm font-semibold">{label}</p>
+      {payload.map((item: TooltipItem, index) => (
+        <div className="flex items-center gap-3" key={`tooltip-${index}`}>
+          <span
+            className="h-3 w-3"
+            style={getSeriesStyle(item.dataKey)}
+            aria-label={item.name}
           />
-          <Bar
-            dataKey="Online Test"
-            stackId="a"
-            fill="#88CFC5"
-            radius={[10, 10, 0, 0]}
-          />
-        </BarChart>
-      </ResponsiveContainer>
+          <span className="ml-auto font-medium">{item.value} Hr</span>
+        </div>
+      ))}
     </div>
   );
 };
 
-export default HoursSpentChart;
+const StudyBarShape = (props: any) => {
+  const { payload, ...rest } = props;
+  const hasTopSegment =
+    typeof payload?.onlineTest === "number" && payload.onlineTest > 0;
+  const radius = hasTopSegment ? [0, 0, 0, 0] : STACK_RADIUS;
+
+  return <Rectangle {...rest} radius={radius} />;
+};
+
+const HourGraph = () => {
+  return (
+    <section className="w-full rounded-3xl bg-white px-4 py-5 shadow-sm ring-1 ring-slate-100 sm:px-5 sm:py-6 lg:px-6">
+      <header className="mb-5 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="text-lg font-semibold text-slate-900">Hours Spent</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-600">
+          {LEGEND_ITEMS.map((item) => (
+            <div className="flex items-center gap-2" key={item.label}>
+              <span
+                className="h-3 w-3 rounded"
+                style={{ background: item.color }}
+              />
+              {item.label}
+            </div>
+          ))}
+        </div>
+      </header>
+      <div className="h-[260px] w-full sm:h-[300px] md:h-[360px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={CHART_DATA}
+            barCategoryGap="20%"
+            margin={{ top: 10, right: 8, left: 0, bottom: 0 }}
+          >
+            <defs>
+              <linearGradient id="studyGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#50E3C2" stopOpacity={1} />
+                <stop offset="100%" stopColor="#10B0C4" stopOpacity={1} />
+              </linearGradient>
+              <linearGradient id="testGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#F2FFF3" stopOpacity={1} />
+                <stop offset="100%" stopColor="#CFF7E0" stopOpacity={1} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid
+              stroke="#ECEFF5"
+              strokeDasharray="4 8"
+              vertical={false}
+            />
+            <XAxis
+              dataKey="month"
+              axisLine={false}
+              tickLine={false}
+              tickMargin={12}
+              tick={{ fill: "#9399A9", fontSize: 12 }}
+            />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tickMargin={8}
+              domain={[0, 80]}
+              ticks={[0, 20, 40, 60, 80]}
+              tickFormatter={(value) => `${value} Hr`}
+              tick={{ fill: "#9399A9", fontSize: 12 }}
+            />
+            <Tooltip
+              cursor={{ fill: "rgba(21,191,199,0.08)" }}
+              content={<CustomTooltip />}
+            />
+            <Bar
+              dataKey="study"
+              name="Study"
+              stackId="hours"
+              fill="url(#studyGradient)"
+              radius={STACK_RADIUS}
+              maxBarSize={60}
+              shape={StudyBarShape}
+            />
+            <Bar
+              dataKey="onlineTest"
+              name="Online Test"
+              stackId="hours"
+              fill="url(#testGradient)"
+              radius={STACK_RADIUS}
+              maxBarSize={60}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </section>
+  );
+};
+
+export default HourGraph;

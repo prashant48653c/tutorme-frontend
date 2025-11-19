@@ -19,14 +19,11 @@ const page = () => {
   return (
     <section className="flex py-10 pl-4 flex-col gap-y-9">
       <div className="flex  items-center justify-between">
-        <h4 className="uppercase text-xl font-bold">Manage Course</h4>
+        <h4 className="uppercase text-xl font-bold">My courses</h4>
         <div>
-          <Button
-            onClick={() => Router.push("/course")}
-            className="bg-primeGreen rounded-full px-9"
-          >
-            Browse Course
-          </Button>
+          <Button className="rounded-full bg-teal-500 px-6 py-2 text-sm font-semibold text-white shadow hover:bg-teal-600">
+          My Courses
+        </Button>
         </div>
       </div>
 

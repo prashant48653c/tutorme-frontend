@@ -159,10 +159,10 @@ export const handleImageUpload = async (
     onProgress?.({ progress })
   }
 
-  return "/images/placeholder-image.png"
+  // return "/images/placeholder-image.png"
 
   // Uncomment for production use:
-  // return convertFileToBase64(file, abortSignal);
+  return convertFileToBase64(file, abortSignal);
 }
 
 /**

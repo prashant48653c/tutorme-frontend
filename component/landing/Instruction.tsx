@@ -31,7 +31,7 @@ const Instruction = () => {
           <br />
           <span className="text-green-400">Instructor? </span>
         </h2>
-        <p className="text-sm my-3 font-bold">
+        <p className="text-md my-3 font-bold text-gray-600">
           Join TutorMe as an instructor and connect with learners who need
           quick, effective guidance.{" "}
         </p>

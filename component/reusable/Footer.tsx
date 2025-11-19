@@ -8,8 +8,10 @@ export default function Footer() {
           <div className="grid grid-cols-1 md:grid-cols-2  lg:grid-cols-4 gap-8 mb-8">
           {/* Brand Section */}
           <div className="space-y-4">
-            <div className="text-2xl font-bold">
+            <div className="text-2xl titleFont font-bold">
+              <a href="/" className="text-white">
               TUTOR<span className="text-teal-400">ME</span>
+              </a>
             </div>
             <p className="text-gray-300 text-sm leading-relaxed">
               Morbi cursus porttitor enim lobortis molestie. Duis gravida turpis dui, eget bibendum magna congue nec.

@@ -37,7 +37,12 @@ try {
     return "Loading"
   }
   console.log(tutorData)
-  const session=tutorData.tutorProfile.sessions[0];
+  const session=tutorData?.tutorProfile?.sessions?.[0];
+  
+  if(!session){
+    return "No sessions available"
+  }
+  
   return (
    <section className="w-full flex flex-col gap-5">
     <Card className="w-full p-0 pt-8 mb-10 ">
@@ -180,7 +185,7 @@ try {
                 <p className="text-gray-700 font-medium mb-3">234 Sessions Completed</p>
 
                 <p className="text-gray-600 max-w-[90%] text-sm mb-4 leading-relaxed">
-                 {session.description}
+                 {session?.description}
                 </p>
               </div>
 
@@ -203,7 +208,7 @@ try {
                 </div>
                 </div>
                   <div className="text-center">
-                    <div className="text-3xl mb-3 font-semibold text-gray-900">Rs {session.price}</div>
+                    <div className="text-3xl mb-3 font-semibold text-gray-900">Rs {session?.price}</div>
                     <div className="text-sm text-green-400 mb-3 ">Per Hour</div>
                  
                   </div>
@@ -221,7 +226,7 @@ try {
         <div className="flex text-gray-500  text-sm justify-between flex-col items-start my-3">
           <p className="text-sm text-green-400 mb-2">Mostly available on:</p>
           {
-            session.duration.map((slot:{day: string, startTime: string, endTime: string},index:number)=>{
+            session?.duration?.map((slot:{day: string, startTime: string, endTime: string},index:number)=>{
               return (
                 <p key={index}> <span>{slot.day} - </span> {slot.startTime} to {slot.endTime} </p>
               )

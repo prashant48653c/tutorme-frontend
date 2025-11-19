@@ -74,6 +74,7 @@ export interface Resource {
   courseId?: number;
   title?: string;
   description?: string;
+  pdf?:string;
 }
 
 export interface Question {
@@ -81,6 +82,8 @@ export interface Question {
   courseId?: number;
   title?: string;
   description?: string;
+  pdf?:string;
+
 }
 
 export interface Assignment {
@@ -88,6 +91,8 @@ export interface Assignment {
   courseId?: number;
   title?: string;
   description?: string;
+  pdf?:string;
+
 }
 
 export interface TutorProfile {
