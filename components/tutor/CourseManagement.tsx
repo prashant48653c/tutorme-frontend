@@ -83,7 +83,7 @@ const getTabStatus = (tab: string) => {
 };
 
 const tabTriggerClasses =
-  "flex items-center justify-center rounded-none px-2 py-2 text-center text-xs font-medium leading-tight text-gray-600 whitespace-normal transition data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-white data-[state=active]:text-teal-600 data-[state=active]:font-semibold sm:text-sm sm:py-3";
+  "data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3 data-[state=active]:text-black";
 
 export default function CourseManagement({ refetchKey }: { refetchKey: number }) {
   const user = useAuthStore((state) => state.user);
@@ -375,7 +375,7 @@ export default function CourseManagement({ refetchKey }: { refetchKey: number })
 
   return (
     <>
-      <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center md:justify-between">
         <div className="flex flex-wrap items-center gap-2 text-sm text-gray-700">
           <span>Show</span>
           <select
@@ -392,6 +392,7 @@ export default function CourseManagement({ refetchKey }: { refetchKey: number })
           <span>entries</span>
         </div>
 
+         <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
         <div className="flex w-full flex-1 items-center justify-center gap-2 rounded-lg border bg-[#F5F7F9] p-2 md:max-w-sm lg:justify-end">
           <Search size={18} />
           <input
@@ -412,9 +413,10 @@ export default function CourseManagement({ refetchKey }: { refetchKey: number })
           <span className="font-medium">Sort By (A-Z)</span>
           <ArrowUpAZ className="h-4 w-4" />
         </button>
+        </div>
       </div>
 
-      <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-sm">
+      <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-sm text-gray-400">
         <Tabs
           value={activeTab}
           onValueChange={handleTabChange}

@@ -488,7 +488,7 @@ const setUser=useAuthStore((state)=>state.setUser);
                   <SelectTrigger className="bg-[#F5F7F9] w-full border-0 h-11 rounded-xl">
                     <SelectValue placeholder="Select Qualification" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent >
                     <SelectItem value="bachelors">Bachelor's Degree</SelectItem>
                     <SelectItem value="masters">Master's Degree</SelectItem>
                     <SelectItem value="phd">PhD</SelectItem>
@@ -762,9 +762,9 @@ const setUser=useAuthStore((state)=>state.setUser);
           <div className="flex flex-col md:flex-row">
             {/* Left side - Illustration */}
             <div className="w-full md:w-1/3 p-4 md:p-6">
-              <div className="rounded-2xl h-64 md:h-full flex items-center justify-center border border-gray-200 bg-white">
-                <div className="relative w-[85%] h-[85%]">
-                  <Image src="/static/landing/Sign Up Image.svg" alt="KYC Illustration" fill className="object-cover" />
+              <div className="rounded-2xl h-64 md:h-full flex items-center justify-center border border-gray-200 bg-white rounded-3xl">
+                <div className="relative w-[100%] h-[100%]">
+                  <Image src="/static/landing/Sign Up Image.svg" alt="KYC Illustration" fill className="object-cover rounded-3xl" />
                 </div>
               </div>
             </div>

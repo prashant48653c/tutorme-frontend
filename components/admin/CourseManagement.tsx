@@ -285,14 +285,13 @@ export default function CourseManagement() {
 console.log(counts)
   return (
     <>
-      <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-wrap items-center gap-2 text-sm text-gray-700">
           <span>Show</span>
           <select
             className="rounded border border-gray-300 bg-white px-2 py-1 text-sm"
             value={pagination.limit}
-            onChange={(e) => handleLimitChange(Number(e.target.value))}
-          >
+            onChange={(e) => handleLimitChange(Number(e.target.value))}>
             {[5, 10, 15, 20, 25, 30].map((num) => (
               <option key={num} value={num}>
                 {num}
@@ -301,8 +300,9 @@ console.log(counts)
           </select>
           <span>entries</span>
         </div>
+  <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
 
-        <div className="flex w-full flex-1 items-center justify-center gap-2 rounded-lg border bg-[#F5F7F9] p-2 md:max-w-sm lg:justify-end">
+        <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-[#F5F7F9] px-4 py-2 md:max-w-sm lg:flex-1">
           <Search size={18} />
           <input
             className="w-full border-0 bg-transparent text-sm outline-0 hover:outline-0"
@@ -312,19 +312,20 @@ console.log(counts)
           />
         </div>
 
-        <button
+        <Button
           type="button"
           onClick={() =>
             handleSortChange(pagination.sortBy == "asc" ? "desc" : "asc")
           }
-          className="flex items-center justify-center gap-2 text-sm text-gray-700 transition hover:text-teal-600"
+          className="flex items-center justify-center gap-2 rounded-full border border-gray-200 text-sm font-medium text-gray-700 transition hover:border-teal-500 hover:text-teal-600"
         >
           <span className="font-medium">Sort By (A-Z)</span>
           <ArrowUpAZ className="h-4 w-4" />
-        </button>
+        </Button>
+        </div>
       </div>
 
-      <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-sm">
+      <div className="w-full max-w-9xl mx-auto bg-white rounded-lg shadow-sm">
         <Tabs
           value={activeTab}
           onValueChange={handleTabChange}

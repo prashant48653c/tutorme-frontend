@@ -1,19 +1,16 @@
 "use client";
 import { Button } from "@/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarInset } from "@/components/ui/sidebar";
 import api from "@/hooks/axios";
-import { Course } from "@/types/course";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { ArrowRight, Search, Star } from "lucide-react";
-import Image from "next/image";
-import React, { useEffect, useRef, useState } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { Search } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTutorFilter } from "@/store/useTutorFilter"; // Adjust path as needed
 import { useRouter } from "next/navigation";
 import Navbar from "@/component/reusable/Navbar";
 import { TutorSidebar } from "@/components/tutor/TutorSidebar";
 import TutorCard from "@/components/tutor/TutorCard";
+import Footer from "@/component/reusable/Footer";
 
 type PaginatedTutors = {
   data: any[]; // Replace 'any' with your Tutor type
@@ -21,7 +18,14 @@ type PaginatedTutors = {
 };
 
 const TutorPage = () => {
-  const { searchQuery, setSearchQuery, getAllFilters } = useTutorFilter();
+  const {
+    searchQuery,
+    setSearchQuery,
+    course,
+    priceRange,
+    language,
+    rating,
+  } = useTutorFilter();
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const router = useRouter();
   const observerRef = useRef<HTMLDivElement | null>(null);
@@ -36,30 +40,37 @@ const TutorPage = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const fetchTutors: any = async ({ pageParam = 1 }): Promise<any> => {
-    const filters = getAllFilters();
-    console.log("Fetching tutors with filters:", filters);
-    console.log("Page:", pageParam);
+  const filtersSnapshot = useMemo(
+    () => ({
+      course,
+      priceRange,
+      language,
+      rating,
+    }),
+    [course, priceRange, language, rating]
+  );
 
-    // Create request body with filters and search
-    const requestBody = {
-      page: 2,
-      limit: 15,
-      tags: filters.course,
-      max: filters.priceRange.max,
-      min: filters.priceRange.min,
+  const fetchTutors: any = useCallback(
+    async ({ pageParam = 1 }): Promise<any> => {
+      const requestBody = {
+        page: pageParam,
+        limit: 15,
+        tags: filtersSnapshot.course,
+        max: filtersSnapshot.priceRange.max,
+        min: filtersSnapshot.priceRange.min,
+        language: filtersSnapshot.language,
+        rating: filtersSnapshot.rating,
+        title: debouncedSearchQuery || "",
+      };
 
-      language: filters.language,
-      rating: filters.rating,
-      title: debouncedSearchQuery || "",
-    };
+      const res = await api.get(`/tutor`, {
+        params: requestBody,
+      });
 
-    const res = await api.get(`/tutor`, {
-      params: requestBody,
-    });
-
-    return res.data.data;
-  };
+      return res.data.data;
+    },
+    [debouncedSearchQuery, filtersSnapshot]
+  );
 
   const {
     data,
@@ -70,17 +81,13 @@ const TutorPage = () => {
     isLoading,
     error,
   } = useInfiniteQuery<any>({
-    queryKey: ["tutorsCount", debouncedSearchQuery, getAllFilters()],
+    queryKey: ["tutorsCount", debouncedSearchQuery, filtersSnapshot],
     queryFn: fetchTutors,
     initialPageParam: 1,
     getNextPageParam: (lastPage, pages) => {
       return lastPage.hasMore ? pages.length + 1 : undefined;
     },
   });
-
-  useEffect(() => {
-    refetch();
-  }, [debouncedSearchQuery, refetch]);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
@@ -89,7 +96,6 @@ const TutorPage = () => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          console.log("Sentinel visible, fetching next page...");
           fetchNextPage();
         }
       },
@@ -111,7 +117,7 @@ const TutorPage = () => {
 
   if (error) {
     return (
-      <main className="w-full gap-4 px-8">
+      <main className="w-full">
         <Navbar />
         <div className="flex justify-center items-center min-h-[50vh]">
           <div className="text-center">
@@ -133,9 +139,7 @@ const TutorPage = () => {
     );
   }
 
-  console.log(data);
-
-  return (
+  return (<>
     <main className="w-full gap-4 px-8">
       <Navbar />
 
@@ -153,25 +157,33 @@ const TutorPage = () => {
           />
         </div>
         <Button
-          className="md:hidden block bg-amber-800"
+          className="hidden sm:hidden lg:hidden md:hidden block bg-amber-800"
           onClick={(e) => {
             e.stopPropagation();
-            setMobileSidebar(!mobileSidebar);
+            setMobileSidebar((prev) => !prev);
           }}
+        style ={{ backgroundColor: '#09C4AE' , display:'none'}
+      }
         >
           Filter
         </Button>
       </section>
 
       <div className="flex min-h-[90vh]">
-        <div className={`${mobileSidebar ? "block" : "hidden"} md:block `}>
-          <TutorSidebar />
+        <div className="relative">
+          <TutorSidebar
+            mobileOpen={mobileSidebar}
+            onMobileOpenChange={(open) => setMobileSidebar(open)}
+          />
         </div>
-        <SidebarInset className="w-full md:w-full" onClick={(e) => {
-          if (mobileSidebar && e.target === e.currentTarget) {
-            setMobileSidebar(false);
-          }
-        }}>
+        <SidebarInset
+          className="w-full md:w-full"
+          onClick={(e) => {
+            if (mobileSidebar && e.target === e.currentTarget) {
+              setMobileSidebar(false);
+            }
+          }}
+        >
           <section className="flex flex-col gap-6">
             {/* <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Featured Courses
@@ -229,7 +241,10 @@ const TutorPage = () => {
           </section>
         </SidebarInset>
       </div>
+      
     </main>
+    <Footer/>
+    </>
   );
 };
 

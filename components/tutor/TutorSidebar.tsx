@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import type React from "react"
 
 import { SlidersHorizontal, X } from "lucide-react"
@@ -53,7 +53,7 @@ function FilterSection({ title, data, showClearAll, onItemChange, onClearAll, ch
                   id={item.id}
                   checked={item.checked}
                   onCheckedChange={(checked) => onItemChange?.(item.id, checked as boolean)}
-                  className="data-[state=checked]:bg-[#061826] data-[state=checked]:border-[#061826]"
+                  className="data-[state=checked]:bg-white data-[state=checked]:border-[#061826]"
                 />
                 <Label htmlFor={item.id} className="text-sm font-normal cursor-pointer">
                   {item.label}
@@ -70,8 +70,39 @@ function FilterSection({ title, data, showClearAll, onItemChange, onClearAll, ch
   )
 }
 
-export function TutorSidebar() {
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+interface TutorSidebarProps {
+  mobileOpen?: boolean
+  onMobileOpenChange?: (open: boolean) => void
+}
+
+export function TutorSidebar({ mobileOpen, onMobileOpenChange }: TutorSidebarProps = {}) {
+  const [internalMobileFilterOpen, setInternalMobileFilterOpen] = useState(false)
+  const isControlled = typeof mobileOpen === "boolean"
+  const resolvedMobileOpen = isControlled ? (mobileOpen as boolean) : internalMobileFilterOpen
+  const setResolvedMobileOpen = useCallback(
+    (nextOpen: boolean) => {
+      if (!isControlled) {
+        setInternalMobileFilterOpen(nextOpen)
+      }
+      onMobileOpenChange?.(nextOpen)
+    },
+    [isControlled, onMobileOpenChange]
+  )
+
+  useEffect(() => {
+    if (typeof document === "undefined") return
+    if (!resolvedMobileOpen) {
+      document.body.style.overflow = ""
+      return
+    }
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [resolvedMobileOpen])
   
   const {
     course,
@@ -198,17 +229,15 @@ export function TutorSidebar() {
 
   const getActiveFilters = () => {
     const allFilters = getAllFilters();
-    console.log("All tutor filters from Zustand:", allFilters);
     return allFilters;
   };
 
   const showMore = () => {
-    console.log("Show more clicked");
   };
 
   const SidebarContent = () => (
-    <div className="w-full pr-3">
-      <div className="rounded-2xl border shadow-sm p-4 bg-white space-y-6">
+    <div className="w-full pr-0 md:pr-3">
+      <div className="rounded-2xl border shadow-sm p-4 bg-white space-y-6 ">
         {/* Course Filter */}
         <FilterSection
           title="Course"
@@ -282,7 +311,7 @@ export function TutorSidebar() {
       </div>
 
       {/* Debug Section */}
-      <div className="p-4 border-t">
+      <div className="p-4 border-t hidden">
         <details className="text-xs">
           <summary className="cursor-pointer text-gray-600">
             Debug: Current Filter State
@@ -298,41 +327,63 @@ export function TutorSidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden md:block w-64">
+      <div className="hidden w-64 shrink-0 md:block">
         <SidebarContent />
       </div>
 
-      {/* Mobile Filter Button */}
-      <button
-        onClick={() => setIsMobileFilterOpen(true)}
-        className="md:hidden fixed bottom-6 left-6 z-40 bg-teal-500 hover:bg-teal-600 text-white p-3 rounded-full shadow-lg"
+      {/* Mobile Filter Toggle */}
+      <Button
+        type="button"
+        variant="default"
+        onClick={() => setResolvedMobileOpen(true)}
+        className="fixed bottom-6 right-5 z-40 flex items-center gap-2 rounded-full bg-primeGreen px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-primeGreen/90 md:hidden"
+        aria-controls="tutor-filters-panel"
+        aria-expanded={resolvedMobileOpen}
       >
-        <SlidersHorizontal className="h-5 w-5" />
-      </button>
+        <SlidersHorizontal className="h-4 w-4" />
+        Filters
+      </Button>
 
-      {/* Mobile Overlay */}
-      {isMobileFilterOpen && (
-        <div 
-          className="md:hidden fixed inset-0 z-50 bg-black bg-opacity-50" 
-          onClick={() => setIsMobileFilterOpen(false)} 
+      {/* Mobile Sheet */}
+      <div
+        className={`md:hidden ${resolvedMobileOpen ? "pointer-events-auto" : "pointer-events-none"} fixed inset-0 z-50`}
+      >
+        <div
+          className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${
+            resolvedMobileOpen ? "opacity-100" : "opacity-0"
+          }`}
+          onClick={() => setResolvedMobileOpen(false)}
         />
-      )}
-
-      {/* Mobile Sidebar */}
-      <div className={`md:hidden fixed left-0 top-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ${
-        isMobileFilterOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="font-semibold">Tutor Filters</h2>
-          <button
-            onClick={() => setIsMobileFilterOpen(false)}
-            className="p-1 hover:bg-gray-100 rounded"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="overflow-y-auto h-full pb-20">
-          <SidebarContent />
+        <div
+          id="tutor-filters-panel"
+          role="dialog"
+          aria-modal="true"
+          className={`absolute right-0 top-0 flex h-full w-[min(90vw,20rem)] flex-col bg-white shadow-2xl transition-transform duration-300 ${
+            resolvedMobileOpen ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
+          <div className="flex items-center justify-between border-b p-4">
+            <div>
+              <p className="text-sm font-semibold text-gray-900">
+                Filter Tutors
+              </p>
+              <p className="text-xs text-gray-500">
+                Refine by course, language, and rating.
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-gray-500 hover:text-gray-900"
+              onClick={() => setResolvedMobileOpen(false)}
+              aria-label="Close filters"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="h-full overflow-y-auto p-4">
+            <SidebarContent />
+          </div>
         </div>
       </div>
     </>
