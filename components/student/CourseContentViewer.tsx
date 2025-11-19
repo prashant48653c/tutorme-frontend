@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useReducer, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -13,8 +13,11 @@ import {
   Folder,
   FileImage,
 } from "lucide-react";
-import "plyr-react/plyr.css";
-import Plyr from "plyr-react";
+
+// Import Video.js CSS
+import "video.js/dist/video-js.css";
+import videojs from "video.js";
+import Player from "video.js/dist/types/player";
 
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -53,20 +56,25 @@ export const CourseContentViewer = ({ courseId }: { courseId: string }) => {
   const [currentSection, setCurrentSection] = useState<any>([]);
   const router = useRouter();
   const [selectedItem, setSelectedItem] = useState<
-    | ((Chapter | SubHeading | SubTitle) & {
+    | ((Chapter | SubHeading | SubTitle | any) & {
         type: "chapter" | "subheading" | "subchapter";
         parentId: string;
       })
     | null
   >();
+
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const playerRef = useRef<Player | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
   // Get everything from the store
   const fetchCourse = async () => {
     const res = await api.get("/course/" + courseId);
     console.log(res);
     setCourse(res.data.data);
-
     console.log(courseDetails, "Updated");
   };
+
   const handleSelection = (
     e: any,
     item: Chapter | SubHeading | SubTitle,
@@ -77,6 +85,7 @@ export const CourseContentViewer = ({ courseId }: { courseId: string }) => {
     setSelectedItem({ ...item, type, parentId });
     console.log(item);
   };
+
   const {
     courseDetails,
     chapters,
@@ -109,17 +118,159 @@ export const CourseContentViewer = ({ courseId }: { courseId: string }) => {
   useEffect(() => {
     fetchCourse();
   }, []);
+
+  // Initialize and manage Video.js player
+  useEffect(() => {
+    // Clean up previous player
+    if (playerRef.current) {
+      try {
+        playerRef.current.pause();
+        playerRef.current.reset();
+        playerRef.current.dispose();
+      } catch (error) {
+        console.error("Error disposing player:", error);
+      }
+      playerRef.current = null;
+    }
+
+    // Only initialize if we have both a video element and video URL
+    if (!videoRef.current || !selectedItem?.video) {
+      return;
+    }
+
+    // Small delay to ensure DOM is ready
+    const timeout = setTimeout(() => {
+      if (!videoRef.current) return;
+
+      try {
+        // Initialize new player
+        const player = videojs(videoRef.current, {
+          controls: true,
+          responsive: true,
+          fluid: true,
+          preload: "metadata",
+          playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 2],
+          html5: {
+            vhs: {
+              overrideNative: true,
+            },
+            nativeVideoTracks: false,
+            nativeAudioTracks: false,
+            nativeTextTracks: false,
+          },
+          controlBar: {
+            children: [
+              "playToggle",
+              "volumePanel",
+              "currentTimeDisplay",
+              "timeDivider",
+              "durationDisplay",
+              "progressControl",
+              "remainingTimeDisplay",
+              "subsCapsButton",
+              "playbackRateMenuButton",
+              "fullscreenToggle",
+            ],
+          },
+        });
+
+        // Wait for player to be ready
+        player.ready(() => {
+          // Set video source
+          const videoSource = selectedItem.video.replace(/^http:\/\//, "https://");
+          const videoType = videoSource.includes(".m3u8")
+            ? "application/x-mpegURL"
+            : "video/mp4";
+
+          player.src({
+            src: videoSource,
+            type: videoType,
+          });
+
+          // Add subtitles if available
+          if (selectedItem?.subtitle) {
+            const subtitleSrc = selectedItem.subtitle.replace(
+              /^http:\/\//,
+              "https://"
+            );
+            player.addRemoteTextTrack(
+              {
+                kind: "subtitles",
+                label: "English",
+                srclang: "en",
+                src: subtitleSrc,
+                default: true,
+              },
+              false
+            );
+          }
+
+          // Handle errors gracefully
+          player.on("error", (e:any) => {
+            const error = player.error();
+            console.error("Video.js error:", error);
+            
+            if (error && error.code === 3) {
+              // MEDIA_ERR_DECODE - try reloading
+              setTimeout(() => {
+                if (playerRef.current) {
+                  playerRef.current.src({
+                    src: videoSource,
+                    type: videoType,
+                  });
+                }
+              }, 100);
+            }
+          });
+        });
+
+        playerRef.current = player;
+      } catch (error) {
+        console.error("Error initializing player:", error);
+      }
+    }, 100);
+
+    // Cleanup function
+    return () => {
+      clearTimeout(timeout);
+      if (playerRef.current) {
+        try {
+          playerRef.current.pause();
+          playerRef.current.dispose();
+        } catch (error) {
+          console.error("Error in cleanup:", error);
+        }
+        playerRef.current = null;
+      }
+    };
+  }, [selectedItem?.video, selectedItem?.id]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (playerRef.current) {
+        try {
+          playerRef.current.dispose();
+        } catch (error) {
+          console.error("Error disposing on unmount:", error);
+        }
+        playerRef.current = null;
+      }
+    };
+  }, []);
+
   console.log("Selected item video:", selectedItem?.video);
 
   if (!course) {
     return <div>Loading...</div>;
   }
+
   return (
-    <div className="flex border relative justify-end  p-1  overflow-hidden   ">
+    <div className="flex border relative justify-end p-1 overflow-hidden">
       <div
         className={`${
           sidebarCollapsed ? "w-0 invisible" : "w-[30%]"
-        } border transition-all duration-300 ease-in-out overflow-x-hidden `}
+        } border transition-all duration-300 ease-in-out overflow-x-hidden`}
       >
         <section className="py-4 overflow-y-auto pb-10 h-[30rem] flex flex-col">
           <div className="flex items-center justify-between mb-4">
@@ -131,7 +282,7 @@ export const CourseContentViewer = ({ courseId }: { courseId: string }) => {
           {/* Drag and Drop Course Structure */}
           <div className="flex flex-col items-start">
             {course.chapters?.map((chapter: Chapter, chapterIndex: number) => (
-              <div key={chapter.id} className="border p-2 my-2 bg-white">
+              <div key={chapterIndex} className="border p-2 my-2 bg-white">
                 {/* Chapter Header */}
                 <div
                   onClick={(e) =>
@@ -186,7 +337,7 @@ export const CourseContentViewer = ({ courseId }: { courseId: string }) => {
                   <div className="ml-4">
                     {chapter.subChapters?.map((sub, subIndex) => (
                       <div
-                        key={sub.id}
+                        key={subIndex}
                         className="border p-2 my-2 bg-gray-100 py-4 flex flex-col justify-center rounded"
                       >
                         <div
@@ -256,7 +407,7 @@ export const CourseContentViewer = ({ courseId }: { courseId: string }) => {
                           <ul className="ml-4 my-3 list-disc">
                             {sub.subHeadings?.map((sh, shIndex) => (
                               <li
-                                key={sh.id}
+                                key={shIndex}
                                 className="py-2 pl-2 my-1 bg-white list-none border-b"
                               >
                                 <div
@@ -327,15 +478,14 @@ export const CourseContentViewer = ({ courseId }: { courseId: string }) => {
       </div>
 
       <div
-        className={` overflow-auto  h-[90vh] relative flex flex-col  ${
-          sidebarCollapsed ? "w-[100%] " : "w-[70%]"
-        }
-flex flex-col} px-1`}
+        className={`overflow-auto h-[90vh] relative flex flex-col ${
+          sidebarCollapsed ? "w-[100%]" : "w-[70%]"
+        } px-1`}
       >
-        <div className="absolute rounded-lg bg-black  top-[45%]">
+        <div className="absolute rounded-lg bg-black top-[45%]">
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="py-2  px-1   "
+            className="py-2 px-1"
           >
             {sidebarCollapsed ? (
               <ChevronRight color="white" className="w-5 h-5" />
@@ -367,83 +517,57 @@ flex flex-col} px-1`}
         </div>
 
         {/* Content Editor */}
-      <div className="flex-1 p-6 mb-10 overflow-y-auto">
- <div className="max-w-4xl mx-auto space-y-6">
-  {/* Plyr Video Player */}
-  {selectedItem?.video && (
-    <Plyr
-      key={selectedItem?.id}
-      source={{
-        type: "video",
-        sources: [
-          {
-            src: selectedItem.video.replace(/^http:\/\//, "https://"),
-            type: "video/mp4",
-          },
-        ],
-        tracks: selectedItem?.subtitle
-          ? [
-              {
-                kind: "subtitles", // changed from captions
-                label: "English",
-                src: selectedItem.subtitle.replace(/^http:\/\//, "https://"),
-                srcLang: "en",
-                default: true,
-              },
-            ]
-          : [],
-      }}
-      options={{
-        controls: [
-          "play-large",
-          "play",
-          "progress",
-          "current-time",
-          "mute",
-          "volume",
-          "captions",
-          "settings",
-          "pip",
-          "airplay",
-          "fullscreen",
-        ],
-        captions: { active: true, language: "en", update: true },
-        autoplay: false,
-        resetOnEnd: true,
-      }}
-    />
-  )}
+        <div className="flex-1 p-6 mb-10 overflow-y-auto">
+          <div className="max-w-4xl mx-auto space-y-6">
+            {/* Video.js Player - Key prop forces complete remount */}
+            {selectedItem?.video ? (
+              <div 
+                key={selectedItem.id} 
+                ref={containerRef}
+                className="video-container my-6"
+              >
+                <div data-vjs-player>
+                  <video
+                    ref={videoRef}
+                    className="video-js vjs-big-play-centered"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="my-6 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl h-96 flex items-center justify-center">
+                <p className="text-gray-500">No video content available</p>
+              </div>
+            )}
 
-  <div className="w-full h-max">
-    <p className="w-full h-full p-2 text-gray-700 border rounded">
-      {selectedItem?.description}
-    </p>
-  </div>
+            <div className="w-full h-max">
+              <p className="w-full h-full p-2 text-gray-700 border rounded">
+                {selectedItem?.description}
+              </p>
+            </div>
 
-  {/* Action Buttons */}
-  <div className="border-t grid grid-cols-2 gap-4 pt-4 space-y-3">
-    <Button
-      onClick={(e) => {
-        e.preventDefault();
-        addChapter();
-      }}
-      className="border py-5 bg-transparent text-black hover:bg-green-200 w-full border-green-400"
-      disabled={isLoading}
-    >
-      Previous
-    </Button>
+            {/* Action Buttons */}
+            <div className="border-t grid grid-cols-2 gap-4 pt-4 space-y-3">
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  addChapter();
+                }}
+                className="border py-5 bg-transparent text-black hover:bg-green-200 w-full border-green-400"
+                disabled={isLoading}
+              >
+                Previous
+              </Button>
 
-    <Button
-      onClick={handleSaveDraft}
-      className="w-full py-5 bg-green-600 hover:bg-green-700"
-      disabled={isSaving}
-    >
-      Next
-    </Button>
-  </div>
-</div>
-
-</div>
+              <Button
+                onClick={handleSaveDraft}
+                className="w-full py-5 bg-green-600 hover:bg-green-700"
+                disabled={isSaving}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
