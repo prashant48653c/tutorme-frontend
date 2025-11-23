@@ -22,7 +22,8 @@ interface Tutor {
   name: string;
   createdAt: string;
   status: "APPROVED" | "DISAPPROVED" | "BANNED" | "UNDERREVIEW" | "REGISTERED";
-  avatar: string;
+  avatar?: string;
+  image?: string;
   tutorProfile: {
     status:
       | "APPROVED"
@@ -471,6 +472,8 @@ export default function TutorManagement() {
               ) : (
                 tutors.map((tutor) => {
                   const statusConfig = getStatusBadge(tutor.status);
+                  const avatarSrc =
+                    tutor.image || tutor.avatar || "/placeholder.svg";
                   return (
                     <div
                       key={tutor.id}
@@ -479,7 +482,7 @@ export default function TutorManagement() {
                       <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-left sm:space-x-4">
                         <Avatar className="h-12 w-12">
                           <AvatarImage
-                            src={tutor.avatar || "/placeholder.svg"}
+                            src={avatarSrc}
                             alt={tutor.name}
                           />
                           <AvatarFallback className="bg-gray-800 text-white text-xs">

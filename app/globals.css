@@ -82,7 +82,7 @@ body {
 
 }
 @media (max-width: 920px) {
-  body {
+  .zoomed {
     zoom: 1 !important;
   }
 }

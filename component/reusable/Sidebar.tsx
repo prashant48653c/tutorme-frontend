@@ -32,7 +32,7 @@ const Sidebar = ({ links, isOpen = true, onClose }: SidebarProps) => {
   const showMobileOverlay = Boolean(onClose) && isOpen;
 
   return (
-    <aside className="w-full border  relative bg-white text-black">
+    <aside className="w-full border relative bg-white text-black lg:sticky lg:top-0 lg:h-fit">
       <div className=" lg:hidden">
         <div
           aria-hidden={!showMobileOverlay}

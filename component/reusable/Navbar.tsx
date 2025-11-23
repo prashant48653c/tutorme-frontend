@@ -105,7 +105,7 @@ const Navbar = () => {
   return (
     <>
       <nav ref={navRef as any} className="fixed top-0 left-0 right-0 flex justify-center w-full items-center z-[12000]">
-        <div className="w-[85%] md:w-[80%] shadow-xl bg-[#061826] items-center px-4 py-2 my-5 flex justify-between rounded-4xl relative text-4xl z-[10050]">
+        <div className="w-[92%] sm:w-[90%] md:w-[88%] lg:w-[80%] shadow-xl bg-[#061826] items-center px-4 py-2 my-5 flex justify-between rounded-4xl relative text-4xl z-[10050]">
           {/* Logo */}
           <div>
             <h1 className="titleFont text-white font-hove">
@@ -116,7 +116,7 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <ul className="hidden md:flex items-center justify-center gap-x-5 z-[999]">
+          <ul className="hidden lg:flex items-center justify-center gap-x-5 z-[999] font-hove">
             {links.map((link, i) => {
               return (
                 <li className="text-white text-xl" key={i}>
@@ -127,7 +127,7 @@ const Navbar = () => {
           </ul>
 
           {/* Desktop Auth Section */}
-          <div className="hidden md:flex items-center gap-3 z-[999]">
+          <div className="hidden lg:flex items-center gap-3 z-[999]">
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -189,7 +189,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Menu Button and User Avatar */}
-          <div className="flex md:hidden items-center gap-2">
+          <div className="flex lg:hidden items-center gap-2">
             {user && (
               <Avatar className="h-8 w-8">
                 <AvatarImage src={user.image || "/placeholder.svg"} alt={user.name} />
@@ -213,7 +213,7 @@ const Navbar = () => {
             createPortal(
               <>
                 <div
-                  className="fixed left-0 right-0 bg-[#061826] rounded-lg shadow-xl border border-gray-700 z-[11000] mx-4 md:hidden"
+                  className="fixed left-0 right-0 bg-[#061826] rounded-lg shadow-xl border border-gray-700 z-[11000] mx-4 lg:hidden"
                   style={{ top: navOffset }}
                 >
                   {/* Navigation Links */}
@@ -281,7 +281,7 @@ const Navbar = () => {
                 </div>
 
                 <div 
-                  className="fixed right-0 bottom-0 left-0  z-[10990] md:hidden" 
+                  className="fixed right-0 bottom-0 left-0  z-[10990] lg:hidden" 
                   style={{ top: navOffset }}
                   onClick={closeMobileMenu}
                 />

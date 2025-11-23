@@ -1,4 +1,5 @@
 import Image from "next/image"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, ArrowUpRight } from "lucide-react"
 import Marquee from "react-fast-marquee";
@@ -10,6 +11,7 @@ export default function Blog() {
       image: "/static/landing/course.svg",
       date: "June 02, 2024",
       title: "From Panic to Prepared: A Night Before Exam Checklist",
+      slug: "panic-to-prepared",
     },
     {
       id: 2,
@@ -17,6 +19,7 @@ export default function Blog() {
 
       date: "June 02, 2024",
       title: "How to Find the Right Tutor in Under 10 Minutes",
+      slug: "find-the-right-tutor",
     },
     {
       id: 3,
@@ -24,6 +27,7 @@ export default function Blog() {
 
       date: "June 02, 2024",
       title: "5 Last-Minute Study Hacks That Actually Work",
+      slug: "last-minute-study-hacks",
     },
     {
       id: 4,
@@ -31,6 +35,7 @@ export default function Blog() {
 
       date: "June 02, 2024",
       title: "The Ultimate Guide to Online Learning Success",
+      slug: "online-learning-success",
     },
     {
       id: 5,
@@ -38,6 +43,7 @@ export default function Blog() {
 
       date: "June 02, 2024",
       title: "Building Confidence Before Your Big Presentation",
+      slug: "confidence-before-presentation",
     },
   ]
 
@@ -55,17 +61,19 @@ export default function Blog() {
             </p>
           </div>
           <div >
-<Button className="hidden sm:flex group border-green-400 bg-white justify-around text-center border min-w-[10rem] mt-4 px-1 py-6 text-lg font-semibold pl-3 rounded-full text-black hover:bg-teal-50 transition">              {" "}
-              View all Blogs
-              <span className="icon-hover-rotate">
-              <div className='rounded-full p-3  bg-green-400'>
-                
-              <ArrowUpRight color='white'  size={15}/>
-              </div>
-              </span>
-
-              
-          </Button>
+            <Button
+              asChild
+              className="hidden sm:flex group border-green-400 bg-white justify-around text-center border min-w-[10rem] mt-4 px-1 py-6 text-lg font-semibold pl-3 rounded-full text-black hover:bg-teal-50 transition"
+            >
+              <Link href="/blog" className="flex items-center gap-3">
+                View all Blogs
+                <span className="icon-hover-rotate">
+                  <div className="rounded-full p-3 bg-green-400">
+                    <ArrowUpRight color="white" size={15} />
+                  </div>
+                </span>
+              </Link>
+            </Button>
             </div>
         </div>
 
@@ -78,20 +86,22 @@ export default function Blog() {
           key={`${post.id}-${index}`}
           className="flex-shrink-0 w-80 bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
         >
-          <div className="relative h-48 overflow-hidden">
-            <Image src={post.image || "/placeholder.svg"} alt={post.title} fill className="object-cover" />
-          </div>
-          <div className="p-6">
-            <p className="text-sm text-gray-500 mb-3">{post.date}</p>
-            <h3 className="text-xl font-semibold text-gray-900 mb-4 line-clamp-2">{post.title}</h3>
-            <Button
-              variant="outline"
-              className="flex items-center rounded-full gap-2 text-gray-700 border-gray-300 hover:bg-gray-50"
-            >
-              Read More
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
+          <Link href={`/blog/${post.slug || post.id}`} className="block h-full no-underline text-inherit">
+            <div className="relative h-48 overflow-hidden">
+              <Image src={post.image || "/placeholder.svg"} alt={post.title} fill className="object-cover" />
+            </div>
+            <div className="p-6">
+              <p className="text-sm text-gray-500 mb-3">{post.date}</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4 line-clamp-2">{post.title}</h3>
+              <Button
+                variant="outline"
+                className="flex items-center rounded-full gap-2 text-gray-700 border-gray-300 hover:bg-gray-50"
+              >
+                Read More
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </Link>
         </div>
       ))}
     </div>
@@ -101,11 +111,14 @@ export default function Blog() {
         {/* Mobile View All Button */}
         <div className="flex justify-center mt-8 md:hidden min-w-[200%] sm:min-w-max">
           <Button
+            asChild
             variant="outline"
             className="flex items-center gap-2 px-6 py-3 rounded-full border-2 border-teal-400 text-teal-600 hover:bg-teal-50 bg-white"
           >
-            View all Blogs
-            <ArrowRight className="w-4 h-4" />
+            <Link href="/blog">
+              View all Blogs
+              <ArrowRight className="w-4 h-4 inline-block ml-2" />
+            </Link>
           </Button>
         </div>
       </div>

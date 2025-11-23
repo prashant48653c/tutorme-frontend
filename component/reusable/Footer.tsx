@@ -14,8 +14,7 @@ export default function Footer() {
               </a>
             </div>
             <p className="text-gray-300 text-sm leading-relaxed">
-              Morbi cursus porttitor enim lobortis molestie. Duis gravida turpis dui, eget bibendum magna congue nec.
-            </p>
+TutorMe is a platform designed to connect students with the right tutors for last-minute syllabus coverage.             </p>
             <div className="flex space-x-3">
               <Link
                 href="#"
