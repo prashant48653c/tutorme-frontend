@@ -57,13 +57,14 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
           {/* Sidebar */}
           <div
             className={`w-0 flex-shrink-0 transition-[width] duration-300 lg:sticky lg:top-[88px] lg:h-[calc(100vh-88px)] ${
-              isSidebarVisible ? "w-20 lg:w-[18%]" : "lg:w-0"
+              isSidebarVisible ? "w-20 lg:w-[18%]" : "w-0 lg:w-16"
             }`}
           >
             <Sidebar
               links={links}
               isOpen={isSidebarVisible}
               onClose={() => setSidebarVisible(false)}
+              collapsed={!isSidebarVisible}
             />
           </div>
           {/* Main Content */}

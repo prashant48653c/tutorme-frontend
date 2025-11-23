@@ -41,21 +41,22 @@ import { ReactNode, useState } from "react";
 export default function ProtectedLayout({ children }: { children: ReactNode }) {
  const [isSidebarVisible, setSidebarVisible] = useState(true);
 
-   return (
-    <html lang="en">
+  return (
+   <html lang="en">
       <body>
         <AdminGuard>
-        <div className="flex pb-5 bg-gray-100 relative justify-center w-[100%]">
+        <div className="flex items-start pb-5 bg-gray-100 relative w-[100%] min-h-screen">
           {/* Sidebar */}
           <div
-            className={`flex-shrink-0 transition-[width] duration-300 lg:sticky lg:top-0 lg:h-screen ${
-              isSidebarVisible ? "w-[30%] sm:w-[20%] lg:w-[15%]" : "w-0"
+            className={`flex-shrink-0 transition-[width] duration-300 lg:sticky lg:top-[88px] lg:h-[calc(100vh-88px)] ${
+              isSidebarVisible ? "w-[30%] sm:w-[20%] lg:w-[15%]" : "w-0 lg:w-16"
             }`}
           >
             <Sidebar
               links={links}
               isOpen={isSidebarVisible}
               onClose={() => setSidebarVisible(false)}
+              collapsed={!isSidebarVisible}
             />
           </div>
           {/* Main Content */}
