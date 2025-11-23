@@ -26,6 +26,12 @@ import { ReactNode, useState } from "react";
       icon: "icon5",
     },
     {
+      path: "/admin/blogs",
+      name: "Manage Blogs",
+
+      icon: "icon5",
+    },
+    {
       path: "/",
       name: "Forum Surveillence",
 
