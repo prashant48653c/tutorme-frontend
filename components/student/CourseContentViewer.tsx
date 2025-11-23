@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -13,11 +13,6 @@ import {
   Folder,
   FileImage,
 } from "lucide-react";
-
-// Import Video.js CSS
-import "video.js/dist/video-js.css";
-import videojs from "video.js";
-import Player from "video.js/dist/types/player";
 
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -62,10 +57,6 @@ export const CourseContentViewer = ({ courseId }: { courseId: string }) => {
       })
     | null
   >();
-
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const playerRef = useRef<Player | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Get everything from the store
   const fetchCourse = async () => {
@@ -119,151 +110,32 @@ export const CourseContentViewer = ({ courseId }: { courseId: string }) => {
     fetchCourse();
   }, []);
 
-  // Initialize and manage Video.js player
-  useEffect(() => {
-    // Clean up previous player
-    if (playerRef.current) {
-      try {
-        playerRef.current.pause();
-        playerRef.current.reset();
-        playerRef.current.dispose();
-      } catch (error) {
-        console.error("Error disposing player:", error);
-      }
-      playerRef.current = null;
+  // Extract video ID from Bunny video URL
+  const extractBunnyVideoId = (videoUrl: string) => {
+    if (!videoUrl) return null;
+    
+    // Handle iframe embed URLs: https://iframe.mediadelivery.net/embed/LIBRARY_ID/VIDEO_ID
+    const embedMatch = videoUrl.match(/embed\/(\d+)\/([a-f0-9-]+)/i);
+    if (embedMatch) {
+      return { libraryId: embedMatch[1], videoId: embedMatch[2] };
     }
-
-    // Only initialize if we have both a video element and video URL
-    if (!videoRef.current || !selectedItem?.video) {
-      return;
+    
+    // Handle direct play URLs: https://iframe.mediadelivery.net/play/LIBRARY_ID/VIDEO_ID
+    const playMatch = videoUrl.match(/play\/(\d+)\/([a-f0-9-]+)/i);
+    if (playMatch) {
+      return { libraryId: playMatch[1], videoId: playMatch[2] };
     }
-
-    // Small delay to ensure DOM is ready
-    const timeout = setTimeout(() => {
-      if (!videoRef.current) return;
-
-      try {
-        // Initialize new player
-        const player = videojs(videoRef.current, {
-          controls: true,
-          responsive: true,
-          fluid: true,
-          preload: "metadata",
-          playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 2],
-          html5: {
-            vhs: {
-              overrideNative: true,
-            },
-            nativeVideoTracks: false,
-            nativeAudioTracks: false,
-            nativeTextTracks: false,
-          },
-          controlBar: {
-            children: [
-              "playToggle",
-              "volumePanel",
-              "currentTimeDisplay",
-              "timeDivider",
-              "durationDisplay",
-              "progressControl",
-              "remainingTimeDisplay",
-              "subsCapsButton",
-              "playbackRateMenuButton",
-              "fullscreenToggle",
-            ],
-          },
-        });
-
-        // Wait for player to be ready
-        player.ready(() => {
-          // Set video source
-          const videoSource = selectedItem.video.replace(/^http:\/\//, "https://");
-          const videoType = videoSource.includes(".m3u8")
-            ? "application/x-mpegURL"
-            : "video/mp4";
-
-          player.src({
-            src: videoSource,
-            type: videoType,
-          });
-
-          // Add subtitles if available
-          if (selectedItem?.subtitle) {
-            const subtitleSrc = selectedItem.subtitle.replace(
-              /^http:\/\//,
-              "https://"
-            );
-            player.addRemoteTextTrack(
-              {
-                kind: "subtitles",
-                label: "English",
-                srclang: "en",
-                src: subtitleSrc,
-                default: true,
-              },
-              false
-            );
-          }
-
-          // Handle errors gracefully
-          player.on("error", (e:any) => {
-            const error = player.error();
-            console.error("Video.js error:", error);
-            
-            if (error && error.code === 3) {
-              // MEDIA_ERR_DECODE - try reloading
-              setTimeout(() => {
-                if (playerRef.current) {
-                  playerRef.current.src({
-                    src: videoSource,
-                    type: videoType,
-                  });
-                }
-              }, 100);
-            }
-          });
-        });
-
-        playerRef.current = player;
-      } catch (error) {
-        console.error("Error initializing player:", error);
-      }
-    }, 100);
-
-    // Cleanup function
-    return () => {
-      clearTimeout(timeout);
-      if (playerRef.current) {
-        try {
-          playerRef.current.pause();
-          playerRef.current.dispose();
-        } catch (error) {
-          console.error("Error in cleanup:", error);
-        }
-        playerRef.current = null;
-      }
-    };
-  }, [selectedItem?.video, selectedItem?.id]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (playerRef.current) {
-        try {
-          playerRef.current.dispose();
-        } catch (error) {
-          console.error("Error disposing on unmount:", error);
-        }
-        playerRef.current = null;
-      }
-    };
-  }, []);
+    
+    return null;
+  };
 
   console.log("Selected item video:", selectedItem?.video);
 
   if (!course) {
     return <div>Loading...</div>;
   }
+
+  const bunnyVideoInfo = extractBunnyVideoId(selectedItem?.video || "");
 
   return (
     <div className="flex border relative justify-end p-1 overflow-hidden">
@@ -519,19 +391,26 @@ export const CourseContentViewer = ({ courseId }: { courseId: string }) => {
         {/* Content Editor */}
         <div className="flex-1 p-6 mb-10 overflow-y-auto">
           <div className="max-w-4xl mx-auto space-y-6">
-            {/* Video.js Player - Key prop forces complete remount */}
-            {selectedItem?.video ? (
+            {/* Bunny Video Player - Native iframe embed */}
+            {bunnyVideoInfo ? (
               <div 
                 key={selectedItem.id} 
-                ref={containerRef}
                 className="video-container my-6"
               >
-                <div data-vjs-player>
-                  <video
-                    ref={videoRef}
-                    className="video-js vjs-big-play-centered"
+                <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
+                  <iframe
+                    src={`https://iframe.mediadelivery.net/embed/${bunnyVideoInfo.libraryId}/${bunnyVideoInfo.videoId}?autoplay=false&preload=true`}
+                    loading="lazy"
+                    className="absolute top-0 left-0 w-full h-full border-0 rounded-lg"
+                    allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+                    allowFullScreen
                   />
                 </div>
+              </div>
+            ) : selectedItem?.video ? (
+              <div className="my-6 bg-yellow-50 border-2 border-yellow-300 rounded-xl p-6 flex flex-col items-center justify-center">
+                <p className="text-yellow-800 font-medium">Invalid video URL format</p>
+                <p className="text-yellow-600 text-sm mt-2">URL: {selectedItem.video}</p>
               </div>
             ) : (
               <div className="my-6 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl h-96 flex items-center justify-center">

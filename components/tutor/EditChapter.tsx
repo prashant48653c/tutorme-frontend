@@ -184,56 +184,79 @@ console.log(courseDetails,"Updated")
 };
 
 const handleUpload = async () => {
-console.log(selectedItem?.video, selectedItem?.subtitle);
+  if (!selectedItem) return toast.error("Select a section first");
+  if (!videoFile) return toast.error("Please select a video file");
+  if (!subtitleFile) return toast.error("Please select a subtitle file");
 
-const videoSource = videoFile || selectedItem?.video;
-const subtitleSource = subtitleFile || selectedItem?.subtitle;
+  setLoadingState(true);
 
-const isValidVideo =
-videoSource instanceof File || typeof videoSource === "string";
-const isValidSubtitle =
-subtitleSource instanceof File || typeof subtitleSource === "string";
+  try {
+    // 1️⃣ Get Bunny upload token from backend
+    const tokenRes = await api.get("/course/bunny/upload-token");
+    const { guid, url, libraryId, apiKey } = tokenRes.data; // ✅ Get apiKey from backend
 
-if (!isValidVideo || !isValidSubtitle) {
-toast.error("Both video and subtitle must be provided (file or URL).");
-return;
-}
+    if (!guid || !url || !apiKey) throw new Error("Failed to get upload token");
 
-setLoadingState(true);
+    const loadingToast = toast.loading("Uploading video to Bunny CDN...");
 
-try {
-const formData = new FormData();
+    // 2️⃣ Upload video directly to Bunny
+    const uploadRes = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "AccessKey": apiKey, // ✅ Use apiKey from backend, NOT hardcoded
+        "Content-Type": "application/octet-stream",
+      },
+      body: videoFile,
+    });
 
-// Append video and subtitle — either File or string
-formData.append("video", videoSource);
-formData.append("subtitle", subtitleSource);
+    console.log("Upload Response:", uploadRes.status, uploadRes.statusText);
 
-formData.append("title", selectedItem?.title ?? "");
-formData.append("description", description);
-formData.append("courseId", courseDetails?.id?.toString() ?? "");
-formData.append("parentId", selectedItem?.parentId ?? "");
-formData.append("type", selectedItem?.type ?? "");
+    if (!uploadRes.ok) {
+      const errorText = await uploadRes.text();
+      toast.dismiss(loadingToast);
+      throw new Error(`Video upload failed: ${errorText}`);
+    }
 
-const res = await api.patch(
-`/course/chapter/${selectedItem?.id}`,
-formData
-);
+    toast.dismiss(loadingToast);
+    toast.success("Video uploaded! Processing...");
+    
+    // 3️⃣ Wait for Bunny to process the video
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
-console.log("Upload success:", res.data);
-toast.success("Course has been updated!");
+    // 4️⃣ Construct playback URL
+    const playbackUrl = `https://iframe.mediadelivery.net/embed/${libraryId}/${guid}`;
 
-// Reset state
-await fetchCourse();
-setSelectedItem(null);
-setVideoFile(null);
-setSubtitleFile(null);
-} catch (error) {
-console.error("Upload failed:", error);
-toast.error("Course wasn't updated!");
-} finally {
-setLoadingState(false);
-}
+    // 5️⃣ Send metadata + subtitle to backend (PATCH chapter)
+    const formData = new FormData();
+    formData.append("title", selectedItem.title ?? "");
+    formData.append("description", description);
+    formData.append("videoUrl", playbackUrl);
+    formData.append("guid", guid);
+    formData.append("courseId", courseDetails?.id?.toString() ?? "");
+    formData.append("parentId", selectedItem?.parentId ?? "");
+    formData.append("type", selectedItem?.type ?? "");
+    formData.append("subtitle", subtitleFile);
+
+    const res = await api.patch(`/course/chapter/${selectedItem.id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    console.log("Upload success:", res.data);
+    toast.success("Course has been updated!");
+
+    // Reset state
+    await fetchCourse();
+    setSelectedItem(null);
+    setVideoFile(null);
+    setSubtitleFile(null);
+  } catch (error: any) {
+    console.error("Upload failed:", error);
+    toast.error(error.message || "Course wasn't updated!");
+  } finally {
+    setLoadingState(false);
+  }
 };
+
 
 const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 const file = e.target.files?.[0];
