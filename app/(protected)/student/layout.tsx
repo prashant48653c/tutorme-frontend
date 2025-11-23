@@ -53,9 +53,13 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className="relative">
-        <div className="flex bg-gray-100 relative justify-center w-[100%] min-h-screen">
+        <div className="flex items-start bg-gray-100 relative w-full min-h-screen">
           {/* Sidebar */}
-          <div className="w-0 sm:w-0 lg:w-[18%]">
+          <div
+            className={`w-0 flex-shrink-0 transition-[width] duration-300 lg:sticky lg:top-[88px] lg:h-[calc(100vh-88px)] ${
+              isSidebarVisible ? "w-20 lg:w-[18%]" : "lg:w-0"
+            }`}
+          >
             <Sidebar
               links={links}
               isOpen={isSidebarVisible}
@@ -63,19 +67,17 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
             />
           </div>
           {/* Main Content */}
-          <main className="flex lg:w-[82%] sm:w-[75%] w-[100%] flex-1 px-6  bg-gray-100">
-            <div className={`w-full bg-gray-100 flex flex-col h-max `}>
-              <div className="relative w-full  bg-gray-100 mb-16 ">
-                <nav className="p-4 fixed lg:w-[81%]    top-0 z-50 bg-gray-100 items-center flex lg:justify-between  justify-center ">
-                  <Topbar
-                    isSidebarVisible={isSidebarVisible}
-                    onToggleSidebar={() =>
-                      setSidebarVisible((prev) => !prev)
-                    }
-                  />
-                </nav>
+          <main className="flex flex-1 w-full min-w-0 px-4 sm:px-6 bg-gray-100 transition-[width] duration-300">
+            <div className="w-full bg-gray-100 flex flex-col h-max">
+              <div className="relative w-full bg-gray-100 mb-6">
+                <Topbar
+                  isSidebarVisible={isSidebarVisible}
+                  onToggleSidebar={() =>
+                    setSidebarVisible((prev) => !prev)
+                  }
+                />
               </div>
-              <div className="relative mt-8">{children}</div>
+              <div className="relative mt-2 sm:mt-4">{children}</div>
             </div>
           </main>
         </div>

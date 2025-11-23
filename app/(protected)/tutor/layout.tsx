@@ -43,10 +43,10 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className="relative">
-        <div className="flex bg-gray-100 relative justify-center w-[100%] min-h-screen">
+        <div className="flex items-start bg-gray-100 relative w-[100%] min-h-screen">
           {/* Sidebar */}
           <div
-            className={`flex-shrink-0 transition-[width] duration-300 ${
+            className={`flex-shrink-0 transition-[width] duration-300 lg:sticky lg:top-[88px] lg:h-[calc(100vh-88px)] ${
               isSidebarVisible ? "w-[30%] sm:w-[20%] lg:w-[15%]" : "w-0"
             }`}
           >

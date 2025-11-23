@@ -51,10 +51,10 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body>
         <AdminGuard>
-        <div className="flex pb-5 bg-gray-100 overflow-y-hidden relative justify-center w-[100%]">
+        <div className="flex pb-5 bg-gray-100 relative justify-center w-[100%]">
           {/* Sidebar */}
           <div
-            className={`flex-shrink-0 transition-[width] duration-300 ${
+            className={`flex-shrink-0 transition-[width] duration-300 lg:sticky lg:top-0 lg:h-screen ${
               isSidebarVisible ? "w-[30%] sm:w-[20%] lg:w-[15%]" : "w-0"
             }`}
           >
