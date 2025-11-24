@@ -68,11 +68,11 @@ export default function QualificationView() {
         collapsible
         value={openItem || ""}
         onValueChange={(value) => setOpenItem(value)}
-        className="w-full"
+        className="w-full bg-white"
       >
         <AccordionItem value="education">
           <AccordionTrigger className="text-primeGreen text-xl [&>svg]:hidden">
-            <div className="flex w-full justify-between items-center gap-2">
+            <div className="flex  w-full justify-between items-center gap-2">
               <span>Education</span>
               <div className="flex items-center gap-5">
                 <Plus

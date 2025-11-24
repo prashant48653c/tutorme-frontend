@@ -29,11 +29,11 @@ const ProfilePage = () => {
         <div className="  h-full  pb-7 flex flex-col  p-4">
           <Profile/>
 
-          <div className="shadow-md  mt-8 rounded-2xl px-4  ">
+          <div className="shadow-md  mt-8 rounded-2xl px-4 bg-white ">
             <BioAccordion />
           </div>
 
-          <div className="shadow-md  mt-8 rounded-2xl px-4  ">
+          <div className="shadow-md  mt-8 rounded-2xl px-4 bg-white ">
             <QualificationView />
           </div>
         </div>

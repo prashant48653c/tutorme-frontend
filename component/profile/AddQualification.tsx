@@ -164,7 +164,7 @@ const[isLoadingUpdate,setIsLoading]=useState(false)
 
   return (
     <div>
-      <div className="    bg-white rounded-2xl w-full p-6">
+      <div className="bg-white rounded-2xl w-full p-6">
         <div>
           <h3 className="text-2xl text-black font-semibold mb-2">
             Add Qualification

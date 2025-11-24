@@ -1,5 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Plus, Calendar, Trash2, ChevronUp, ChevronDown, Upload, X, Edit } from 'lucide-react';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import api from '@/hooks/axios';
@@ -343,7 +344,7 @@ const Blog: React.FC = () => {
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Blog Management</h1>
 
@@ -465,6 +466,13 @@ const Blog: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
+                      <Link
+                        href={`/blog/${blog.id}`}
+                        className="p-2 hover:bg-teal-50 rounded-lg transition-colors text-teal-600 text-sm font-medium"
+                        title="View blog"
+                      >
+                        Read more
+                      </Link>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();

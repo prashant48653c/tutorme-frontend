@@ -40,7 +40,7 @@ const Profile = () => {
     }
   };
   return (
-    <div className="shadow-md   rounded-2xl p-4 pb-7 ">
+    <div className="shadow-md  bg-white rounded-2xl p-4 pb-7 ">
       <div className="text-center flex flex-col items-center my-3">
         <div className="relative w-32 h-32">
           <div

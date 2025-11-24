@@ -43,14 +43,14 @@ const Sidebar = ({ links, isOpen = true, onClose, collapsed = false }: SidebarPr
         />
       </div>
       <div
-        className={`flex w-[40%] z-50 lg:z-[50] bg-white flex-col items-start no-scrollbar overflow-y-auto fixed top-0 h-full pt-6 space-y-4 xs:w-[55%] sm:w-[40%] md:w-[30%] lg:static lg:flex-shrink-0 lg:w-full transition-transform duration-300 ease-in-out ${
+        className={`flex w-[40%] z-50 lg:z-[50] bg-white flex-col items-start no-scrollbar overflow-y-auto fixed top-16 h-full pt-6 space-y-4 xs:w-[55%] sm:w-[40%] md:w-[30%] lg:sticky lg:top-20 lg:h-[calc(100vh-80px)] lg:flex-shrink-0 lg:w-full transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0`}
         style={{
           width: isCollapsed ? "4.5rem" : undefined,
         }}
       >
-        <div className="w-full flex justify-center px-2">
+        {/* <div className="w-full flex justify-center px-2">
           <h1
             onClick={() => router.push("/")}
             className={`font-extrabold cursor-pointer text-black transition-all duration-200 ${
@@ -65,28 +65,7 @@ const Sidebar = ({ links, isOpen = true, onClose, collapsed = false }: SidebarPr
               </>
             )}
           </h1>
-        </div>
-
-        {!isCollapsed && (
-          <div className="text-center flex flex-col items-center my-8 pl-[4rem]">
-            <div className="w-24 h-24 overflow-hidden rounded-full">
-              <Image
-                src={user?.image || "/icons/profile.png"}
-                alt="profile"
-                width={96}
-                height={96}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <h5 className="mt-1 text-lg text-green-600 font-hove font-semibold">
-           {user?.name}
-            </h5>
-            <p className="font-hove text-sm text-gray-500">
-           {user?.tutorProfile?.jobTitle}
-
-            </p>
-          </div>
-        )}
+        </div> */}
 
         <ul className={`w-full decoration-0 no-underline ${isCollapsed ? "px-1" : "px-3"}`}>
   {links.map((link, index) => (
@@ -109,10 +88,9 @@ const Sidebar = ({ links, isOpen = true, onClose, collapsed = false }: SidebarPr
     </li>
   ))}
 
-           <li onClick={handleLogout} className={`group mb-6 rounded-3xl flex items-center hover:bg-red-500 mt-10 ${isCollapsed ? "p-2 justify-center" : "p-3 w-fit"}`}>
-            <div
-               
-              className="flex items-center transition group-hover:invert"
+           <li onClick={handleLogout} className={`group mb-6 rounded-3xl flex items-center hover:bg-red-500 mt-10 ${isCollapsed ? "p-2 justify-center" : "p-3 w-full"}`}>
+            <div         
+              className="flex items-center gap-3 transition group-hover:invert"
             >
               <img
                 src="/static/icons/logout.svg"

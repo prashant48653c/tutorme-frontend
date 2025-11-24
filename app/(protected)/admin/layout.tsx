@@ -45,17 +45,17 @@ import { ReactNode, useState } from "react";
     }
   ];
 export default function ProtectedLayout({ children }: { children: ReactNode }) {
- const [isSidebarVisible, setSidebarVisible] = useState(true);
+ const [isSidebarVisible, setSidebarVisible] = useState(false);
 
   return (
    <html lang="en">
-      <body>
+      <body className="min-h-screen overflow-y-auto bg-gray-100">
         <AdminGuard>
-        <div className="flex items-start pb-5 bg-gray-100 relative w-[100%] min-h-screen">
+        <div className="flex items-start pb-5 bg-gray-100 relative w-[100%] min-h-screen overflow-y-auto">
           {/* Sidebar */}
           <div
-            className={`flex-shrink-0 transition-[width] duration-300 lg:sticky lg:top-[88px] lg:h-[calc(100vh-88px)] ${
-              isSidebarVisible ? "w-[30%] sm:w-[20%] lg:w-[15%]" : "w-0 lg:w-16"
+            className={`flex-shrink-0 transition-[width] duration-300 w-0 lg:sticky lg:top-16 lg:h-[calc(100vh-64px)] ${
+              isSidebarVisible ? "lg:w-[18%]" : "lg:w-16"
             }`}
           >
             <Sidebar
@@ -66,10 +66,10 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
             />
           </div>
           {/* Main Content */}
-          <main className="flex flex-1 px-6 bg-gray-100 transition-[width] duration-300">
+          <main className="flex flex-1 px-4 sm:px-6 bg-gray-100 transition-[width] duration-300 overflow-y-auto">
             <div className={`w-full bg-gray-100 flex flex-col h-max `}>
               <div className="relative w-full  bg-gray-100 mb-16 ">
-                <nav className="p-4 fixed lg:w-[81%] top-0 z-50 bg-gray-100 items-center flex lg:justify-between md:justify-between  justify-center ">
+                <nav className="p-0 sm:p-0 lg:p-4 fixed w-full top-0 z-50 bg-gray-100 items-center flex lg:justify-between md:justify-between  justify-center ">
                   <Topbar
                     isSidebarVisible={isSidebarVisible}
                     onToggleSidebar={() =>
