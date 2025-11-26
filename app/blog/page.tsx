@@ -106,14 +106,13 @@ export default function BlogPage() {
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight">
                 From Our <span className="text-teal-400">Blogs</span>
               </h1>
-              <p className="max-w-2xl text-base sm:text-lg text-gray-600">
-                Stay updated with the latest tips, ideas, and student success
-                stories from the TutorMe community.
+              <p className="max-w-fit text-base sm:text-lg text-gray-600">
+                Stay updated with the latest tips, ideas, and student success stories from the TutorMe community.
               </p>
             </div>
             <Link
               href="/"
-              className="inline-flex items-center rounded-full border border-teal-400 bg-white px-5 py-3 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-teal-50"
+              className="inline-flex items-center rounded-full border border-teal-400 bg-white px-5 py-3 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-teal-50 w-fit"
             >
               Back to home
             </Link>
@@ -160,7 +159,7 @@ export default function BlogPage() {
 
           {/* Blog grid */}
           {!isLoading && !error && blogs.length > 0 && (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {blogs.map((post) => {
                 const href = post.id
                   ? `/blog/${post.id}`

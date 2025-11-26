@@ -336,7 +336,7 @@ export function TutorSidebar({ mobileOpen, onMobileOpenChange }: TutorSidebarPro
         type="button"
         variant="default"
         onClick={() => setResolvedMobileOpen(true)}
-        className="fixed bottom-6 right-5 z-40 flex items-center gap-2 rounded-full bg-primeGreen px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-primeGreen/90 md:hidden"
+        className="fixed bottom-6 right-5 z-[13020] flex items-center gap-2 rounded-full bg-primeGreen px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-primeGreen/90 md:hidden"
         aria-controls="tutor-filters-panel"
         aria-expanded={resolvedMobileOpen}
       >
@@ -346,10 +346,10 @@ export function TutorSidebar({ mobileOpen, onMobileOpenChange }: TutorSidebarPro
 
       {/* Mobile Sheet */}
       <div
-        className={`md:hidden ${resolvedMobileOpen ? "pointer-events-auto" : "pointer-events-none"} fixed inset-0 z-50`}
+        className={`md:hidden ${resolvedMobileOpen ? "pointer-events-auto" : "pointer-events-none"} fixed inset-0 z-[13000]`}
       >
         <div
-          className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${
+          className={`absolute inset-0 bg-black/40 transition-opacity duration-300 z-[13002] ${
             resolvedMobileOpen ? "opacity-100" : "opacity-0"
           }`}
           onClick={() => setResolvedMobileOpen(false)}
@@ -358,16 +358,16 @@ export function TutorSidebar({ mobileOpen, onMobileOpenChange }: TutorSidebarPro
           id="tutor-filters-panel"
           role="dialog"
           aria-modal="true"
-          className={`absolute right-0 top-0 flex h-full w-[min(90vw,20rem)] flex-col bg-white shadow-2xl transition-transform duration-300 ${
-            resolvedMobileOpen ? "translate-x-0" : "translate-x-full"
+          className={`absolute left-0 top-0 flex h-full w-[min(90vw,20rem)] flex-col rounded-3xl bg-white shadow-2xl transition-transform duration-300 z-[13005] ${
+            resolvedMobileOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
           <div className="flex items-center justify-between border-b p-4">
             <div>
-              <p className="text-sm font-semibold text-gray-900">
+              <p className="text-ls font-semibold text-gray-900">
                 Filter Tutors
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-ls text-gray-500">
                 Refine by course, language, and rating.
               </p>
             </div>
@@ -381,7 +381,7 @@ export function TutorSidebar({ mobileOpen, onMobileOpenChange }: TutorSidebarPro
               <X className="h-4 w-4" />
             </Button>
           </div>
-          <div className="h-full overflow-y-auto p-4">
+          <div className="h-full overflow-y-auto p-4 !text-xl">
             <SidebarContent />
           </div>
         </div>

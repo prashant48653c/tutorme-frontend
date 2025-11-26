@@ -95,19 +95,18 @@ export default function Blog() {
     <section className="py-16 pl-16 bg-gray-50">
       <div className="lg:max-w-7xl md:max-w-3xl mx-auto">
         {/* Header */}
-        <div className="flex md:flex-row flex-col pr-16 items-center justify-between mb-12">
+        <div className="flex md:flex-row flex-col pr-20 lg:pl-16 items-center justify-between mb-12">
           <div>
-            <h2 className="text-4xl md:text-5xl font-hove font-extrabold text-gray-900 mb-4">
+            <h2 className="text-4xl  md:text-5xl font-hove font-extrabold text-gray-900 mb-4">
               From Our <span className="text-teal-400">Blogs</span>
             </h2>
-            <p className="text-gray-600 text-lg">
-              Stay updated with the latest insights, tips, and trends from our
-              blog.
+            <p className="text-gray-600 text-ls lg:text-lg">
+              Stay updated with the latest insights, tips, and trends from our blogs.
             </p>
           </div>
           <div>
             <Link href="/blog">
-              <Button className="hidden sm:flex group border-green-400 bg-white justify-around text-center border min-w-[10rem] mt-4 px-1 py-6 text-lg font-semibold pl-3 rounded-full text-black hover:bg-teal-50 transition">
+              <Button className=" sm:flex group border-green-400 bg-white justify-around text-center border min-w-[10rem] mt-4 px-1 py-6 text-lg font-semibold pl-3 rounded-full text-black hover:bg-teal-50 transition">
                 View all Blogs
                 <span className="icon-hover-rotate">
                   <div className="rounded-full p-3 bg-green-400">

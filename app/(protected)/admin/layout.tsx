@@ -49,9 +49,9 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
 
   return (
    <html lang="en">
-      <body className="min-h-screen overflow-y-auto bg-gray-100">
+      <body className="min-h-screen bg-gray-100 overflow-visible">
         <AdminGuard>
-        <div className="flex items-start pb-5 bg-gray-100 relative w-[100%] min-h-screen overflow-y-auto">
+        <div className="flex items-start pb-5 bg-gray-100 relative w-[100%] min-h-screen overflow-visible">
           {/* Sidebar */}
           <div
             className={`flex-shrink-0 transition-[width] duration-300 w-0 lg:sticky lg:top-16 lg:h-[calc(100vh-64px)] ${
@@ -66,7 +66,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
             />
           </div>
           {/* Main Content */}
-          <main className="flex flex-1 px-4 sm:px-6 bg-gray-100 transition-[width] duration-300 overflow-y-auto">
+          <main className="flex flex-1 px-4 sm:px-6 bg-gray-100 transition-[width] duration-300 overflow-visible">
             <div className={`w-full bg-gray-100 flex flex-col h-max `}>
               <div className="relative w-full  bg-gray-100 mb-16 ">
                 <nav className="p-0 sm:p-0 lg:p-4 fixed w-full top-0 z-50 bg-gray-100 items-center flex lg:justify-between md:justify-between  justify-center ">
