@@ -136,7 +136,7 @@ export default function CourseManagement() {
   ]
 
   return (
-    <div className="w-full min-h-[30rem] rounded-2xl max-w-4xl shadow-md mx-auto p-6">
+    <div className="w-full min-h-[30rem] rounded-2xl max-w-4xl shadow-md mx-auto p-6 bg-white">
       {/* Tabs */}
       <div className="flex border-b border-gray-200 mb-6 gap-4">
         {tabs.map((tab) => (

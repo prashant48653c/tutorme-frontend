@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, ArrowUpRight, Loader2 } from "lucide-react";
 import Marquee from "react-fast-marquee";
 import api from '@/hooks/axios';
-import { useRouter } from 'next/navigation';
  
 
 interface Blog {
@@ -15,13 +14,13 @@ interface Blog {
   content: string;
   publishedAt: string;
   thumbnail: string;
+  slug?: string;
 }
 
 export default function Blog() {
   const [blogPosts, setBlogPosts] = useState<Blog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-const router=useRouter();
   useEffect(() => {
     fetchBlogs();
   }, []);
@@ -96,19 +95,18 @@ const router=useRouter();
     <section className="py-16 pl-16 bg-gray-50">
       <div className="lg:max-w-7xl md:max-w-3xl mx-auto">
         {/* Header */}
-        <div className="flex md:flex-row flex-col pr-16 items-center justify-between mb-12">
+        <div className="flex md:flex-row flex-col pr-20 lg:pl-16 items-center justify-between mb-12">
           <div>
-            <h2 className="text-4xl md:text-5xl font-hove font-extrabold text-gray-900 mb-4">
+            <h2 className="text-4xl  md:text-5xl font-hove font-extrabold text-gray-900 mb-4">
               From Our <span className="text-teal-400">Blogs</span>
             </h2>
-            <p className="text-gray-600 text-lg">
-              Stay updated with the latest insights, tips, and trends from our
-              blog.
+            <p className="text-gray-600 text-ls lg:text-lg">
+              Stay updated with the latest insights, tips, and trends from our blogs.
             </p>
           </div>
           <div>
             <Link href="/blog">
-              <Button className="hidden sm:flex group border-green-400 bg-white justify-around text-center border min-w-[10rem] mt-4 px-1 py-6 text-lg font-semibold pl-3 rounded-full text-black hover:bg-teal-50 transition">
+              <Button className=" sm:flex group border-green-400 bg-white justify-around text-center border min-w-[10rem] mt-4 px-1 py-6 text-lg font-semibold pl-3 rounded-full text-black hover:bg-teal-50 transition">
                 View all Blogs
                 <span className="icon-hover-rotate">
                   <div className="rounded-full p-3 bg-green-400">
@@ -131,42 +129,48 @@ const router=useRouter();
             <div className="pb-4 overflow-x-visible">
               <Marquee pauseOnHover={true} gradient={false} speed={40}>
                 <div className="flex gap-6 px-6 min-w-max">
-                  {[...blogPosts, ...blogPosts].map((post, index) => (
-                    <Link 
-                      key={`${post.id}-${index}`}
-                      href={`/blog/${post.id}`}
-                    >
+                  {[...blogPosts, ...blogPosts].map((post, index) => {
+                    const href = post.id
+                      ? `/blog/${post.id}`
+                      : post.slug
+                      ? `/blog/${post.slug}`
+                      : "/blog";
+
+                    return (
                       <div className="flex-shrink-0 w-80 bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer">
-                        <div className="relative h-48 overflow-hidden">
+                        <Link href={href} className="block relative h-48 overflow-hidden">
                           <Image
                             src={post.thumbnail || "/placeholder.svg"}
                             alt={post.title}
                             fill
                             className="object-cover"
                           />
-                        </div>
+                        </Link>
                         <div className="p-6">
                           <p className="text-sm text-gray-500 mb-3">
                             {formatDate(post.publishedAt)}
                           </p>
-                          <h3 className="text-xl font-semibold text-gray-900 mb-4 line-clamp-2">
-                            {post.title}
-                          </h3>
+                          <Link href={href}>
+                            <h3 className="text-xl font-semibold text-gray-900 mb-4 line-clamp-2 hover:text-teal-600 transition-colors">
+                              {post.title}
+                            </h3>
+                          </Link>
                           <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                             {getExcerpt(post.content, 80)}
                           </p>
-                          <Button
-                          onClick={()=>router.push(`/blog/${post.id}`)}
-                            variant="outline"
-                            className="flex items-center rounded-full gap-2 text-gray-700 border-gray-300 hover:bg-gray-50"
-                          >
-                            Read More
-                            <ArrowRight className="w-4 h-4" />
-                          </Button>
+                          <Link href={href}>
+                            <Button
+                              variant="outline"
+                              className="flex items-center rounded-full gap-2 text-gray-700 border-gray-300 hover:bg-gray-50"
+                            >
+                              Read More
+                              <ArrowRight className="w-4 h-4" />
+                            </Button>
+                          </Link>
                         </div>
                       </div>
-                    </Link>
-                  ))}
+                    );
+                  })}
                 </div>
               </Marquee>
             </div>

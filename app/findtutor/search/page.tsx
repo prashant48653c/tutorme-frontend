@@ -157,12 +157,12 @@ const TutorPage = () => {
           />
         </div>
         <Button
-          className="hidden sm:hidden lg:hidden md:hidden block bg-amber-800"
+          className=" block md:hidden lg:hidden  bg-amber-800 "
           onClick={(e) => {
             e.stopPropagation();
             setMobileSidebar((prev) => !prev);
           }}
-        style ={{ backgroundColor: '#09C4AE' , display:'none'}
+        style ={{ backgroundColor: '#09C4AE' ,color:"white", scale:1.5}
       }
         >
           Filter

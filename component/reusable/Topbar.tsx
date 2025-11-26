@@ -54,8 +54,8 @@ const Topbar = ({ onToggleSidebar, isSidebarVisible }: TopbarProps) => {
       {/* Fixed full-width topbar so it doesn't move when sidebar toggles */}
       <div className="fixed left-0 right-0 top-0 z-10 bg-white border rounded-2xl px-4 py-2 shadow-sm">
         <div className="w-full px-6 flex items-center justify-between h-16">
-          {/* Left side greeting + sidebar toggle */}
-          <div className="flex items-center gap-3 flex-1  ">
+          {/* Left side logo + sidebar toggle */}
+          <div className="flex items-center gap-3 flex-1">
             {onToggleSidebar && (
               <button
                 type="button"
@@ -66,29 +66,32 @@ const Topbar = ({ onToggleSidebar, isSidebarVisible }: TopbarProps) => {
                 {isSidebarVisible ? <X size={18} /> : <Menu size={18} color="green" className="hover:text-white" />}
               </button>
             )}
-            <div className={`flex flex-col justify-center lg:items-start gap-1 transition-all duration-300 ease-in-out ${isSidebarVisible ? "lg:ml-[182px]" : "lg:ml-0"}`}>
-              <h5 className="text-lg font-hove hidden lg:block font-semibold">
-                Hi! {user?.name?.split(" ")[0]}
-              </h5>
-              <p className="text-sm hidden lg:block text-gray-500">
-                Let's do something new today!
-              </p>
+            <div className="flex items-center gap-2">
+              <h1 className="titleFont text-2xl font-extrabold text-black tracking-wide">
+                TUTOR<span className="text-primeGreen">ME</span>
+              </h1>
             </div>
           </div>
 
           <div className="flex justify-end items-center gap-6 ml-auto">
-            <div className="flex items-center justify-center gap-3">
-              {/* Bell + Notification Badge */}
-              <div onClick={handleBellClick} className="relative cursor-pointer">
-                <Bell size={23} />
-                {notifications > 0 && (
-                  <div className="bg-green-600 text-white rounded-full w-5 h-5 absolute -top-1 -right-1 border-2 border-white flex items-center justify-center text-[10px] leading-none">
-                    {notifications}
-                  </div>
-                )}
-              </div>
+            {/* Bell + Notification Badge */}
+            <div onClick={handleBellClick} className="relative cursor-pointer">
+              <Bell size={23} />
+              {notifications > 0 && (
+                <div className="bg-green-600 text-white rounded-full w-5 h-5 absolute -top-1 -right-1 border-2 border-white flex items-center justify-center text-[10px] leading-none">
+                  {notifications}
+                </div>
+              )}
+            </div>
 
-              {/* Profile image */}
+            {/* User details */}
+            <div className="flex items-center gap-3">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-semibold text-gray-900">{user?.name || "User"}</p>
+                <p className="text-xs text-gray-500">
+                  {user?.tutorProfile?.jobTitle || user?.role || "Role"}
+                </p>
+              </div>
               <div className="w-10 h-10">
                 <Image
                   src={user?.image || "/static/landing/course.svg"}

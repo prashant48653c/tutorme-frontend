@@ -29,6 +29,10 @@ module.exports = {
       borderRadius: {
         '4xl': '2rem',
       },
+      zIndex: {
+        12010: '12010',
+        12001: '12001', // for overlay
+      },
     },
   },
   plugins: [],

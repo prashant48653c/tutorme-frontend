@@ -42,7 +42,7 @@ export default function BioAccordion() {
       collapsible
       value={openItem || ""}
       onValueChange={(value) => setOpenItem(value)}
-      className=" w-full  border "
+      className=" w-full  bg-white "
     >
       {items.map(({ title, content }, index) => {
         const isOpen = openItem === `item-${index}`;

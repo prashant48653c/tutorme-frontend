@@ -1,168 +1,271 @@
-'use client'
-import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { Calendar, ArrowLeft, Loader2 } from 'lucide-react';
-import api from '@/hooks/axios';
- 
+import Footer from "@/component/reusable/Footer";
+import Navbar from "@/component/reusable/Navbar";
+import Image from "next/image";
+import Link from "next/link";
+import { Onest } from "next/font/google";
 
-interface Blog {
-  id: number;
+type BlogPost = {
+  id: string | number;
   title: string;
-  content: string;
-  publishedAt: string;
-  thumbnail: string;
-}
-
-const BlogViewPage = () => {
-  const params = useParams();
-  const router = useRouter();
-  const blogId = params.id as string;
-
-  const [blog, setBlog] = useState<Blog | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (blogId) {
-      fetchBlog();
-    }
-  }, [blogId]);
-
-  const fetchBlog = async () => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const res = await api.get(`/blog/${blogId}`);
-      setBlog(res.data.data);
-    } catch (err: any) {
-      console.error('Error fetching blog:', err);
-      if (err.response?.status === 404) {
-        setError('Blog post not found');
-      } else {
-        setError('Failed to load blog post. Please try again later.');
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-        <div className="text-center">
-          <Loader2 className="h-16 w-16 animate-spin text-teal-500 mx-auto mb-4" />
-          <p className="text-gray-600 text-lg">Loading blog post...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !blog) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-        <div className="text-center max-w-md">
-          <div className="bg-red-50 border-2 border-red-200 rounded-xl p-8">
-            <h2 className="text-2xl font-bold text-red-600 mb-3">Oops!</h2>
-            <p className="text-gray-700 mb-6">{error || 'Blog post not found'}</p>
-            <button
-              onClick={() => router.back()}
-              className="px-6 py-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors flex items-center gap-2 mx-auto"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              Go Back
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Header with Back Button */}
-      <div className="bg-white border-b sticky top-0 z-10 shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-600 hover:text-teal-600 transition-colors"
-          >
-            <ArrowLeft className="h-5 w-5" />
-            <span className="font-medium">Back</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Blog Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <article className="bg-white rounded-xl shadow-lg overflow-hidden">
-          {/* Featured Image */}
-          {blog.thumbnail && (
-            <div className="w-full h-96 overflow-hidden">
-              <img
-                src={blog.thumbnail}
-                alt={blog.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-
-          {/* Blog Header */}
-          <div className="p-8 md:p-12">
-            <div className="mb-6">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-                {blog.title}
-              </h1>
-              
-              <div className="flex items-center gap-2 text-gray-500">
-                <Calendar className="h-5 w-5" />
-                <time dateTime={blog.publishedAt}>
-                  {formatDate(blog.publishedAt)}
-                </time>
-              </div>
-            </div>
-
-            {/* Blog Content */}
-            <div className="border-t pt-8">
-              <div 
-                className="prose prose-lg max-w-none
-                  prose-headings:text-gray-900 
-                  prose-p:text-gray-700 prose-p:leading-relaxed
-                  prose-a:text-teal-600 prose-a:no-underline hover:prose-a:underline
-                  prose-strong:text-gray-900
-                  prose-ul:text-gray-700
-                  prose-ol:text-gray-700
-                  prose-blockquote:border-teal-500 prose-blockquote:bg-teal-50 prose-blockquote:py-2
-                  prose-code:text-teal-600 prose-code:bg-gray-100 prose-code:px-1 prose-code:rounded
-                  prose-pre:bg-gray-900 prose-pre:text-gray-100
-                  prose-img:rounded-lg prose-img:shadow-md"
-                dangerouslySetInnerHTML={{ __html: blog.content }}
-              />
-            </div>
-          </div>
-        </article>
-
-        {/* Back to Blogs Button at Bottom */}
-        <div className="mt-8 text-center">
-          <button
-            onClick={() => router.push('/blog')}
-            className="px-8 py-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors font-medium"
-          >
-            View All Blogs
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  image?: string;
+  date?: string;
+  excerpt?: string;
+  content?: string;
+  slug?: string;
 };
 
-export default BlogViewPage;
+const onest = Onest({
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const FALLBACK_BLOGS: BlogPost[] = [
+  {
+    id: 1,
+    slug: "panic-to-prepared",
+    title: "From Panic to Prepared: A Night Before Exam Checklist",
+    image: "/static/landing/course.svg",
+    date: "June 02, 2024",
+    excerpt: "Practical steps to stay calm, focused, and ready to ace exam day.",
+    content:
+      "When the night before an exam hits, it is easy to spin out. Start with a short, focused review, then set a time-boxed plan for sleep, hydration, and a simple morning routine. Your brain consolidates during rest -- trust it. Keep your notes light, avoid cramming new concepts, and prime yourself with a calm walkthrough of likely questions.",
+  },
+  {
+    id: 2,
+    slug: "how-to-focus",
+    title: "How to Focus in Studies",
+    image: "/static/landing/course.svg",
+    date: "June 03, 2024",
+    excerpt: "Simple habits that improve concentration and make study time effective.",
+    content:
+      "Staying focused while studying can feel difficult, especially with constant distractions around us. But with a few simple habits, you can improve concentration and make your study time more effective. Set clear goals, create a distraction-free environment, use 25-minute Pomodoro sprints, silence notifications, prioritize sleep and hydration, and end each session with a two-minute review to cement progress.",
+  },
+  {
+    id: 3,
+    slug: "habits-that-stick",
+    title: "Habits That Stick: Build a Study Routine in 7 Days",
+    image: "/static/landing/course.svg",
+    date: "June 05, 2024",
+    excerpt: "A simple, repeatable plan to form a study habit that lasts.",
+    content:
+      "Start with 20-minute sessions at the same time daily. Use a visible tracker, pair studying with a cue (after breakfast), and end with a 2-minute summary. Keep friction low: one spot, one notebook, one timer. At day seven, reward yourself and schedule the next week to lock the habit in.",
+  },
+];
+
+const BLOG_ENDPOINT =
+  process.env.NEXT_PUBLIC_API_URL
+    ? `${process.env.NEXT_PUBLIC_API_URL}/blog`
+    : "http://localhost:4000/api/blog";
+
+export const revalidate = 300;
+
+async function fetchBlog(id: string): Promise<BlogPost | null> {
+  try {
+    const res = await fetch(`${BLOG_ENDPOINT}/${id}`, {
+      next: { revalidate },
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch blog");
+    }
+
+    const data = await res.json();
+    // API returns { success, data: [...] } or { success, data: {...} }
+    const payload = data?.data ?? data;
+    const post = Array.isArray(payload)
+      ? payload.find((b) => b?.id?.toString() === id) ?? payload[0]
+      : payload;
+    if (!post) return null;
+
+    return {
+      id: post.id ?? id,
+      title: post.title ?? "Untitled blog",
+      image: post.thumbnail ?? post.image ?? "/static/landing/course.svg",
+      date: post.publishedAt ?? post.date ?? post.createdAt,
+      excerpt: post.excerpt ?? post.description ?? "",
+      content: post.content ?? post.body ?? post.description ?? "",
+      slug: post.slug ?? id,
+    };
+  } catch (error) {
+    console.error("Error fetching blog", error);
+    const fallback =
+      FALLBACK_BLOGS.find(
+        (b) => b.id?.toString() === id || b.slug === id
+      ) ?? FALLBACK_BLOGS[0];
+    return fallback;
+  }
+}
+
+async function fetchRelatedBlogs(currentId: string): Promise<BlogPost[]> {
+  try {
+    const res = await fetch(BLOG_ENDPOINT, {
+      next: { revalidate },
+    });
+    if (!res.ok) throw new Error("Failed to fetch related blogs");
+
+    const data = await res.json();
+    const payload = data?.data ?? data;
+    const list = Array.isArray(payload) ? payload : [];
+
+    const mapped: BlogPost[] = list.map((post: any, idx: number) => ({
+      id: post.id ?? idx,
+      title: post.title ?? "Untitled blog",
+      image: post.thumbnail ?? post.image ?? "/static/landing/course.svg",
+      date: post.publishedAt ?? post.date ?? post.createdAt,
+      excerpt: post.excerpt ?? post.description ?? "",
+      content: post.content ?? post.body ?? post.description ?? "",
+      slug: post.slug ?? post.id ?? idx.toString(),
+    }));
+
+    const filtered = mapped.filter(
+      (b) => b.id?.toString() !== currentId && b.slug !== currentId
+    );
+
+    const pool = filtered.length > 0 ? filtered : mapped;
+    if (!pool || pool.length === 0) return [];
+
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 3);
+  } catch (error) {
+    console.error("Error fetching related blog", error);
+    const fallbackCandidates = FALLBACK_BLOGS.filter(
+      (b) => b.id?.toString() !== currentId && b.slug !== currentId
+    );
+    if (fallbackCandidates.length === 0) return [];
+    return fallbackCandidates
+      .sort(() => Math.random() - 0.5)
+      .slice(0, Math.min(3, fallbackCandidates.length));
+  }
+}
+
+const formatDate = (value?: string) => {
+  if (!value) return "Latest";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
+export default async function BlogDetailByIdPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const blog = await fetchBlog(id);
+  const related = await fetchRelatedBlogs(id);
+
+  return (
+    <div className={`${onest.className} flex min-h-screen flex-col bg-gray-50`}>
+      <Navbar />
+
+      <main className="flex-1 font-hove">
+        <section className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-12 py-14 sm:py-16 lg:py-10">
+          <div className="mb-8 flex items-center justify-between gap-4">
+            <Link
+              href="/blog"
+              className="inline-flex items-center rounded-full border border-teal-400 bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-teal-50"
+            >
+              Back to blogs
+            </Link>
+            <p className="text-sm font-medium text-teal-600">
+              {formatDate(blog?.date)}
+            </p>
+          </div>
+
+          <article className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100">
+            <div className="relative h-64 w-full sm:h-80 lg:h-96 bg-gray-100">
+              <Image
+                src={blog?.image || "/static/landing/course.svg"}
+                alt={blog?.title || "Blog image"}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="space-y-4 px-6 pb-10 pt-8 sm:px-8 lg:px-10">
+              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-teal-500">
+                Blog
+              </p>
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+                {blog?.title ?? "Blog"}
+              </h1>
+              {blog?.excerpt && (
+                <p className="text-lg text-gray-600">{blog.excerpt}</p>
+              )}
+              <div className="h-px w-full bg-gray-100" />
+              <div
+                className="prose max-w-none text-gray-800 prose-p:mb-5 prose-p:leading-relaxed prose-h3:mt-6 prose-h3:mb-3"
+                dangerouslySetInnerHTML={{
+                  __html:
+                    blog?.content?.trim() ||
+                    blog?.excerpt ||
+                    "Content coming soon.",
+                }}
+              />
+            </div>
+          </article>
+        </section>
+
+        {related && related.length > 0 && (
+          <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-12 pb-16">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Related blogs</h2>
+              <Link
+                href="/blog"
+                className="text-sm font-semibold text-teal-600 hover:text-teal-700"
+              >
+                View all
+              </Link>
+            </div>
+
+            <div className="grid gap-6 grid-cols-3 sm:grid-cols-2 lg:grid-cols-3">
+              {related.map((item) => (
+                <Link
+                  key={item.id ?? item.slug}
+                  href={`/blog/${item.slug ?? item.id}`}
+                  className="group block rounded-3xl overflow-hidden bg-white shadow-sm ring-1 ring-gray-100 transition hover:-translate-y-1 hover:shadow-lg"
+                >
+                  <div className="relative w-full aspect-square bg-gray-100">
+                    <Image
+                      src={item.image || "/static/landing/course.svg"}
+                      alt={item.title || "Related blog"}
+                      fill
+                      className="object-cover transition duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="space-y-2 px-5 py-4">
+                    <p className="text-xs font-medium text-teal-500">
+                      {formatDate(item.date)}
+                    </p>
+                    <h3 className="text-base font-semibold text-gray-900 leading-snug line-clamp-2">
+                      {item.title}
+                    </h3>
+                    {item.excerpt && (
+                      <p className="text-xs text-gray-600 line-clamp-3">
+                        {item.excerpt}
+                      </p>
+                    )}
+                    <span className="inline-flex items-center text-sm font-semibold text-teal-600">
+                      Read more
+                      <span
+                        aria-hidden
+                        className="ml-2 transition duration-200 group-hover:translate-x-1"
+                      >
+                        -&gt;
+                      </span>
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
