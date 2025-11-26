@@ -109,18 +109,16 @@ export const CourseContentViewer = ({ courseId }: { courseId: string }) => {
   useEffect(() => {
     fetchCourse();
   }, []);
-
-  // Extract video ID from Bunny video URL
+ 
   const extractBunnyVideoId = (videoUrl: string) => {
     if (!videoUrl) return null;
     
-    // Handle iframe embed URLs: https://iframe.mediadelivery.net/embed/LIBRARY_ID/VIDEO_ID
+  
     const embedMatch = videoUrl.match(/embed\/(\d+)\/([a-f0-9-]+)/i);
     if (embedMatch) {
       return { libraryId: embedMatch[1], videoId: embedMatch[2] };
     }
-    
-    // Handle direct play URLs: https://iframe.mediadelivery.net/play/LIBRARY_ID/VIDEO_ID
+     
     const playMatch = videoUrl.match(/play\/(\d+)\/([a-f0-9-]+)/i);
     if (playMatch) {
       return { libraryId: playMatch[1], videoId: playMatch[2] };
