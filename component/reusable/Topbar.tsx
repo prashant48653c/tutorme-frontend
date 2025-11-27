@@ -52,19 +52,23 @@ const Topbar = ({ onToggleSidebar, isSidebarVisible }: TopbarProps) => {
   return (
     <>
       {/* Fixed full-width topbar so it doesn't move when sidebar toggles */}
-      <div className="fixed left-0 right-0 top-0 z-10 bg-white border rounded-2xl px-4 py-2 shadow-sm">
+      <div className="fixed left-0 right-0 top-0 z-10 bg-white border rounded-2xl px-0 py-2 shadow-sm">
         <div className="w-full px-6 flex items-center justify-between h-16">
           {/* Left side logo + sidebar toggle */}
           <div className="flex items-center gap-3 flex-1">
             {onToggleSidebar && (
-              <button
-                type="button"
-                aria-label="Toggle sidebar"
-                onClick={onToggleSidebar}
-                className="inline-flex items-center justify-center rounded-full text-green-600 p-2 transition hover:bg-green-600"
-              >
-                {isSidebarVisible ? <X size={18} /> : <Menu size={18} color="green" className="hover:text-white" />}
-              </button>
+<button
+  type="button"
+  aria-label="Toggle sidebar"
+  onClick={onToggleSidebar}
+  className="group inline-flex items-center justify-center rounded-full text-teal-500 p-2 transition hover:bg-teal-400"
+>
+  {isSidebarVisible ? (
+    <X size={18} className="text-current group-hover:text-white" />
+  ) : (
+    <Menu size={18} className="text-green-500 group-hover:text-white" />
+  )}
+</button>
             )}
             <div className="flex items-center gap-2">
               <h1 className="titleFont text-2xl font-extrabold text-black tracking-wide">

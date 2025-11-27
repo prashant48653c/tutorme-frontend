@@ -6,11 +6,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import api from "@/hooks/axios"
 import { useAuthStore } from "@/store/useAuthStore"
 import toast from "react-hot-toast"
+import Radio from "@/component/reusable/Radio"
 
 interface TimeSlot {
   from: string
@@ -189,28 +189,16 @@ const formatted = Object.entries(availability)
           {/* Select Language */}
           <div className="space-y-3">
             <Label className="text-sm font-medium text-gray-700">Select Language</Label>
-            <RadioGroup value={selectedLanguage} onValueChange={setSelectedLanguage}>
-              <div className="flex items-center space-x-6">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="english" id="english" />
-                  <Label htmlFor="english" className="text-sm text-blue-500 cursor-pointer">
-                    English
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="nepali" id="nepali" />
-                  <Label htmlFor="nepali" className="text-sm cursor-pointer">
-                    Nepali
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="both" id="both" />
-                  <Label htmlFor="both" className="text-sm cursor-pointer">
-                    Both
-                  </Label>
-                </div>
-              </div>
-            </RadioGroup>
+            <Radio
+              name="language"
+              value={selectedLanguage}
+              onChange={setSelectedLanguage}
+              options={[
+                { label: "English", value: "english" },
+                { label: "Nepali", value: "nepali" },
+                { label: "Both", value: "both" },
+              ]}
+            />
           </div>
 
           {/* Select Tags */}

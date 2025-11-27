@@ -171,9 +171,7 @@ export default async function BlogDetailByIdPage({
             >
               Back to blogs
             </Link>
-            <p className="text-sm font-medium text-teal-600">
-              {formatDate(blog?.date)}
-            </p>
+            
           </div>
 
           <article className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100">
@@ -186,9 +184,15 @@ export default async function BlogDetailByIdPage({
               />
             </div>
             <div className="space-y-4 px-6 pb-10 pt-8 sm:px-8 lg:px-10">
+                        <div className="mb-8 flex items-center justify-between gap-4">
+
               <p className="text-sm font-semibold uppercase tracking-[0.25em] text-teal-500">
                 Blog
               </p>
+              <p className="text-sm font-medium text-teal-600">
+              {formatDate(blog?.date)}
+            </p>
+            </div>
               <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
                 {blog?.title ?? "Blog"}
               </h1>

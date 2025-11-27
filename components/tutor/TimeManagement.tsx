@@ -1,6 +1,7 @@
 'use client'
 
 import api from "@/hooks/axios";
+import Radio from "@/component/reusable/Radio";
 import { useGlobalCourseStore } from "@/store/useGlobalCourseStore";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -59,30 +60,17 @@ const TimeManagement = () => {
           <label className="text-lg font-medium">
             Are you willing to give Live Class for Queries?
           </label>
-          <div className="flex items-center space-x-6">
-            <label className="flex items-center space-x-2">
-              <input
-                type="radio"
-                name="liveClass"
-                value="yes"
-                checked={time.isQueryClassAvailable === true}
-                onChange={() => handleChange("isQueryClassAvailable", true)}
-                className="accent-emerald-500"
-              />
-              <span>Yes</span>
-            </label>
-            <label className="flex items-center space-x-2">
-              <input
-                type="radio"
-                name="liveClass"
-                value={course?.isQueryClassAvailable ? "yes" : "no"}
-                checked={time.isQueryClassAvailable === false}
-                onChange={() => handleChange("isQueryClassAvailable", false)}
-                className="accent-emerald-500"
-              />
-              <span>No</span>
-            </label>
-          </div>
+          <Radio
+            name="liveClass"
+            value={time.isQueryClassAvailable ? "yes" : "no"}
+            onChange={(val) =>
+              handleChange("isQueryClassAvailable", val === "yes")
+            }
+            options={[
+              { label: "Yes", value: "yes" },
+              { label: "No", value: "no" },
+            ]}
+          />
         </div>
 
         {/* Dropdowns */}

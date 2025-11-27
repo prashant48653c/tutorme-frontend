@@ -48,23 +48,23 @@ function formatDate(dateString: string) {
 const getStatusBadge = (status: string) => {
   const statusConfig = {
     APPROVED: {
-      label: "Approved",
+      label: "APPROVED",
       className: "bg-green-100 text-green-800 hover:bg-green-100",
     },
     DISAPPROVED: {
-      label: "Disapproved",
+      label: "DISAPPROVED",
       className: "bg-purple-100 text-purple-800 hover:bg-purple-100",
     },
     BANNED: {
-      label: "Banned",
+      label: "BANNED",
       className: "bg-red-100 text-red-800 hover:bg-red-100",
     },
     UNDERREVIEW: {
-      label: "Under Review",
+      label: "UNDER REVIEW",
       className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
     },
     REGISTERED: {
-      label: "Registered",
+      label: "REGISTERED",
       className: "bg-blue-100 text-blue-800 hover:bg-blue-100",
     },
   };
@@ -471,7 +471,8 @@ export default function TutorManagement() {
                 </div>
               ) : (
                 tutors.map((tutor) => {
-                  const statusConfig = getStatusBadge(tutor.status);
+                  const statusValue = tutor?.tutorProfile?.status || tutor.status;
+                  const statusConfig = getStatusBadge(statusValue);
                   const avatarSrc =
                     tutor.image || tutor.avatar || "/placeholder.svg";
                   return (
@@ -500,7 +501,7 @@ export default function TutorManagement() {
                             Joined Date: {formatDate(tutor.createdAt)}
                           </p>
                           <Badge className={`mt-1 w-full sm:w-auto ${statusConfig.className}`}>
-                            {tutor?.tutorProfile?.status || "UNKNOWN"}
+                            {statusConfig.label}
                           </Badge>
                         </div>
                       </div>

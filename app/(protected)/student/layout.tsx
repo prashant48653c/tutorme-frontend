@@ -1,9 +1,7 @@
 "use client";
 import Sidebar from "@/component/reusable/Sidebar";
 import Topbar from "@/component/reusable/Topbar";
-import type { Metadata } from "next";
-import { useState } from "react";
-import { ReactNode } from "react";
+import { useState, ReactNode } from "react";
 
 const links = [
     {
@@ -47,44 +45,52 @@ const links = [
     icon: "icon5",
   },
 ];
+
 export default function ProtectedLayout({ children }: { children: ReactNode }) {
   const [isSidebarVisible, setSidebarVisible] = useState(false);
+  const desktopSidebarWidth = isSidebarVisible ? "lg:w-64" : "lg:w-16";
+  const mobileWrapperState = isSidebarVisible
+    ? "pointer-events-auto"
+    : "pointer-events-none";
+  const mobileWrapperVisibility = isSidebarVisible ? "block" : "hidden";
 
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-gray-100 overflow-visible">
-        <div className="flex items-start bg-gray-100 relative w-full min-h-screen overflow-visible">
-          {/* Sidebar */}
-          <div
-            className={`flex-shrink-0 transition-[width] duration-300 w-0 lg:sticky lg:top-16 lg:h-[calc(100vh-64px)] ${
-              isSidebarVisible ? "lg:w-[15%]" : "lg:w-16"
-            }`}
-          >
-            <Sidebar
-              links={links}
-              isOpen={isSidebarVisible}
-              onClose={() => setSidebarVisible(false)}
-              collapsed={!isSidebarVisible}
-            />
+    <div className="min-h-screen bg-gray-100">
+      <Topbar
+        isSidebarVisible={isSidebarVisible}
+        onToggleSidebar={() => setSidebarVisible((prev) => !prev)}
+      />
+
+      {/* Mobile sidebar overlay (kept mounted for smooth transition) */}
+      <div
+        className={`lg:hidden ${mobileWrapperVisibility} fixed inset-y-0 left-0 z-[60] w-full ${mobileWrapperState}`}
+        aria-hidden={!isSidebarVisible}
+      >
+        <Sidebar
+          links={links}
+          isOpen={isSidebarVisible}
+          onClose={() => setSidebarVisible(false)}
+          collapsed={false}
+        />
+      </div>
+
+      <div className="flex w-full bg-gray-100">
+        {/* Desktop sticky sidebar */}
+        <div
+          className={`hidden lg:block ${desktopSidebarWidth} transition-all duration-300`}
+        >
+          <div className="sticky top-16 h-[calc(100vh-64px)]">
+            <Sidebar links={links} isOpen collapsed={!isSidebarVisible} />
           </div>
-          {/* Main Content */}
-          <main className="flex flex-1 px-4 sm:px-6 bg-gray-100 transition-[width] duration-300 overflow-visible">
-            <div className="w-full bg-gray-100 flex flex-col h-max">
-              <div className="relative w-full bg-gray-100 mb-16">
-                <nav className="p-0 sm:p-0 lg:p-4 fixed w-full top-0 z-50 bg-gray-100 items-center flex lg:justify-between md:justify-between justify-center">
-                  <Topbar
-                    isSidebarVisible={isSidebarVisible}
-                    onToggleSidebar={() =>
-                      setSidebarVisible((prev) => !prev)
-                    }
-                  />
-                </nav>
-              </div>
-              <div className="relative mt-8">{children}</div>
-            </div>
-          </main>
         </div>
-      </body>
-    </html>
+
+        {/* Main Content */}
+        <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 pb-10 pt-20">
+          <div className="max-w-screen-2xl mx-auto w-full">
+            {children}
+          </div>
+        </main>
+      </div>
+    </div>
   );
 }

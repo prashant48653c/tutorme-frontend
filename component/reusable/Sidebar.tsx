@@ -43,7 +43,7 @@ const Sidebar = ({ links, isOpen = true, onClose, collapsed = false }: SidebarPr
         />
       </div>
       <div
-        className={`flex w-[40%] z-50 lg:z-[50] bg-white flex-col items-start no-scrollbar overflow-y-auto fixed top-16 h-full pt-6 space-y-4 xs:w-[55%] sm:w-[40%] md:w-[30%] lg:sticky lg:top-20 lg:h-[calc(100vh-80px)] lg:flex-shrink-0 lg:w-full transition-transform duration-300 ease-in-out ${
+        className={`flex w-[80vw] max-w-xs sm:max-w-sm z-50 lg:z-[50] bg-white flex-col items-start no-scrollbar overflow-y-auto fixed top-16 h-[calc(100vh-64px)] pt-6 space-y-4 lg:sticky lg:top-20 lg:h-[calc(100vh-80px)] lg:flex-shrink-0 lg:w-full transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0`}
         style={{

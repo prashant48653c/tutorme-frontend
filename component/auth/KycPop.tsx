@@ -20,6 +20,7 @@ import { toast } from "react-hot-toast";
 import { ToastBar } from "react-hot-toast";
 import api from "@/hooks/axios";
 import { useAuthStore } from "@/store/useAuthStore";
+import Radio from "@/component/reusable/Radio";
 
 interface StepIndicatorProps {
   currentStep: number;
@@ -596,42 +597,21 @@ const setUser=useAuthStore((state)=>state.setUser);
                 <Label className="text-sm  text-gray-700">
                   Are you currently working?
                 </Label>
-                <div className="flex items-center w-full gap-4">
-                  <label className="flex items-center gap-1 text-sm text-gray-800">
-                    <input
-                      type="radio"
-                      name="working"
-                      value="yes"
-                      className="accent-teal-500"
-                      checked={state.currentlyWorking === "yes"}
-                      onChange={() =>
-                        dispatch({
-                          type: "SET_FIELD",
-                          field: "currentlyWorking",
-                          value: "yes",
-                        })
-                      }
-                    />
-                    Yes
-                  </label>
-                  <label className="flex items-center gap-1 text-sm text-gray-800">
-                    <input
-                      type="radio"
-                      name="working"
-                      value="no"
-                      className="accent-teal-500"
-                      checked={state.currentlyWorking === "no"}
-                      onChange={() =>
-                        dispatch({
-                          type: "SET_FIELD",
-                          field: "currentlyWorking",
-                          value: "no",
-                        })
-                      }
-                    />
-                    No
-                  </label>
-                </div>
+                <Radio
+                  name="working"
+                  value={state.currentlyWorking}
+                  onChange={(val) =>
+                    dispatch({
+                      type: "SET_FIELD",
+                      field: "currentlyWorking",
+                      value: val,
+                    })
+                  }
+                  options={[
+                    { label: "Yes", value: "yes" },
+                    { label: "No", value: "no" },
+                  ]}
+                />
               </div>
 
               <div>
@@ -758,7 +738,7 @@ const setUser=useAuthStore((state)=>state.setUser);
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-h-[90vh] w-full max-w-[95vw] md:max-w-[60rem] overflow-y-auto p-0 gap-0 rounded-2xl">
+        <DialogContent className="max-h-[90vh] w-full max-w-[95vw] md:max-w-[60rem] overflow-y-auto p-0 gap-0 rounded-2xl no-scrollbar">
           <div className="flex flex-col md:flex-row">
             {/* Left side - Illustration */}
             <div className="w-full md:w-1/3 p-4 md:p-6">
