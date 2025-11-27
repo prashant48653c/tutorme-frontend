@@ -57,7 +57,7 @@ async function getVideoThumbnail(videoUrl:string, seekTo = 1.0) {
 return new Promise((resolve, reject) => {
 const video = document.createElement("video");
 video.src = videoUrl;
-video.crossOrigin = "anonymous"; // needed if the video is from another domain
+video.crossOrigin = "anonymous"; 
 video.load();
 
 video.addEventListener("loadeddata", () => {
@@ -88,7 +88,6 @@ parentId: string;
 })
 | null
 >();
-// Get everything from the store
 
 const handleSelection =async (
 e: any,
@@ -190,19 +189,17 @@ const handleUpload = async () => {
   setLoadingState(true);
 
   try {
-    // 1️⃣ Get Bunny upload token from backend
     const tokenRes = await api.get("/course/bunny/upload-token");
-    const { guid, url, libraryId, apiKey } = tokenRes.data; // ✅ Get apiKey from backend
+    const { guid, url, libraryId, apiKey } = tokenRes.data; 
 
     if (!guid || !url || !apiKey) throw new Error("Failed to get upload token");
 
     const loadingToast = toast.loading("Uploading video to Bunny CDN...");
 
-    // 2️⃣ Upload video directly to Bunny
     const uploadRes = await fetch(url, {
       method: "PUT",
       headers: {
-        "AccessKey": apiKey, // ✅ Use apiKey from backend, NOT hardcoded
+        "AccessKey": apiKey, 
         "Content-Type": "application/octet-stream",
       },
       body: videoFile,
@@ -219,13 +216,10 @@ const handleUpload = async () => {
     toast.dismiss(loadingToast);
     toast.success("Video uploaded! Processing...");
     
-    // 3️⃣ Wait for Bunny to process the video
     await new Promise(resolve => setTimeout(resolve, 3000));
 
-    // 4️⃣ Construct playback URL
     const playbackUrl = `https://iframe.mediadelivery.net/embed/${libraryId}/${guid}`;
 
-    // 5️⃣ Send metadata + subtitle to backend (PATCH chapter)
     const formData = new FormData();
     formData.append("title", selectedItem.title ?? "");
     formData.append("description", description);
@@ -270,14 +264,11 @@ video.crossOrigin = "anonymous";
 video.muted = true;
 video.playsInline = true;
 
-// Wait for metadata to load (we get duration & dimensions)
 video.onloadedmetadata = () => {
-// Seek to 1 second (or 0 if shorter)
 const seekTime = Math.min(1, video.duration / 2);
 video.currentTime = seekTime;
 };
 
-// Once we have the frame we want, draw it to canvas
 video.onseeked = () => {
 const canvas = document.createElement("canvas");
 canvas.width = video.videoWidth;

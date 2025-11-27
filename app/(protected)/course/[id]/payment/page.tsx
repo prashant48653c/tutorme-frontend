@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Star, BookOpen, BarChart3, Clock, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,11 +9,18 @@ import { useQuery } from "@tanstack/react-query";
 import api from "@/hooks/axios";
 import { initiateKhaltiPayment } from "@/hooks/khalti";
 import { useAuthStore } from "@/store/useAuthStore";
+import { v4 as uuidv4 } from "uuid";
+import CryptoJS from "crypto-js";
 
 export default function CourseCheckout() {
   const params = useParams();
   const id = params.id;
-  const discountAmount = 250; // Example discount amount
+  
+  const discountAmount = 250;
+  const [paymentOption, setPaymentOption] = useState<"esewa" | "khalti">("khalti");
+  const [promoCode, setPromoCode] = useState("");
+  const user = useAuthStore((state) => state.user);
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["course"],
     queryFn: async () => {
@@ -22,21 +29,110 @@ export default function CourseCheckout() {
       return res.data.data;
     },
   });
-  const [promoCode, setPromoCode] = useState("");
-  const user = useAuthStore((state) => state.user);
+
+  // eSewa form state
+  const [esewaFormData, setEsewaFormData] = useState({
+    amount: "",
+    tax_amount: "0",
+    total_amount: "",
+    transaction_uuid: "",
+    product_service_charge: "0",
+    product_delivery_charge: "0",
+    product_code: "EPAYTEST",
+    success_url: "",
+    failure_url: "",
+    signed_field_names: "total_amount,transaction_uuid,product_code",
+    signature: "",
+    secret: "8gBm/:&EnhH.1/q",
+  });
+
+  // Generate signature function
+  const generateSignature = (
+    total_amount: string,
+    transaction_uuid: string,
+    product_code: string,
+    secret: string
+  ) => {
+    const hashString = `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`;
+    const hash = CryptoJS.HmacSHA256(hashString, secret);
+    const hashedSignature = CryptoJS.enc.Base64.stringify(hash);
+    return hashedSignature;
+  };
+
+  // Update eSewa form data when course data loads
+  useEffect(() => {
+    if (data && typeof window !== 'undefined') {
+      const finalAmount = (data.price - discountAmount).toString();
+      const uuid = uuidv4();
+      
+      const signature = generateSignature(
+        finalAmount,
+        uuid,
+        "EPAYTEST",
+        "8gBm/:&EnhH.1/q"
+      );
+
+      setEsewaFormData({
+        ...esewaFormData,
+        amount: finalAmount,
+        total_amount: finalAmount,
+        transaction_uuid: uuid,
+        signature: signature,
+        success_url: `${window.location.origin}/esewa/success?studentId=${user?.studentProfile?.id || 1}&courseId=${id}&userId=${user?.id || 1}&data=`,
+        failure_url: `${window.location.origin}/esewa/failure`,
+      });
+    }
+  }, [data, discountAmount]);
+
+  // Function to submit eSewa payment programmatically
+  const submitEsewaPayment = () => {
+    // Create a form element dynamically
+    console.log(user?.id)
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
+
+    // Add form fields
+    const fields = {
+      amount: esewaFormData.amount,
+      tax_amount: esewaFormData.tax_amount,
+      total_amount: esewaFormData.total_amount,
+      transaction_uuid: esewaFormData.transaction_uuid,
+      product_code: esewaFormData.product_code,
+      product_service_charge: esewaFormData.product_service_charge,
+      product_delivery_charge: esewaFormData.product_delivery_charge,
+      success_url: esewaFormData.success_url,
+      failure_url: esewaFormData.failure_url,
+      signed_field_names: esewaFormData.signed_field_names,
+      signature: esewaFormData.signature,
+    };
+
+    Object.keys(fields).forEach(key => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = fields[key as keyof typeof fields];
+      form.appendChild(input);
+    });
+
+    // Append form to body and submit
+    document.body.appendChild(form);
+    form.submit();
+  };
 
   const handlePayment = async () => {
     if (!id) {
       return;
     }
-    // const studentProfileId=user?.studentProfile.id;
-    await initiateKhaltiPayment(
-      +id,
+    
+    const finalAmount = data.price - discountAmount;
 
-      data.courseName,
-      2,
-      data.price - discountAmount
-    );
+    if (paymentOption === "esewa") {
+      // Submit eSewa payment programmatically
+      submitEsewaPayment();
+    } else {
+      await initiateKhaltiPayment(+id, data.courseName, 2, finalAmount);
+    }
   };
 
   if (isLoading) {
@@ -54,8 +150,6 @@ export default function CourseCheckout() {
           <input
             className="border-0 min-w-[20rem] outline-0 hover:outline-0 bg-transparent"
             placeholder="Search.."
-            // value={searchQuery}
-            // onChange={handleSearchChange}
           />
         </div>
       </section>
@@ -184,19 +278,25 @@ export default function CourseCheckout() {
               </div>
 
               {/* Payment Methods */}
-              <div className="flex justify-center gap-4 mb-6">
-                {/* eSewa Logo */}
-                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+              <div className="flex justify-center gap-6 mb-6">
+                {/* eSewa */}
+                <div
+                  onClick={() => setPaymentOption("esewa")}
+                  className={`w-14 h-14 rounded-full flex items-center justify-center cursor-pointer 
+                    ${paymentOption === "esewa" ? "ring-4 ring-green-400" : "bg-green-100"}`}
+                >
+                  <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
                     <span className="text-white text-xs font-bold">e</span>
                   </div>
                 </div>
 
-                {/* Khalti Logo */}
-                <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
-                  <span className="text-purple-600 text-sm font-bold">
-                    khalti
-                  </span>
+                {/* Khalti */}
+                <div
+                  onClick={() => setPaymentOption("khalti")}
+                  className={`w-14 h-14 rounded-full flex items-center justify-center cursor-pointer 
+                    ${paymentOption === "khalti" ? "ring-4 ring-purple-400" : "bg-purple-100"}`}
+                >
+                  <span className="text-purple-600 text-sm font-bold">khalti</span>
                 </div>
               </div>
 
