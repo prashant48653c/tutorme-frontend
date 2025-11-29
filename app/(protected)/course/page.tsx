@@ -73,6 +73,12 @@ const [mobileSidebar,setMobileSidebar]=useState(false)
     refetch();
   }, [debouncedSearchQuery, refetch]);
 
+  const totalCourses =
+    data?.pages?.reduce(
+      (sum: number, page: any) => sum + (page?.data?.length || 0),
+      0
+    ) || 0;
+
   // Intersection Observer for infinite scroll
   useEffect(() => {
     if (!observerRef.current || !hasNextPage || isFetchingNextPage) return;
@@ -143,8 +149,14 @@ const [mobileSidebar,setMobileSidebar]=useState(false)
               <div className="flex justify-center py-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
               </div>
+            ) : totalCourses === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center gap-2 text-gray-600">
+                <img src="/static/icons/courseIcon.svg" alt="No courses" className="w-10 h-10 opacity-60" />
+                <p className="font-semibold text-lg text-gray-800">No courses available</p>
+                <p className="text-sm text-gray-500">Try adjusting your filters or search.</p>
+              </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-10 aspect-square">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-10 ">
                 {data?.pages.map((page, pageIndex) =>
                   page?.data.map((course: Course) => (
                     <Card
@@ -209,7 +221,7 @@ const [mobileSidebar,setMobileSidebar]=useState(false)
                         </div>
                         <Button
                           onClick={() => handleEnroll(course?.id as number)}
-                          className="w-full bg-teal-300 hover:bg-teal-400 text-white font-bold"
+                          className="w-full bg-primeGreen hover:bg-teal-400 text-white font-bold"
                         >
                           Enroll Course
                         </Button>
@@ -220,8 +232,8 @@ const [mobileSidebar,setMobileSidebar]=useState(false)
               </div>
             )}
             {/* Sentinel element for IntersectionObserver */}
-            <div ref={observerRef} className="h-10" />
-            {isFetchingNextPage && (
+            {totalCourses > 0 && <div ref={observerRef} className="h-10" />}
+            {isFetchingNextPage && totalCourses > 0 && (
               <div className="flex justify-center py-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
               </div>

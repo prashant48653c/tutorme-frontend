@@ -189,6 +189,25 @@ body {
   animation: marquee 30s linear infinite;
 }
 
+@keyframes popup-bounce {
+  0% {
+    transform: scale(0.92) translateY(18px);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(1.04) translateY(-8px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.bouncy-popup {
+  animation: popup-bounce 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 @media (max-width:660px) {
   html{
     font-size: 90%;

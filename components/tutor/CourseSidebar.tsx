@@ -16,6 +16,25 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useFilterStore } from "@/store/useCourseFilter"; // Adjust path as needed
 
+const SEMESTER_MAP: Record<string, string> = {
+  First: "FIRST",
+  Second: "SECOND",
+  Third: "THIRD",
+  Fourth: "FOURTH",
+  Fifth: "FIFTH",
+  Sixth: "SIXTH",
+  Seventh: "SEVENTH",
+  Eighth: "EIGHT",
+};
+
+const DURATION_MAP: Record<string, string> = {
+  "Less than 2 hrs": "less than 2 hour",
+  "2-3 hrs": "2-3 hour",
+  "1-3 Months": "1-3 months",
+  "3-6 Months": "3-6 months",
+  "4-6 Months": "4-6 months",
+};
+
 interface FilterItem {
   id: string;
   label: string;
@@ -155,23 +174,10 @@ export function CourseFilterSidebar() {
     );
 
     setSemesterFilters((prev) =>
-      prev.map((item) => {
-        const semesterMap: any = {
-          First: "ONE",
-          Second: "TWO",
-          Third: "THREE",
-          Fourth: "FOUR",
-          Fifth: "FIVE",
-          Sixth: "SIX",
-          Seventh: "SEVEN",
-          Eighth: "EIGHT",
-        };
-
-        return {
-          ...item,
-          checked: targetSem.includes(semesterMap[item.label]),
-        };
-      })
+      prev.map((item) => ({
+        ...item,
+        checked: targetSem.includes(SEMESTER_MAP[item.label]),
+      }))
     );
 
     setLanguageFilters((prev) =>
@@ -190,16 +196,9 @@ export function CourseFilterSidebar() {
 
     setDurationFilters((prev) =>
       prev.map((item) => {
-        const durationMap: any = {
-          "Less than 2 hrs": "less than 2 hour",
-          "2-3 hrs": "2-3 hour",
-          "1-3 Months": "1-3 months",
-          "3-6 Months": "3-6 months",
-          "4-6 Months": "4-6 months",
-        };
         return {
           ...item,
-          checked: duration.includes(durationMap[item.label] || item.label),
+          checked: duration.includes(DURATION_MAP[item.label] || item.label),
         };
       })
     );
@@ -219,28 +218,16 @@ export function CourseFilterSidebar() {
   };
 
   const handleSemesterFilterChange = (id: string, checked: boolean) => {
-    setSemesterFilters((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, checked } : item))
-    );
-
-    const updatedSemesters = semesterFilters
-      .map((item) => (item.id === id ? { ...item, checked } : item))
-      .filter((item) => item.checked)
-      .map((item) => {
-        const semesterMap: any = {
-          First: 1,
-          Second: 2,
-          Third: 3,
-          Fourth: 4,
-          Fifth: 5,
-          Sixth: 6,
-          Seventh: 7,
-          Eighth: 8,
-        };
-        return semesterMap[item.label];
-      });
-
-    setTargetSem(updatedSemesters);
+    setSemesterFilters((prev) => {
+      const next = prev.map((item) =>
+        item.id === id ? { ...item, checked } : item
+      );
+      const updatedSemesters = next
+        .filter((item) => item.checked)
+        .map((item) => SEMESTER_MAP[item.label]);
+      setTargetSem(updatedSemesters);
+      return next;
+    });
   };
 
   const handleLanguageFilterChange = (id: string, checked: boolean) => {
@@ -270,25 +257,16 @@ export function CourseFilterSidebar() {
   };
 
   const handleDurationFilterChange = (id: string, checked: boolean) => {
-    setDurationFilters((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, checked } : item))
-    );
-
-    const updatedDurations = durationFilters
-      .map((item) => (item.id === id ? { ...item, checked } : item))
-      .filter((item) => item.checked)
-      .map((item) => {
-        const durationMap: any = {
-          "Less than 2 hrs": "less than 2 hour",
-          "2-3 hrs": "2-3 hour",
-          "1-3 Months": "1-3 months",
-          "3-6 Months": "3-6 months",
-          "4-6 Months": "4-6 months",
-        };
-        return durationMap[item.label] || item.label;
-      });
-
-    setDuration(updatedDurations);
+    setDurationFilters((prev) => {
+      const next = prev.map((item) =>
+        item.id === id ? { ...item, checked } : item
+      );
+      const updatedDurations = next
+        .filter((item) => item.checked)
+        .map((item) => DURATION_MAP[item.label] || item.label);
+      setDuration(updatedDurations);
+      return next;
+    });
   };
 
   const handleClearAllFilters = () => {

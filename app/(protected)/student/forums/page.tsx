@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { User } from "@/types/auth";
 import AdInTake from "@/component/adsense/AdTake";
+import { toast } from "sonner";
 
 interface Comment {
   id: number;
@@ -337,7 +338,7 @@ const handleFollow = async (profileId: number, userId: number) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!description || !flair) {
-      alert("Please add a description and select a flair.");
+      toast.error("Please add a description and select a flair.", { duration: 2800 });
       return;
     }
 
@@ -353,6 +354,7 @@ const handleFollow = async (profileId: number, userId: number) => {
 
     const data = await createPost(formData);
     console.log(data);
+    toast.success("Post shared with the community!", { duration: 2600 });
     refetch();
     setDescription("");
     setFlair(null);

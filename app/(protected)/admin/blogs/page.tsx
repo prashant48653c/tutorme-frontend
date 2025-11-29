@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Plus, Calendar, Trash2, ChevronUp, ChevronDown, Upload, X, Edit } from 'lucide-react';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import api from '@/hooks/axios';
+import { toast } from 'sonner';
 
 interface Blog {
   id: number;
@@ -49,11 +50,11 @@ const EditBlogModal: React.FC<EditBlogModalProps> = ({ blog, isOpen, onClose, on
     if (!file) return;
     
     if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file');
+      toast.error('Please upload an image file', { duration: 2600 });
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert('Image file size should be less than 5MB');
+      toast.error('Image file size should be less than 5MB', { duration: 2600 });
       return;
     }
     
@@ -70,7 +71,7 @@ const EditBlogModal: React.FC<EditBlogModalProps> = ({ blog, isOpen, onClose, on
 
   const handleUpdate = async () => {
     if (!editedBlog.title || !editedBlog.content) {
-      alert('Please fill in all required fields');
+      toast.error('Please fill in all required fields', { duration: 2600 });
       return;
     }
 
@@ -92,12 +93,12 @@ const EditBlogModal: React.FC<EditBlogModalProps> = ({ blog, isOpen, onClose, on
         },
       });
 
-      alert('Blog updated successfully!');
+      toast.success('Blog updated successfully!', { duration: 2400 });
       onRefresh();
       onClose();
     } catch (error) {
       console.error('Error updating blog:', error);
-      alert('Failed to update blog. Please try again.');
+      toast.error('Failed to update blog. Please try again.', { duration: 2600 });
     } finally {
       setIsUpdating(false);
     }
@@ -223,7 +224,7 @@ const Blog: React.FC = () => {
       setBlogs(res.data.data);
     } catch (error) {
       console.error('Error fetching blogs:', error);
-      alert('Failed to load blogs. Please refresh the page.');
+      toast.error('Failed to load blogs. Please refresh the page.', { duration: 2800 });
     } finally {
       setIsLoading(false);
     }
@@ -240,11 +241,11 @@ const Blog: React.FC = () => {
     if (!file) return;
     
     if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file');
+      toast.error('Please upload an image file', { duration: 2600 });
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert('Image file size should be less than 5MB');
+      toast.error('Image file size should be less than 5MB', { duration: 2600 });
       return;
     }
     
@@ -265,12 +266,12 @@ const Blog: React.FC = () => {
 
   const handleCreateBlog = async (): Promise<void> => {
     if (!newBlog.title || !newBlog.content) {
-      alert('Please fill in all required fields');
+      toast.error('Please fill in all required fields', { duration: 2600 });
       return;
     }
 
     if (!newBlog.imageFile) {
-      alert('Please upload an image');
+      toast.error('Please upload an image', { duration: 2600 });
       return;
     }
 
@@ -288,12 +289,12 @@ const Blog: React.FC = () => {
         },
       });
 
-      alert('Blog created successfully!');
+      toast.success('Blog created successfully!', { duration: 2400 });
       setNewBlog({ title: '', content: '', imageUrl: null, imageFile: null });
       fetchBlogs(); // Refresh the blog list
     } catch (error) {
       console.error('Error creating blog:', error);
-      alert('Failed to create blog. Please try again.');
+      toast.error('Failed to create blog. Please try again.', { duration: 2600 });
     } finally {
       setIsCreating(false);
     }
@@ -306,11 +307,11 @@ const Blog: React.FC = () => {
 
     try {
       await api.delete(`/blog/${id}`);
-      alert('Blog deleted successfully!');
+      toast.success('Blog deleted successfully!', { duration: 2400 });
       fetchBlogs(); // Refresh the blog list
     } catch (error) {
       console.error('Error deleting blog:', error);
-      alert('Failed to delete blog. Please try again.');
+      toast.error('Failed to delete blog. Please try again.', { duration: 2600 });
     }
   };
 
@@ -471,7 +472,7 @@ const Blog: React.FC = () => {
                         className="p-2 hover:bg-teal-50 rounded-lg transition-colors text-teal-600 text-sm font-medium"
                         title="View blog"
                       >
-                        Read more
+                        View
                       </Link>
                       <button
                         onClick={(e) => {

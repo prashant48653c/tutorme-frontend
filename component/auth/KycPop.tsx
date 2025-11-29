@@ -16,8 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "react-hot-toast";
-import { ToastBar } from "react-hot-toast";
+import { toast } from "sonner";
 import api from "@/hooks/axios";
 import { useAuthStore } from "@/store/useAuthStore";
 import Radio from "@/component/reusable/Radio";

@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import api from "@/hooks/axios";
 import { useAuthStore } from "@/store/useAuthStore";
 
