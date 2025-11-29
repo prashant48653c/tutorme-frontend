@@ -9,6 +9,7 @@ import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getUserData } from "@/lib/api";
 import { useAuthStore } from "@/store/useAuthStore";
+import { Link } from "lucide-react";
 
 const page = () => {
   const Router = useRouter();
@@ -17,13 +18,15 @@ const page = () => {
   const data = getUserData(user?.id as number);
 
   return (
-    <section className="flex py-10 pl-4 flex-col gap-y-9">
+    <section className="flex pl-4 flex-col gap-y-9">
       <div className="flex  items-center justify-between">
         <h4 className="uppercase text-xl font-bold">My courses</h4>
         <div>
+          <a href="/course">
           <Button className="rounded-full bg-teal-500 px-6 py-2 text-sm font-semibold text-white shadow hover:bg-teal-600">
-          My Courses
+          Browse Courses
         </Button>
+        </a>
         </div>
       </div>
 

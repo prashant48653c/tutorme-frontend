@@ -9,13 +9,13 @@ export default function TutorCard({tutor}:{tutor:any}) {
   <div className="relative">
     
 <div className="absolute bottom-[-50%] left-0 w-full h-full overflow-visible cardcolor z-[0] transform -translate-y-1/6 rounded-3xl" />
-    <div className="aspect-[4/5] scale-90 relative overflow-hidden z-[1]">
+    <div className="aspect-square scale-90 relative overflow-hidden z-[1]">
       <Image
         src={tutor?.image || "/static/landing/course.svg"}
         alt={tutor?.name}
         fill
         className="object-cover rounded-3xl"
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw aspect ration "
         priority
       />
     </div>

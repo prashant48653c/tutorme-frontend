@@ -40,15 +40,15 @@ function FilterSection({
 }: FilterSectionProps) {
   return (
     <SidebarGroup>
-      <div className="flex items-center justify-between">
-        <SidebarGroupLabel className="text-teal-600  font-medium text-md mb-1">
+      <div className="flex items-center justify-between gap-10">
+        <SidebarGroupLabel className="text-teal-400  font-medium text-lg mb-1">
           {title}
         </SidebarGroupLabel>
         {showClearAll && (
           <Button
             variant="link"
             size="sm"
-            className="h-auto p-0 text-xs text-teal-600 hover:text-teal-700"
+            className="h-auto p-0 text-xs text-teal-400 hover:text-teal-700"
             onClick={onClearAll}
           >
             Clear All Filters
@@ -317,12 +317,12 @@ export function CourseFilterSidebar() {
   };
 
   const SidebarContent = () => (
-    <div className="w-full pr-3">
-      <div className="">
+    <div className="w-full pr-3 ">
+      <div className="flex justify-start">
         <Button
           variant="outline"
           size="sm"
-          className="justify-start border border-green-400 px-5 gap-2 bg-transparent w-full"
+          className="justify-center  items-center border-2 border-green-400 px-5 gap-2 bg-transparent w-[10rem]"
           onClick={getActiveFilters}
         >
           Filter
@@ -330,7 +330,7 @@ export function CourseFilterSidebar() {
         </Button>
       </div>
 
-      <div className="p-4 space-y-6">
+      <div className="p-4 space-y-6 border-l-2 border-r-2 border-b-4 border-gray-200 shadow-md  rounded-3xl">
         <FilterSection
           title="Course"
           data={courseFilters}
@@ -381,7 +381,7 @@ export function CourseFilterSidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden md:block w-64">
+      <div className="hidden md:block w-full lg:w-80">
         <SidebarContent />
       </div>
 

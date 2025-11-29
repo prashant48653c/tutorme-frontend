@@ -114,7 +114,11 @@ export default function CourseManagement() {
       setLoading(true);
       try {
         const id = user?.studentProfile?.id;
-         
+        if (!id) {
+          setLoading(false);
+          return;
+        }
+
         console.log(id);
 
         const status = getTabStatus(tabValue);
@@ -126,8 +130,9 @@ export default function CourseManagement() {
             sortBy,
           },
         });
-        setTotalCount(res.data.data.statusCounts);
-        console.log(res.data.data.statusCounts);
+        const statusCounts = res.data?.data?.statusCounts || [];
+        setTotalCount(statusCounts);
+        console.log(statusCounts);
 
         const fetchedCourses = res.data.data.data || [];
         const normalizedSort =
@@ -176,7 +181,7 @@ export default function CourseManagement() {
         setLoading(false);
       }
     },
-    []
+    [user?.studentProfile?.id]
   );
 
   const handleSearch = useCallback(
@@ -217,7 +222,7 @@ export default function CourseManagement() {
       searchQuery,
       pagination.sortBy,
     );
-  }, [activeTab, pagination.page, fetchTutors]);
+  }, [activeTab, pagination.page, fetchTutors, user?.studentProfile?.id]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -262,13 +267,13 @@ export default function CourseManagement() {
     totalCount.find((item) => item?.status === "EXPIRED")?.count || 0;
 
   const tabBaseClasses =
-    "group relative flex min-w-[190px] flex-none items-center justify-center rounded-4xl border border-slate-200 bg-white px-6 py-3 text-center text-base font-semibold text-slate-600 transition-colors duration-200 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 data-[state=active]:border-[3px] data-[state=active]:text-slate-900 sm:flex-1 sm:min-w-0";
+    "group relative flex w-fit lg:w-full shrink-0 items-center justify-center rounded-[18px] border-2 border-slate-200 bg-[#f5f8ff] px-6 sm:px-8 py-3.5 sm:py-4 text-center text-base font-semibold text-slate-600 shadow-sm transition-all duration-200 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 data-[state=active]:bg-white data-[state=active]:text-slate-900 sm:flex-1 sm:min-w-0 text-gray-300 data-[state=active]:text-gray-600";
   const tabAccentClasses: Record<string, string> = {
-    all: "focus-visible:ring-teal-200 data-[state=active]:border-teal-400",
+    all: "focus-visible:ring-teal-200  data-[state=active]:border-teal-400 data-[state=active]:shadow-[0_3px_0_0_rgba(20,184,166,0.35)]",
     active:
-      "focus-visible:ring-emerald-200 data-[state=active]:border-emerald-400",
+      "focus-visible:ring-emerald-200 data-[state=active]:border-emerald-400 data-[state=active]:shadow-[0_3px_0_0_rgba(16,185,129,0.35)]",
     expired:
-      "focus-visible:ring-rose-200 data-[state=active]:border-rose-400",
+      "focus-visible:ring-rose-200 data-[state=active]:border-rose-400 data-[state=active]:shadow-[0_3px_0_0_rgba(244,63,94,0.35)]",
   };
 
   const tabConfig = [
@@ -345,14 +350,14 @@ console.log(tutors,"Data of course")
         </div>
       </div>
 
-      <div className="w-full max-w-6xl mx-auto rounded-lg shadow-sm">
+      <div className="w-full max-w-6xl mx-auto shadow-sm  ">
         <Tabs
           value={activeTab}
           onValueChange={handleTabChange}
           className="w-full p-0"
         >
-          <div className="w-full overflow-x-auto pb-1 h-fit">
-            <TabsList className="flex w-max items-stretch gap-3 border-0 bg-transparent p-1 sm:w-full sm:flex-wrap">
+          <div className="w-full pb-1 h-max">
+            <TabsList className="flex w-max sm:w-full items-stretch gap-3 sm:gap-4 border-0 bg-transparent p-2 sm:flex-wrap sm:justify-between overflow-x-auto sm:overflow-visible h-full ml-[-1rem] lg:ml-0 ">
               {tabConfig.map((tab) => (
                 <TabsTrigger
                   key={tab.value}
@@ -369,7 +374,7 @@ console.log(tutors,"Data of course")
             <div
               className="
     grid gap-4
-    grid-cols-1
+    grid-cols-2
     md:grid-cols-2
     lg:grid-cols-3
    

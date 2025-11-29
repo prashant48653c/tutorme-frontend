@@ -71,9 +71,11 @@ const Topbar = ({ onToggleSidebar, isSidebarVisible }: TopbarProps) => {
 </button>
             )}
             <div className="flex items-center gap-2">
+              <a href="/">
               <h1 className="titleFont text-2xl font-extrabold text-black tracking-wide">
                 TUTOR<span className="text-primeGreen">ME</span>
               </h1>
+              </a>
             </div>
           </div>
 
