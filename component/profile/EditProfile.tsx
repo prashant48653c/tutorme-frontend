@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import api from "@/hooks/axios";
 import { useAuthStore } from "@/store/useAuthStore";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 interface FormData {
   firstName: string;

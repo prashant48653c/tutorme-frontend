@@ -81,7 +81,10 @@ export default function CourseProductList() {
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Courses</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {courses.map((course) => (
-            <Card key={course.id} className="overflow-hidden p-0 hover:shadow-lg transition-shadow">
+            <Card
+              key={course.id}
+              className="overflow-hidden p-0 border-0 rounded-2xl shadow-[0_12px_28px_rgba(15,23,42,0.08)] hover:shadow-[0_14px_32px_rgba(15,23,42,0.12)] transition-shadow"
+            >
               <div className="relative">
                 <Image
                   src={course.image || "/placeholder.svg"}
@@ -94,7 +97,7 @@ export default function CourseProductList() {
                   <Badge className="absolute top-3 right-3 bg-teal-500 text-white">{course.badge}</Badge>
                 )}
               </div>
-              <CardContent className="p-4">
+              <CardContent className="p-5 space-y-3">
                 <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{course.title}</h3>
                 <p className="text-sm text-gray-600 mb-3 line-clamp-3">{course.description}</p>
 
@@ -122,16 +125,16 @@ export default function CourseProductList() {
                         <p>12 Chapters</p>
                         <p>400 minutes</p>
                     </div>
-                <Button className="w-full bg-teal-500 hover:bg-teal-600 text-white">Enroll Course</Button>
+                <Button className="w-full bg-teal-500 hover:bg-teal-600 text-white rounded-full">Enroll Course</Button>
               </CardContent>
             </Card>
           ))}
 
           {/* Explore More Card */}
-          <Card className="bg-gradient-to-br from-teal-400 to-teal-600 text-white overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
-            <CardContent className="p-6 h-full flex flex-col justify-center items-center text-center">
-              <h3 className="text-xl font-bold mb-2">Explore more</h3>
-              <h4 className="text-2xl font-bold mb-4">Courses</h4>
+          <Card className="bg-gradient-to-b from-[#1fb6ae] to-[#6dd7d0] text-white overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border-0 rounded-2xl">
+            <CardContent className="p-6 h-full flex flex-col justify-center items-center text-center space-y-3">
+              <h3 className="text-lg font-semibold">Explore more</h3>
+              <h4 className="text-2xl font-bold">Courses</h4>
               <div className="bg-white bg-opacity-20 rounded-full p-3">
                 <ArrowRight className="w-6 h-6" />
               </div>
@@ -145,7 +148,10 @@ export default function CourseProductList() {
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Products</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {products.map((product) => (
-            <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow p-0">
+            <Card
+              key={product.id}
+              className="overflow-hidden hover:shadow-[0_14px_32px_rgba(15,23,42,0.12)] shadow-[0_12px_28px_rgba(15,23,42,0.08)] transition-shadow p-0 border-0 rounded-2xl"
+            >
               <div className="relative">
                 <Image
                   src={product.image || "/placeholder.svg"}
@@ -155,7 +161,7 @@ export default function CourseProductList() {
                   className="w-full h-48 object-cover"
                 />
               </div>
-              <CardContent className="p-4">
+              <CardContent className="p-5 space-y-3">
                 <h3 className="font-semibold text-gray-900 mb-3 line-clamp-2">{product.title}</h3>
 
                 <div className="flex items-center justify-between gap-1 mb-3">
@@ -180,16 +186,16 @@ export default function CourseProductList() {
 
                
 
-                <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white">Buy Now</Button>
+                <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-full">Buy Now</Button>
               </CardContent>
             </Card>
           ))}
 
           {/* Explore More Card */}
-          <Card className="bg-gradient-to-br from-teal-400 to-teal-600 text-white overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
-            <CardContent className="p-6 h-full flex flex-col justify-center items-center text-center">
-              <h3 className="text-xl font-bold mb-2">Explore more</h3>
-              <h4 className="text-2xl font-bold mb-4">Products</h4>
+          <Card className="bg-gradient-to-b from-[#1fb6ae] to-[#6dd7d0] text-white overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border-0 rounded-2xl">
+            <CardContent className="p-6 h-full flex flex-col justify-center items-center text-center space-y-3">
+              <h3 className="text-lg font-semibold">Explore more</h3>
+              <h4 className="text-2xl font-bold">Products</h4>
               <div className="bg-white bg-opacity-20 rounded-full p-3">
                 <ArrowRight className="w-6 h-6" />
               </div>

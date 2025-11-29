@@ -308,6 +308,10 @@ export default function SessionManagement() {
   };
   console.log(totalCount)
 
+
+  const tabTriggerClasses =
+  "data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3 data-[state=active]:text-black";
+
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
@@ -363,17 +367,17 @@ export default function SessionManagement() {
           onValueChange={handleTabChange}
           className="w-full p-0"
         >
-          <TabsList className="grid bg-[#F5F7F9] w-full grid-cols-5 border-b rounded-none h-[3rem] p-0">
+          <TabsList className="grid bg-[#F5F7F9] w-full grid-cols-5 border-b rounded-none h-[3rem] p-0 text-gray-300">
             <TabsTrigger
               value="all"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+              className={tabTriggerClasses}
             >
               All  (
               {totalCount.reduce((acc, item) => acc + item.count._all, 0)})
             </TabsTrigger>
             <TabsTrigger
               value="scheduled"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+              className={tabTriggerClasses}
             >
               Scheduled (
               {totalCount.find((item) => item?.status === "SCHEDULED")
@@ -382,7 +386,7 @@ export default function SessionManagement() {
             </TabsTrigger>
             <TabsTrigger
               value="completed"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+              className={tabTriggerClasses}
             >
               Completed (
               {totalCount.find((item) => item.status === "COMPLETED")?.count._all ||
@@ -391,7 +395,7 @@ export default function SessionManagement() {
             </TabsTrigger>
             <TabsTrigger
               value="cancelled"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+              className={tabTriggerClasses}
             >
               Cancelled (
               {totalCount.find((item) => item.status === "CANCELLED")?.count._all ||

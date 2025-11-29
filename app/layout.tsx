@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css"
 import ReactQueryProvider from "./queryProvider";
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
@@ -41,7 +41,17 @@ export default function RootLayout({
         <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "949950176019-9sf5271jp00lq2bgqjr3ngarqhrigc0i.apps.googleusercontent.com"}>
           <ReactQueryProvider>{children}</ReactQueryProvider>
 
-          <Toaster />
+          <Toaster
+            position="top-center"
+            richColors
+            closeButton
+            expand
+            toastOptions={{
+              duration: 2600,
+              className: "shadow-xl rounded-2xl border border-slate-200 bg-white/90 backdrop-blur-md text-slate-900 px-4 py-3",
+              style: { fontWeight: 600 },
+            }}
+          />
         </GoogleOAuthProvider>
       </body>
     </html>

@@ -73,6 +73,12 @@ const [mobileSidebar,setMobileSidebar]=useState(false)
     refetch();
   }, [debouncedSearchQuery, refetch]);
 
+  const totalCourses =
+    data?.pages?.reduce(
+      (sum: number, page: any) => sum + (page?.data?.length || 0),
+      0
+    ) || 0;
+
   // Intersection Observer for infinite scroll
   useEffect(() => {
     if (!observerRef.current || !hasNextPage || isFetchingNextPage) return;
@@ -101,43 +107,61 @@ const [mobileSidebar,setMobileSidebar]=useState(false)
 
   return (
     <main className="w-full gap-4 p-8">
-      <section className="md:flex-row flex-col flex  items-center gap-16 mb-10">
-        <h2 className="font-bold text-2xl min-w-fit">
-          TUTORME <span className="text-primeGreen">COURSES</span>
-        </h2>
-        <div className="flex w-full items-center border rounded-lg bg-[#F5F7F9] p-2 gap-2 justify-start">
-          <Search size={18} />
-          <input
-            className="border-0 min-w-[20rem] outline-0 hover:outline-0 bg-transparent"
-            placeholder="Search.."
-            value={searchQuery}
-            onChange={handleSearchChange}
-          />
-        </div>
-        <Button className="md:hidden block" onClick={()=>setMobileSidebar(!mobileSidebar)} >Filter</Button>
-      </section>
+      <section className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
+  {/* Left side: Title */}
+  <h2 className="titleFont font-bold text-2xl min-w-fit">
+    TUTORME <span className="text-primeGreen">COURSES</span>
+  </h2>
+
+  {/* Right side: Search bar + Filter button */}
+  <div className="flex items-center gap-4 w-full md:w-auto">
+    <div className="flex items-center border rounded-lg bg-[#F5F7F9] p-2 gap-2 w-full md:w-[20rem]">
+      <Search size={18} />
+      <input
+        className="border-0 w-full outline-0 bg-transparent"
+        placeholder="Search.."
+        value={searchQuery}
+        onChange={handleSearchChange}
+      />
+    </div>
+
+    {/* Filter button (only visible on mobile) */}
+    <Button
+      className="md:hidden block bg-teal-300 text-white px-4 py-2 rounded"
+      onClick={() => setMobileSidebar(!mobileSidebar)}
+    >
+      Filter
+    </Button>
+  </div>
+</section>
 
       <div className="flex min-h-[90vh]">
-        <div className={`${mobileSidebar ? "block" : "hidden"} md:block `}>
+        <div className={`${mobileSidebar ? "block" : "hidden"} md:block border-1 `}>
           <CourseFilterSidebar />
         </div>
         
-        <SidebarInset className="w-full md:w-full">
-          <section className="flex flex-col gap-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        <SidebarInset className="w-full md:w-full ">
+          <section className="flex flex-col lg:pl-20 lg:mt-[-50px] font-hove">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">
               Featured Courses
             </h2>
             {isLoading ? (
               <div className="flex justify-center py-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
               </div>
+            ) : totalCourses === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center gap-2 text-gray-600">
+                <img src="/static/icons/courseIcon.svg" alt="No courses" className="w-10 h-10 opacity-60" />
+                <p className="font-semibold text-lg text-gray-800">No courses available</p>
+                <p className="text-sm text-gray-500">Try adjusting your filters or search.</p>
+              </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-10 ">
                 {data?.pages.map((page, pageIndex) =>
                   page?.data.map((course: Course) => (
                     <Card
                       key={`${course.id}-${pageIndex}`} // Ensure unique key
-                      className="overflow-hidden p-0 hover:shadow-lg transition-shadow"
+                      className="overflow-hidden p-0 hover:shadow-lg transition-shadow rounded-3xl "
                     >
                       <div className="relative">
                         <Image
@@ -149,41 +173,55 @@ const [mobileSidebar,setMobileSidebar]=useState(false)
                         />
                       </div>
                       <CardContent className="p-4">
-                        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                        <h3 className="font-bold text-xl text-gray-900 mb-2 line-clamp-2">
                           {course.title}
                         </h3>
-                        <p className="text-sm text-gray-600 mb-3 line-clamp-3">
+                        {/* <p className="text-sm text-gray-600 mb-3 line-clamp-3">
                           {course.description}
-                        </p>
+                        </p> */}
                         <div className="flex items-center justify-between gap-1 mb-3">
-                          <div className="flex items-center">
+                          <div className="flex items-center gap-1">
                             {[1, 2, 3, 4, 5].map((star) => (
                               <Star
                                 key={star}
-                                className={`w-3 h-3 ${
+                                className={`w-3 h-3 md:w-2 md:h-2 lg:w-4 lg:h-4 ${
                                   star <= Math.floor(4)
                                     ? "fill-yellow-400 text-yellow-400"
                                     : "text-gray-300"
                                 }`}
                               />
                             ))}
-                            <span className="text-sm text-gray-600">
-                              2 (20 reviews)
+                            <span className="text-md text-gray-600">
+                              2 (20)
                             </span>
                           </div>
                           <div>
-                            <span className="text-xs font-bold text-gray-900">
+                            <span className="text-lg font-bold text-teal-400">
                               Nrs {course.price}
                             </span>
                           </div>
                         </div>
-                        <div className="my-2 flex items-center justify-between text-xs">
-                          <p>{course.chapters?.length} Chapters</p>
-                          <p>{course.duration} minutes</p>
+                        <div className="my-2 flex items-center justify-between text-sm text-gray-500">
+                          <div className="flex items-center gap-2">
+                            <img
+                              src="/static/icons/courseIcon.svg"
+                              alt="CourseIcon"
+                              className="w-5 h-5"
+                            />
+                            <p>{course.chapters?.length} Chapters</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <img
+                              src="/static/icons/courseIcon2.svg"
+                              alt="TimeIcon"
+                              className="w-5 h-5"
+                            />
+                            <p>{course.duration} minutes</p>
+                          </div>
                         </div>
                         <Button
                           onClick={() => handleEnroll(course?.id as number)}
-                          className="w-full bg-teal-500 hover:bg-teal-600 text-white"
+                          className="w-full bg-primeGreen hover:bg-teal-400 text-white font-bold"
                         >
                           Enroll Course
                         </Button>
@@ -194,8 +232,8 @@ const [mobileSidebar,setMobileSidebar]=useState(false)
               </div>
             )}
             {/* Sentinel element for IntersectionObserver */}
-            <div ref={observerRef} className="h-10" />
-            {isFetchingNextPage && (
+            {totalCourses > 0 && <div ref={observerRef} className="h-10" />}
+            {isFetchingNextPage && totalCourses > 0 && (
               <div className="flex justify-center py-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
               </div>

@@ -6,11 +6,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import api from "@/hooks/axios"
 import { useAuthStore } from "@/store/useAuthStore"
 import toast from "react-hot-toast"
+import Radio from "@/component/reusable/Radio"
 
 interface TimeSlot {
   from: string
@@ -152,7 +152,19 @@ const formatted = Object.entries(availability)
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+<DialogContent
+  className="
+    w-full 
+    sm:max-w-lg 
+    md:max-w-2xl 
+    lg:max-w-4xl 
+    xl:max-w-4xl 
+    max-h-[90vh] 
+    overflow-y-auto
+    p-5
+    rounded-4xl
+    no-scrollbar
+  ">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-center">
             Set this up for Starting Online Sessions
@@ -177,28 +189,16 @@ const formatted = Object.entries(availability)
           {/* Select Language */}
           <div className="space-y-3">
             <Label className="text-sm font-medium text-gray-700">Select Language</Label>
-            <RadioGroup value={selectedLanguage} onValueChange={setSelectedLanguage}>
-              <div className="flex items-center space-x-6">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="english" id="english" />
-                  <Label htmlFor="english" className="text-sm text-blue-500 cursor-pointer">
-                    English
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="nepali" id="nepali" />
-                  <Label htmlFor="nepali" className="text-sm cursor-pointer">
-                    Nepali
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="both" id="both" />
-                  <Label htmlFor="both" className="text-sm cursor-pointer">
-                    Both
-                  </Label>
-                </div>
-              </div>
-            </RadioGroup>
+            <Radio
+              name="language"
+              value={selectedLanguage}
+              onChange={setSelectedLanguage}
+              options={[
+                { label: "English", value: "english" },
+                { label: "Nepali", value: "nepali" },
+                { label: "Both", value: "both" },
+              ]}
+            />
           </div>
 
           {/* Select Tags */}
@@ -241,13 +241,13 @@ const formatted = Object.entries(availability)
             <div className="flex gap-3">
               <Button
                 onClick={handleSelectAllDays}
-                className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-md text-sm"
+                className="bg-teal-300 hover:bg-teal-400 text-white px-4 py-2 rounded-md text-sm"
               >
                 Select all Days
               </Button>
               <Button
                 onClick={handleApplyToAll}
-                className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-md text-sm"
+                className="bg-teal-300 hover:bg-teal-400 text-white px-4 py-2 rounded-md text-sm"
               >
                 Apply to all
               </Button>
@@ -269,7 +269,7 @@ const formatted = Object.entries(availability)
                       type="time"
                       value={availability[key].timeSlot.from}
                       onChange={(e) => handleTimeChange(key, "from", e.target.value)}
-                      className="w-20 h-8 text-xs"
+                      className="w-30 h-8 text-xs"
                       disabled={!availability[key].enabled}
                     />
                     <span className="text-xs text-gray-500">to</span>
@@ -277,7 +277,7 @@ const formatted = Object.entries(availability)
                       type="time"
                       value={availability[key].timeSlot.to}
                       onChange={(e) => handleTimeChange(key, "to", e.target.value)}
-                      className="w-20 h-8 text-xs"
+                      className="w-30 h-8 text-xs"
                       disabled={!availability[key].enabled}
                     />
                   </div>
@@ -304,7 +304,7 @@ const formatted = Object.entries(availability)
           <div className="flex gap-3 pt-4">
             <Button
               onClick={handleFinish}
-              className="flex-1 bg-teal-500 hover:bg-teal-600 text-white py-3 rounded-md font-medium"
+              className="flex-1 bg-teal-300 hover:bg-teal-400 text-white py-3 rounded-md font-medium"
             >
               Finish Setting up
             </Button>

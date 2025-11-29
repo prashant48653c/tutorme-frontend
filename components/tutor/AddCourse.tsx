@@ -21,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import {
   DragDropContext,
   Draggable,
@@ -43,6 +42,7 @@ import {
   MultiSelectTrigger,
   MultiSelectValue,
 } from "@/components/ui/multi-select";
+import Radio from "@/component/reusable/Radio";
 import { set } from "zod";
 
 
@@ -428,26 +428,17 @@ const[isLoading,setIsLoading]=useState(false);
 
             <div className="flex flex-col gap-4">
               <h4 className="font-semibold text-lg">Course Depth</h4>
-              <RadioGroup
-                value={courseDetails?.courseDepth}
-                onValueChange={(value) =>
-                  updateCourseDetails({ courseDepth: value })
-                }
-                className="flex flex-col gap-6"
-              >
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem value="beginner" id="beginner" />
-                  <Label htmlFor="beginner">Beginner</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem value="intermediate" id="intermediate" />
-                  <Label htmlFor="intermediate">Intermediate</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem value="advanced" id="advanced" />
-                  <Label htmlFor="advanced">Advanced</Label>
-                </div>
-              </RadioGroup>
+              <Radio
+                name="courseDepth"
+                value={courseDetails?.courseDepth || ""}
+                onChange={(value) => updateCourseDetails({ courseDepth: value })}
+                options={[
+                  { label: "Beginner", value: "beginner" },
+                  { label: "Intermediate", value: "intermediate" },
+                  { label: "Advanced", value: "advanced" },
+                ]}
+                className="flex-col gap-3 items-start"
+              />
             </div>
           </div>
 

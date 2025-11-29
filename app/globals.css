@@ -1,8 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Notable&display=swap');
+
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 
 @font-face {
     font-family: "Genera SemiBold";
@@ -71,17 +72,18 @@ html {
 }
 
 body {
-  zoom: 1.2;
   padding: 0;
   margin: 0;  
   overflow-x: hidden;
   box-sizing: border-box;
   font-family: 'Hove',Verdana, Geneva, Tahoma, sans-serif;
   width: 100%;
+  scroll-behavior: smooth;
+
 }
 @media (max-width: 920px) {
-  body {
-    zoom: 1;
+  .zoomed {
+    zoom: 1 !important;
   }
 }
 
@@ -103,7 +105,7 @@ body {
   --accent-foreground: oklch(0.208 0.042 265.755);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
+  --input: oklch(30.094% 0.00389 264.573);
   --ring: oklch(0.704 0.04 256.788);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -187,6 +189,25 @@ body {
   animation: marquee 30s linear infinite;
 }
 
+@keyframes popup-bounce {
+  0% {
+    transform: scale(0.92) translateY(18px);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(1.04) translateY(-8px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.bouncy-popup {
+  animation: popup-bounce 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 @media (max-width:660px) {
   html{
     font-size: 90%;
@@ -220,4 +241,17 @@ body {
 }
 .group:hover .icon-hover-rotate {
   transform: rotate(45deg);
+}
+
+.notable{
+  font-family: 'Notable', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.zoomed{
+  zoom: 1.25;
+}
+.cardcolor{
+  background-color: #F7FBFD;
+}
+.greenbtn{
+  background-color: #20f1d8;
 }

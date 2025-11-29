@@ -27,7 +27,6 @@ SelectItem,
 SelectTrigger,
 SelectValue,
 } from "../ui/select";
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import {
 DragDropContext,
 Draggable,
@@ -58,7 +57,7 @@ async function getVideoThumbnail(videoUrl:string, seekTo = 1.0) {
 return new Promise((resolve, reject) => {
 const video = document.createElement("video");
 video.src = videoUrl;
-video.crossOrigin = "anonymous"; // needed if the video is from another domain
+video.crossOrigin = "anonymous"; 
 video.load();
 
 video.addEventListener("loadeddata", () => {
@@ -89,7 +88,6 @@ parentId: string;
 })
 | null
 >();
-// Get everything from the store
 
 const handleSelection =async (
 e: any,
@@ -184,56 +182,74 @@ console.log(courseDetails,"Updated")
 };
 
 const handleUpload = async () => {
-console.log(selectedItem?.video, selectedItem?.subtitle);
+  if (!selectedItem) return toast.error("Select a section first");
+  if (!videoFile) return toast.error("Please select a video file");
+  if (!subtitleFile) return toast.error("Please select a subtitle file");
 
-const videoSource = videoFile || selectedItem?.video;
-const subtitleSource = subtitleFile || selectedItem?.subtitle;
+  setLoadingState(true);
 
-const isValidVideo =
-videoSource instanceof File || typeof videoSource === "string";
-const isValidSubtitle =
-subtitleSource instanceof File || typeof subtitleSource === "string";
+  try {
+    const tokenRes = await api.get("/course/bunny/upload-token");
+    const { guid, url, libraryId, apiKey } = tokenRes.data; 
 
-if (!isValidVideo || !isValidSubtitle) {
-toast.error("Both video and subtitle must be provided (file or URL).");
-return;
-}
+    if (!guid || !url || !apiKey) throw new Error("Failed to get upload token");
 
-setLoadingState(true);
+    const loadingToast = toast.loading("Uploading video to Bunny CDN...");
 
-try {
-const formData = new FormData();
+    const uploadRes = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "AccessKey": apiKey, 
+        "Content-Type": "application/octet-stream",
+      },
+      body: videoFile,
+    });
 
-// Append video and subtitle — either File or string
-formData.append("video", videoSource);
-formData.append("subtitle", subtitleSource);
+    console.log("Upload Response:", uploadRes.status, uploadRes.statusText);
 
-formData.append("title", selectedItem?.title ?? "");
-formData.append("description", description);
-formData.append("courseId", courseDetails?.id?.toString() ?? "");
-formData.append("parentId", selectedItem?.parentId ?? "");
-formData.append("type", selectedItem?.type ?? "");
+    if (!uploadRes.ok) {
+      const errorText = await uploadRes.text();
+      toast.dismiss(loadingToast);
+      throw new Error(`Video upload failed: ${errorText}`);
+    }
 
-const res = await api.patch(
-`/course/chapter/${selectedItem?.id}`,
-formData
-);
+    toast.dismiss(loadingToast);
+    toast.success("Video uploaded! Processing...");
+    
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
-console.log("Upload success:", res.data);
-toast.success("Course has been updated!");
+    const playbackUrl = `https://iframe.mediadelivery.net/embed/${libraryId}/${guid}`;
 
-// Reset state
-await fetchCourse();
-setSelectedItem(null);
-setVideoFile(null);
-setSubtitleFile(null);
-} catch (error) {
-console.error("Upload failed:", error);
-toast.error("Course wasn't updated!");
-} finally {
-setLoadingState(false);
-}
+    const formData = new FormData();
+    formData.append("title", selectedItem.title ?? "");
+    formData.append("description", description);
+    formData.append("videoUrl", playbackUrl);
+    formData.append("guid", guid);
+    formData.append("courseId", courseDetails?.id?.toString() ?? "");
+    formData.append("parentId", selectedItem?.parentId ?? "");
+    formData.append("type", selectedItem?.type ?? "");
+    formData.append("subtitle", subtitleFile);
+
+    const res = await api.patch(`/course/chapter/${selectedItem.id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    console.log("Upload success:", res.data);
+    toast.success("Course has been updated!");
+
+    // Reset state
+    await fetchCourse();
+    setSelectedItem(null);
+    setVideoFile(null);
+    setSubtitleFile(null);
+  } catch (error: any) {
+    console.error("Upload failed:", error);
+    toast.error(error.message || "Course wasn't updated!");
+  } finally {
+    setLoadingState(false);
+  }
 };
+
 
 const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 const file = e.target.files?.[0];
@@ -248,14 +264,11 @@ video.crossOrigin = "anonymous";
 video.muted = true;
 video.playsInline = true;
 
-// Wait for metadata to load (we get duration & dimensions)
 video.onloadedmetadata = () => {
-// Seek to 1 second (or 0 if shorter)
 const seekTime = Math.min(1, video.duration / 2);
 video.currentTime = seekTime;
 };
 
-// Once we have the frame we want, draw it to canvas
 video.onseeked = () => {
 const canvas = document.createElement("canvas");
 canvas.width = video.videoWidth;
@@ -722,7 +735,7 @@ onClick={() => subtitleInputRef.current?.click()}
 <input
 type="file"
 ref={subtitleInputRef}
-accept=".srt"
+ 
 onChange={(e) =>
 setSubtitleFile(e.target.files?.[0] || null)
 }

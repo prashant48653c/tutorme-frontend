@@ -153,7 +153,7 @@ export default function ProductManagement() {
   ]
 
   return (
-    <div className="w-full min-h-[30rem] rounded-4xl overflow-y-auto max-w-4xl shadow-md mx-auto p-6">
+    <div className="bg-white w-full min-h-[30rem] rounded-4xl overflow-y-auto max-w-4xl shadow-md mx-auto p-6">
       {/* Tabs */}
       <div className="flex border-b border-gray-200 mb-6 gap-4">
         {tabs.map((tab) => (

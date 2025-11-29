@@ -17,7 +17,7 @@ const page = () => {
   return (
    <section className="flex py-10 pl-4 flex-col gap-y-9">
       <div className="flex  items-center justify-between">
-        <h4 className="uppercase text-xl font-bold">Manage Course</h4>
+        <h4 className="uppercase text-xl font-bold">My Courses</h4>
         <div>
           <Button onClick={() => setIsPopupOpen(true)}  className="bg-primeGreen rounded-full px-9">Add Course</Button>
         </div>

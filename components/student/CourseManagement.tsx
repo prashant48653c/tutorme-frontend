@@ -114,22 +114,37 @@ export default function CourseManagement() {
       setLoading(true);
       try {
         const id = user?.studentProfile?.id;
-         
+        if (!id) {
+          setLoading(false);
+          return;
+        }
+
         console.log(id);
 
         const status = getTabStatus(tabValue);
         const res = await api.get(`/course/enrolled/${id}`, {
           params: {
-           
             page: pageNum,
             name: search || undefined,
             status: status || undefined,
-            sortBy: sortBy,
+            sortBy,
           },
         });
-        setTotalCount(res.data.data.statusCounts);
-        console.log(res.data.data.statusCounts);
-        setTutors(res.data.data.data || []);
+        const statusCounts = res.data?.data?.statusCounts || [];
+        setTotalCount(statusCounts);
+        console.log(statusCounts);
+
+        const fetchedCourses = res.data.data.data || [];
+        const normalizedSort =
+          sortBy?.toLowerCase() === "asc" ? "asc" : "desc";
+        const sortedCourses = [...fetchedCourses].sort((a, b) => {
+          const titleA = a?.course?.title?.toLowerCase() || "";
+          const titleB = b?.course?.title?.toLowerCase() || "";
+          return normalizedSort === "asc"
+            ? titleA.localeCompare(titleB)
+            : titleB.localeCompare(titleA);
+        });
+        setTutors(sortedCourses);
 
         // Update paginain info
         if (res.data.data.pagination) {
@@ -166,7 +181,7 @@ export default function CourseManagement() {
         setLoading(false);
       }
     },
-    []
+    [user?.studentProfile?.id]
   );
 
   const handleSearch = useCallback(
@@ -192,7 +207,7 @@ export default function CourseManagement() {
     fetchTutors(activeTab, 1, newLimit, searchQuery, pagination.sortBy);
   };
   const handleSortChange = (sort: string) => {
-    setPagination((prev) => ({ ...prev, sortBy: sort }));
+    setPagination((prev) => ({ ...prev, sortBy: sort, page: 1 }));
     fetchTutors(activeTab, 1, pagination.limit, searchQuery, sort);
   };
 
@@ -207,7 +222,7 @@ export default function CourseManagement() {
       searchQuery,
       pagination.sortBy,
     );
-  }, [activeTab, pagination.page, fetchTutors]);
+  }, [activeTab, pagination.page, fetchTutors, user?.studentProfile?.id]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -241,6 +256,48 @@ export default function CourseManagement() {
   const onClose = () => {
     setIsViewOpen(false);
   };
+
+  const totalCoursesCount = totalCount.reduce(
+    (acc, item) => acc + item.count,
+    0
+  );
+  const activeCoursesCount =
+    totalCount.find((item) => item?.status === "ACTIVE")?.count || 0;
+  const expiredCoursesCount =
+    totalCount.find((item) => item?.status === "EXPIRED")?.count || 0;
+
+  const tabBaseClasses =
+    "group relative flex w-fit lg:w-full shrink-0 items-center justify-center rounded-[18px] border-2 border-slate-200 bg-[#f5f8ff] px-6 sm:px-8 py-3.5 sm:py-4 text-center text-base font-semibold text-slate-600 shadow-sm transition-all duration-200 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 data-[state=active]:bg-white data-[state=active]:text-slate-900 sm:flex-1 sm:min-w-0 text-gray-300 data-[state=active]:text-gray-600";
+  const tabAccentClasses: Record<string, string> = {
+    all: "focus-visible:ring-teal-200  data-[state=active]:border-teal-400 data-[state=active]:shadow-[0_3px_0_0_rgba(20,184,166,0.35)]",
+    active:
+      "focus-visible:ring-emerald-200 data-[state=active]:border-emerald-400 data-[state=active]:shadow-[0_3px_0_0_rgba(16,185,129,0.35)]",
+    expired:
+      "focus-visible:ring-rose-200 data-[state=active]:border-rose-400 data-[state=active]:shadow-[0_3px_0_0_rgba(244,63,94,0.35)]",
+  };
+
+  const tabConfig = [
+    {
+      value: "all",
+      label: "All Courses",
+      count: totalCoursesCount,
+      accent: tabAccentClasses.all,
+    },
+    {
+      value: "active",
+      label: "Active",
+      count: activeCoursesCount,
+      accent: tabAccentClasses.active,
+    },
+    {
+      value: "expired",
+      label: "Expired",
+      count: expiredCoursesCount,
+      accent: tabAccentClasses.expired,
+    },
+  ];
+
+
 console.log(tutors,"Data of course")
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -253,11 +310,11 @@ console.log(tutors,"Data of course")
 
   return (
     <>
-      <div className="flex justify-between mb-4">
-        <div className="flex gap-2 items-center">
+      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-700">
           <span>Show</span>
           <select
-            className="border-gray-600 py-1 px-2 rounded border"
+            className="rounded border border-gray-300 bg-white px-2 py-1 text-sm"
             value={pagination.limit}
             onChange={(e) => handleLimitChange(Number(e.target.value))}
           >
@@ -269,65 +326,55 @@ console.log(tutors,"Data of course")
           </select>
           <span>entries</span>
         </div>
-
-        <div className="flex items-center border rounded-lg bg-[#F5F7F9] p-2 gap-2 justify-center">
-          <Search size={18} />
-          <input
-            className="border-0 min-w-[20rem] outline-0 hover:outline-0 bg-transparent"
-            placeholder="Search courses..."
-            onChange={(e) => handleSearch(e.target.value)}
-            defaultValue={searchQuery}
-          />
-        </div>
-
-        <div
-          onClick={() =>
-            handleSortChange(pagination.sortBy == "asc" ? "desc" : "asc")
-          }
-          className="flex gap-3 items-center"
-        >
-          <span>Sort By (A-Z)</span>
-          <ArrowUpAZ />
+        <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:gap-4 lg:w-auto">
+          <div className="flex w-full items-center gap-2 rounded-full border border-gray-200 bg-[#F5F7F9] px-4 py-2 md:max-w-sm lg:w-72">
+            <Search size={18} className="text-slate-500" />
+            <input
+              className="w-full border-0 bg-transparent text-sm outline-none"
+              placeholder="Search courses..."
+              onChange={(e) => handleSearch(e.target.value)}
+              defaultValue={searchQuery}
+            />
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() =>
+              handleSortChange(pagination.sortBy === "asc" ? "desc" : "asc")
+            }
+            className="flex items-center justify-center gap-2 rounded-full border border-gray-200 text-sm font-medium text-gray-700 transition hover:border-teal-500 hover:text-teal-600"
+          >
+            <ArrowUpAZ className="h-4 w-4" />
+            Sort ({pagination.sortBy === "asc" ? "A-Z" : "Z-A"})
+          </Button>
         </div>
       </div>
 
-      <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-sm">
+      <div className="w-full max-w-6xl mx-auto shadow-sm  ">
         <Tabs
           value={activeTab}
           onValueChange={handleTabChange}
           className="w-full p-0"
         >
-          <TabsList className="grid bg-[#F5F7F9] w-full grid-cols-5 border-b rounded-none h-[3rem] p-0">
-            <TabsTrigger
-              value="all"
-              className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
-            >
-              All Course (
-              {totalCount.reduce((acc, item) => acc + item.count, 0)})
-            </TabsTrigger>
-            <TabsTrigger
-              value="active"
-              className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
-            >
-              Active (
-              {totalCount.find((item) => item?.status === "ACTIVE")?.count || 0}
-              )
-            </TabsTrigger>
-            <TabsTrigger
-              value="expired"
-              className=" data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent shadow-none rounded-none pb-3"
-            >
-              Published (
-              {totalCount.find((item) => item.status === "EXPIRED")?.count || 0}
-              )
-            </TabsTrigger>
-          </TabsList>
+          <div className="w-full pb-1 h-max">
+            <TabsList className="flex w-max sm:w-full items-stretch gap-3 sm:gap-4 border-0 bg-transparent p-2 sm:flex-wrap sm:justify-between overflow-x-auto sm:overflow-visible h-full ml-[-1rem] lg:ml-0 ">
+              {tabConfig.map((tab) => (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className={`${tabBaseClasses} ${tab.accent}`}
+                >
+                  {tab.label} ({tab.count})
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
 
           <TabsContent value={activeTab} className="mt-6">
             <div
               className="
     grid gap-4
-    grid-cols-1
+    grid-cols-2
     md:grid-cols-2
     lg:grid-cols-3
    
@@ -351,8 +398,8 @@ console.log(tutors,"Data of course")
                  
                   return (
                     <div
-                      onClick={() => router.push(`/student/course/${tutor?.course.id}`)}
-                      className="border-b-4 border-b-red-500 rounded-2xl w-full max-w-[20.3rem]"
+                      onClick={() => router.push(`/student/course/${tutor?.course.id}/active`)}
+                      className="border-b-4 border-b-red-500 rounded-2xl w-full max-w-[20.3rem] bg-white shadow-md transition hover:-translate-y-1"
                       key={tutor.id}
                     >
                       <div className="relative group">

@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import api from "@/hooks/axios";
 import { useAuthStore } from "@/store/useAuthStore";
 
@@ -32,7 +32,7 @@ export default function EditBio({setStatus}:{setStatus:(b:boolean)=>void}) {
     }
   };
   return (
-    <div className="  bg-white p-2  rounded-2xl ">
+    <div className=" bg-white p-2  rounded-2xl ">
       <h2 className="text-2xl text-gray-800 font-semibold mb-6">Edit Bio</h2>
 
       <form className="space-y-5">

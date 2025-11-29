@@ -1,7 +1,6 @@
 "use client";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -22,14 +21,8 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-
 import { useEffect, useState } from "react";
-import {
-  useParams,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/hooks/axios";
 import { checkKhaltiPayment } from "@/hooks/khalti";
@@ -38,13 +31,11 @@ import { useAuthStore } from "@/store/useAuthStore";
 export default function CourseInterface() {
   const params = useParams();
   const id = params?.id;
-  console.log(id);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["course"],
     queryFn: async () => {
       const res = await api.get(`/course/${id}`);
-      console.log(res);
       return res.data.data;
     },
   });
@@ -70,25 +61,21 @@ export default function CourseInterface() {
   const handleEnroll = (id: number) => {
     router.push(`/course/${id}/payment`);
   };
+
   const searchParams = useSearchParams();
   const user = useAuthStore((state) => state.user);
-
   const pidx = searchParams.get("pidx");
-  const [status, setStatus] = useState("Verifying...");
 
   useEffect(() => {
-    console.log(user)
-    console.log(user?.studentProfile?.id,"is user profile")
-
     if (pidx && user?.studentProfile?.id) {
       checkKhaltiPayment({
         studentProfileId: user?.studentProfile?.id,
         courseId: id,
         pidx,
-        
       });
     }
-  }, [pidx,user]);
+  }, [pidx, user, id]);
+
   const SubHeadingCard = ({
     subHeading,
     index,
@@ -96,228 +83,216 @@ export default function CourseInterface() {
     subHeading: any;
     index: number;
   }) => (
-    <Card className="ml-16 mt-2 border border-gray-200 hover:shadow-sm transition-shadow">
-      <CardContent className="p-2">
-        <div className="flex items-center gap-3">
-          {/* SubHeading Thumbnail */}
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center flex-shrink-0">
-            <Play onClick={()=>router.push(`/student/course/${id}/active`)} className="w-3 h-3 text-white" />
+    <div className="ml-12 flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
+      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-200 to-teal-100 flex items-center justify-center flex-shrink-0">
+        <Play
+          onClick={() => router.push(`/student/course/${id}/active`)}
+          className="w-4 h-4 text-white drop-shadow"
+        />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-gray-500">Subheading {index + 1}</p>
+        <h4 className="text-sm font-medium text-gray-900 truncate">
+          {subHeading.title}
+        </h4>
+        {subHeading.duration && (
+          <div className="flex items-center gap-1 text-xs text-teal-500 mt-1">
+            <Clock className="w-3 h-3" />
+            <span>{subHeading.duration}</span>
           </div>
-
-          {/* SubHeading Info */}
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs text-gray-500">
-                SubHeading {index + 1}
-              </span>
-            </div>
-            <h4 className="text-xs font-medium text-gray-900 mb-1">
-              {subHeading.title}
-            </h4>
-            {subHeading.duration && (
-              <div className="flex items-center gap-1 text-xs text-purple-500">
-                <Clock className="w-3 h-3" />
-                <span>{subHeading.duration}</span>
-              </div>
-            )}
-          </div>
-
-          {/* SubHeading Actions */}
-          <div className="flex items-center gap-2">
-            {subHeading.hasExternalLink && (
-              <Button variant="ghost" size="sm" className="p-1">
-                <ExternalLink className="w-3 h-3 text-gray-400" />
-              </Button>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        )}
+      </div>
+      {subHeading.hasExternalLink && (
+        <Button variant="ghost" size="icon" className="h-8 w-8">
+          <ExternalLink className="w-4 h-4 text-gray-400" />
+        </Button>
+      )}
+    </div>
   );
 
   const ChapterCard = ({
     chapter,
-    isSubChapter = false,
-    parentChapterId = null,
+    depth = 0,
   }: {
     chapter: any;
-    isSubChapter: boolean;
-    parentChapterId?: number | null;
-  }) => (
-    <Card
-      className={`border border-gray-200 hover:shadow-sm transition-shadow ${
-        isSubChapter ? "ml-8 mt-2" : ""
-      }`}
-    >
-      <CardContent className={`${isSubChapter ? "p-3" : "p-4"}`}>
-        <div className="flex items-center gap-4">
-          {/* Chapter Thumbnail */}
-          <div
-            className={`${
-              isSubChapter ? "w-12 h-12" : "w-16 h-16"
-            } rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center flex-shrink-0`}
-          >
-            <Play
-              className={`${isSubChapter ? "w-4 h-4" : "w-6 h-6"} text-white`}
+    depth?: number;
+  }) => {
+    const hasSubChapters =
+      depth === 0 && chapter.subChapters && chapter.subChapters.length > 0;
+    const hasSubHeadings =
+      depth === 1 && chapter.subHeadings && chapter.subHeadings.length > 0;
+    const isOpen =
+      depth === 0 ? openChapters[chapter.id] : openSubChapters[chapter.id];
+    const toggle =
+      depth === 0
+        ? () => toggleChapter(chapter.id)
+        : () => toggleSubChapter(chapter.id);
+    const durationLabel = chapter.duration
+      ? `${chapter.duration} ${chapter.durationUnit || ""}`
+      : null;
+
+    return (
+      <div className={`${depth > 0 ? "ml-6" : ""} space-y-2`}>
+        <div
+          className={`flex items-center gap-3 rounded-2xl border border-gray-100 ${
+            depth === 0 ? "bg-gray-50" : "bg-white"
+          } p-4 shadow-sm`}
+        >
+          <div className="relative w-16 h-16 flex-shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-teal-100 to-white">
+            <Image
+              src={
+                chapter.thumbnail ||
+                data?.thumbnail ||
+                "/static/landing/course.svg"
+              }
+              alt={chapter.title || "Chapter"}
+              fill
+              sizes="96px"
+              className="object-cover"
             />
           </div>
-
-          {/* Chapter Info */}
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <span
-                className={`${
-                  isSubChapter ? "text-xs" : "text-sm"
-                } text-gray-500`}
-              >
-                {isSubChapter
-                  ? `SubChapter ${chapter.id}`
-                  : `Chapter ${chapter.id}`}
-              </span>
-            </div>
-            <h3
-              className={`${
-                isSubChapter ? "text-sm" : "text-base"
-              } font-medium text-gray-900 mb-1`}
-            >
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-gray-500">
+              {depth === 0 ? "Chapter" : "Subchapter"} {chapter.id}
+            </p>
+            <h3 className="text-sm sm:text-base font-semibold text-gray-900 truncate">
               {chapter.title}
             </h3>
-            {chapter.duration && (
-              <div className="flex items-center gap-1 text-sm text-teal-500">
+            {durationLabel && (
+              <div className="flex items-center gap-1 text-xs font-semibold text-teal-500 mt-1">
                 <Clock className="w-3 h-3" />
-                <span className={isSubChapter ? "text-xs" : "text-sm"}>
-                  {chapter.duration}
-                </span>
+                <span>{durationLabel}</span>
               </div>
             )}
           </div>
-
-          {/* Chapter Actions */}
           <div className="flex items-center gap-2">
             {chapter.hasExternalLink && (
-              <Button variant="ghost" size="sm" className="p-2">
-                <ExternalLink
-                  className={`${
-                    isSubChapter ? "w-3 h-3" : "w-4 h-4"
-                  } text-gray-400`}
-                />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 hover:bg-teal-50"
+              >
+                <ExternalLink className="w-4 h-4 text-gray-500" />
               </Button>
             )}
-
-            {/* Toggle buttons for chapters and subchapters */}
-            {!isSubChapter &&
-            chapter.subChapters &&
-            chapter.subChapters.length > 0 ? (
+            {chapter.isLocked && <Lock className="w-4 h-4 text-gray-400" />}
+            {(hasSubChapters || hasSubHeadings) && (
               <button
-                onClick={() => toggleChapter(chapter.id)}
-                className="flex items-center gap-1 p-1 hover:bg-gray-100 rounded transition-colors"
+                onClick={toggle}
+                className="flex items-center justify-center h-8 w-8 rounded-full border border-teal-100 text-teal-500 hover:bg-teal-50 transition"
               >
-                {openChapters[chapter.id] ? (
-                  <ChevronDown className="w-4 h-4 text-teal-500" />
+                {isOpen ? (
+                  <ChevronDown className="w-4 h-4" />
                 ) : (
-                  <ChevronRight className="w-4 h-4 text-teal-500" />
+                  <ChevronRight className="w-4 h-4" />
                 )}
               </button>
-            ) : isSubChapter &&
-              chapter.subHeadings &&
-              chapter.subHeadings.length > 0 ? (
-              <button
-                onClick={() => toggleSubChapter(chapter.id)}
-                className="flex items-center gap-1 p-1 hover:bg-gray-100 rounded transition-colors"
-              >
-                {openSubChapters[chapter.id] ? (
-                  <ChevronDown className="w-4 h-4 text-teal-500" />
-                ) : (
-                  <ChevronRight className="w-4 h-4 text-teal-500" />
-                )}
-              </button>
-            ) : null}
+            )}
           </div>
         </div>
-      </CardContent>
-    </Card>
-  );
+
+        {hasSubChapters && isOpen && (
+          <div className="space-y-3">
+            {chapter.subChapters.map((subChapter: any) => (
+              <ChapterCard
+                key={`sub-${subChapter.id}`}
+                chapter={subChapter}
+                depth={1}
+              />
+            ))}
+          </div>
+        )}
+
+        {hasSubHeadings && isOpen && (
+          <div className="space-y-2">
+            {chapter.subHeadings.map((subHeading: any, index: number) => (
+              <SubHeadingCard
+                key={`subheading-${subHeading.id || index}`}
+                subHeading={subHeading}
+                index={index}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   if (isLoading) {
     return "Loading";
   }
 
   return (
-    <section className="mx-auto ">
-      {/* Course Header */}
-      <section className="flex items-center gap-16 mt-3 mb-10">
-        <h2 className="font-bold text-2xl min-w-fit ">{data?.title}</h2>
-      </section>
-
-      <div className="flex flex-col lg:flex-row gap-6 mb-8">
-        {/* Course Image */}
-        <div className="h-fit">
-          <Image
-            src={data?.thumbnail || "/static/landing/course.svg"}
-            alt="Course Thumbnail"
-            width={320}
-            height={192}
-            className="w-full h-full rounded-xl object-cover"
-          />
-          <div className="flex mt-3 items-center gap-3">
-            <div className="w-12 h-12 rounded-full overflow-hidden">
+    <section className="space-y-8">
+      <div className="rounded-3xl border border-gray-100 bg-white p-4 md:p-6 shadow-sm">
+        <div className="flex flex-col lg:flex-row gap-6">
+          <div className="w-full lg:w-1/3 flex flex-col gap-4">
+            <div className="relative w-full overflow-hidden rounded-2xl bg-gray-100 aspect-[4/3]">
               <Image
-                src="/static/landing/course.svg"
-                alt={data?.tutor?.user?.name || "Tutor"}
-                width={48}
-                height={48}
-                className="w-full h-full object-cover"
+                src={data?.thumbnail || "/static/landing/course.svg"}
+                alt="Course Thumbnail"
+                fill
+                sizes="400px"
+                className="object-cover"
               />
             </div>
-            <div>
-              <div className="flex items-center gap-1">
-                <span className="font-medium text-gray-900">
-                  {data?.tutor?.user?.name || "Unknown Tutor"}
+            <div className="flex items-center gap-3 rounded-2xl bg-gray-50 p-3">
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-white">
+                <Image
+                  src={
+                    data?.tutor?.user?.profilePicture ||
+                    "/static/landing/course.svg"
+                  }
+                  alt={data?.tutor?.user?.name || "Tutor"}
+                  width={48}
+                  height={48}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1">
+                  <span className="font-semibold text-gray-900">
+                    {data?.tutor?.user?.name || "Tutor"}
+                  </span>
+                  <CheckCircle className="w-4 h-4 text-teal-500" />
+                </div>
+                <span className="text-sm text-gray-500">
+                  {data?.tutor?.jobTitle || "Instructor"}
                 </span>
-                <CheckCircle className="w-4 h-4 text-teal-500" />
               </div>
-              <span className="text-sm text-gray-500">
-                {data?.tutor?.jobTitle || "Instructor"}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Course Details */}
-        <div className="flex-1">
-          <div className="flex justify-between items-start mb-4">
-            <h1 className="text-2xl font-bold text-gray-900">{data?.title}</h1>
-          </div>
-
-          {/* Rating */}
-          <div className="flex items-center justify-between gap-2 mb-4">
-            <div>
-              <div className="flex">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className="w-4 h-4 fill-yellow-400 text-yellow-400"
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-gray-600">5.0 (120+)</span>
             </div>
           </div>
 
-          {/* Description */}
-          <p
-            className="text-gray-600 text-sm mb-4 leading-relaxed 
-             max-h-[10rem] scrollbar-none overflow-y-auto pr-2"
-          >
-            {data?.description ||
-              "Apply your lorem  new skills to real-world projects using the latest industry tools & techniques. Get job-ready for high-growth fields."}{" "}
-            {/* <span className="text-green-400">Read more</span> */}
-          </p>
+          <div className="flex-1 flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                  {data?.title}
+                </h1>
+                <span className="text-lg font-semibold text-teal-500">
+                  NRs. {data?.price || data?.amount || data?.cost || "�"}
+                </span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className="w-4 h-4 fill-yellow-400 text-yellow-400"
+                    />
+                  ))}
+                </div>
+                <span className="text-gray-600">5.0 (120+)</span>
+              </div>
+            </div>
 
-          {/* Tags */}
-          <div className="flex gap-2 my-3">
-            {data?.tags?.map((item: string, i: number) => {
-              return (
+            <p className="text-gray-600 text-sm leading-relaxed max-h-[10rem] overflow-y-auto pr-1">
+              {data?.description ||
+                "Apply your new skills to real-world projects using the latest industry tools & techniques. Get job-ready for high-growth fields."}
+            </p>
+
+            <div className="flex flex-wrap gap-2">
+              {data?.tags?.map((item: string, i: number) => (
                 <Badge
                   key={i}
                   variant="outline"
@@ -325,35 +300,31 @@ export default function CourseInterface() {
                 >
                   {item}
                 </Badge>
-              );
-            })}
-          </div>
+              ))}
+            </div>
 
-          <div>
+
+
             <Button
               onClick={() => handleEnroll(data?.id)}
-              className="bg-teal-500 w-full hover:bg-teal-600 text-white px-8"
+              className="bg-teal-500 w-full hover:bg-teal-600 text-white font-semibold"
             >
-              Go to course
+              Enroll Course
             </Button>
 
-            <div className="flex my-3 justify-between gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-gray-600">
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-teal-500" />
-                <span className="text-sm text-gray-600">
-                  {data?.chapters?.length || 0} Chapters
-                </span>
+                <span>{data?.chapters?.length || 0} Chapters</span>
               </div>
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-teal-500" />
-                <span className="text-sm text-gray-600">
-                  {data?.courseDepth || "Intermediate"}
-                </span>
+                <span>{data?.courseDepth || "Intermediate"}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-teal-500" />
-                <span className="text-sm text-gray-600">
-                  {data?.duration || 0} {data?.durationUnit || "hours"}
+                <span>
+                  {data?.duration || 0} {data?.durationUnit || "minutes"}
                 </span>
               </div>
             </div>
@@ -361,85 +332,49 @@ export default function CourseInterface() {
         </div>
       </div>
 
-      {/* Tabs Section */}
-      <Tabs
-        defaultValue="chapters"
-        className="w-full border border-gray-200 p-2 rounded-2xl"
-      >
-        <TabsList className="grid w-full grid-cols-5 bg-gray-50">
+      <Tabs defaultValue="chapters" className="w-full">
+        <TabsList className="grid w-full grid-cols-5 rounded-2xl border border-gray-100 bg-white shadow-sm p-1">
           <TabsTrigger
             value="chapters"
-            className="data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-teal-500"
+            className="rounded-xl data-[state=active]:bg-teal-50 data-[state=active]:text-teal-600 data-[state=active]:shadow-sm"
           >
             All Chapters ({data?.chapters?.length || 0})
           </TabsTrigger>
           <TabsTrigger
             value="resources"
-            className="data-[state=active]:bg-white"
+            className="rounded-xl data-[state=active]:bg-teal-50 data-[state=active]:text-teal-600 data-[state=active]:shadow-sm"
           >
             Resources
           </TabsTrigger>
           <TabsTrigger
             value="assignments"
-            className="data-[state=active]:bg-white"
+            className="rounded-xl data-[state=active]:bg-teal-50 data-[state=active]:text-teal-600 data-[state=active]:shadow-sm"
           >
             Assignments
           </TabsTrigger>
           <TabsTrigger
             value="questions"
-            className="data-[state=active]:bg-white"
+            className="rounded-xl data-[state=active]:bg-teal-50 data-[state=active]:text-teal-600 data-[state=active]:shadow-sm"
           >
             Past Questions
           </TabsTrigger>
-          <TabsTrigger value="classes" className="data-[state=active]:bg-white">
+          <TabsTrigger
+            value="classes"
+            className="rounded-xl data-[state=active]:bg-teal-50 data-[state=active]:text-teal-600 data-[state=active]:shadow-sm"
+          >
             Classes
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="chapters" className="mt-6">
-          <div className="space-y-4">
-            {data?.chapters?.map((chapter: any) => (
-              <div key={chapter.id}>
-                {/* Main Chapter */}
-                <ChapterCard chapter={chapter} isSubChapter={false} />
-
-                {/* Subchapters */}
-                {openChapters[chapter.id] &&
-                  chapter.subChapters &&
-                  chapter.subChapters.length > 0 && (
-                    <div className="space-y-2">
-                      {chapter.subChapters.map((subChapter: any) => (
-                        <div key={`sub-${subChapter.id}`}>
-                          <ChapterCard
-                            chapter={subChapter}
-                            isSubChapter={true}
-                            parentChapterId={chapter.id}
-                          />
-
-                          {/* SubHeadings */}
-                          {openSubChapters[subChapter.id] &&
-                            subChapter.subHeadings &&
-                            subChapter.subHeadings.length > 0 && (
-                              <div className="space-y-1">
-                                {subChapter.subHeadings.map(
-                                  (subHeading: any, index: number) => (
-                                    <SubHeadingCard
-                                      key={`subheading-${
-                                        subHeading.id || index
-                                      }`}
-                                      subHeading={subHeading}
-                                      index={index}
-                                    />
-                                  )
-                                )}
-                              </div>
-                            )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-              </div>
-            ))}
+        <TabsContent value="chapters" className="mt-4">
+          <div className="rounded-3xl border border-gray-100 bg-white shadow-sm p-3 md:p-4 space-y-3">
+            {data?.chapters?.length ? (
+              data.chapters.map((chapter: any) => (
+                <ChapterCard key={chapter.id} chapter={chapter} />
+              ))
+            ) : (
+              <p className="text-gray-500 text-sm px-2">No chapters found.</p>
+            )}
           </div>
         </TabsContent>
 

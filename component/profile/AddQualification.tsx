@@ -97,12 +97,12 @@ const[isLoadingUpdate,setIsLoading]=useState(false)
     const maxSize = 10 * 1024 * 1024; // 10MB
 
     if (!validTypes.includes(file.type)) {
-      alert("Please upload SVG, PNG or JPEG files only");
+      toast.error("Please upload SVG, PNG or JPEG files only", { duration: 2800 });
       return false;
     }
 
     if (file.size > maxSize) {
-      alert("File size must be less than 10MB");
+      toast.error("File size must be less than 10MB", { duration: 2800 });
       return false;
     }
 
@@ -164,7 +164,7 @@ const[isLoadingUpdate,setIsLoading]=useState(false)
 
   return (
     <div>
-      <div className="    bg-white rounded-2xl w-full p-6">
+      <div className="bg-white rounded-2xl w-full p-6">
         <div>
           <h3 className="text-2xl text-black font-semibold mb-2">
             Add Qualification

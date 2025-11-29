@@ -1,16 +1,19 @@
 "use client";
 
 import NotificationBar from "@/components/NotificationBar";
-import ThemeToggleButton from "@/components/ui/theme-toggle-button";
-import { requestNotificationToken } from "@/firebase";
 import api from "@/hooks/axios";
 import { initClientSocket } from "@/hooks/socket";
 import { useAuthStore } from "@/store/useAuthStore";
-import { Bell, Search } from "lucide-react";
+import { Bell, Menu, X } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 
-const Topbar = () => {
+type TopbarProps = {
+  onToggleSidebar?: () => void;
+  isSidebarVisible?: boolean;
+};
+
+const Topbar = ({ onToggleSidebar, isSidebarVisible }: TopbarProps) => {
   const user = useAuthStore((state) => state.user);
   const [notifications, setNotifications] = React.useState<number>(0);
   const [isVisible, setIsVisible] = React.useState(false);
@@ -31,7 +34,7 @@ const Topbar = () => {
     const socket = initClientSocket(user.id.toString());
 
     socket.on("notification", (payload) => {
-      console.log("📩 Notification received:", payload);
+      console.log("Notification received:", payload);
       setNotifications((prev) => prev + 1);
     });
 
@@ -42,63 +45,82 @@ const Topbar = () => {
 
   const handleBellClick = async () => {
     setIsVisible(!isVisible);
-   
+
     setNotifications(0);
   };
 
   return (
     <>
-      {/* Left side greeting */}
-      <div className="flex relative w-full flex-col justify-center lg:items-start gap-1">
-        <h5 className="text-lg hidden lg:block font-medium">
-          Hi! {user?.name?.split(" ")[0]}
-        </h5>
-        <p className="text-sm hidden lg:block text-gray-500">
-          Let’s do something new today!
-        </p>
-      </div>
-
-      {/* Right side search + actions */}
-      <div className="flex items-center md:pr-0 pr-[4rem]">
-        {/* Search */}
-        <div className="flex items-center border rounded-lg bg-[#F5F7F9] p-2 gap-2 justify-center">
-          <Search size={18} />
-          <input
-            className="border-0 md:min-w-[20rem] min-w-[10rem] outline-0 bg-transparent"
-            placeholder="Search.."
-          />
-        </div>
-
-        {/* Actions */}
-        <div className="flex ml-6 items-center justify-center gap-2">
-          {/* Bell + Notification Badge */}
-          <div onClick={handleBellClick} className="relative">
-            <Bell size={23} />
-            {notifications > 0 && (
-              <div className="bg-green-600 text-white rounded-full w-5 h-5 absolute -top-1 -right-1 border-2 border-white flex items-center justify-center text-[10px] leading-none">
-                {notifications}
-              </div>
+      {/* Fixed full-width topbar so it doesn't move when sidebar toggles */}
+      <div className="fixed left-0 right-0 top-0 z-10 bg-white border rounded-2xl px-0 py-2 shadow-sm">
+        <div className="w-full px-6 flex items-center justify-between h-16">
+          {/* Left side logo + sidebar toggle */}
+          <div className="flex items-center gap-3 flex-1">
+            {onToggleSidebar && (
+<button
+  type="button"
+  aria-label="Toggle sidebar"
+  onClick={onToggleSidebar}
+  className="group inline-flex items-center justify-center rounded-full text-teal-500 p-2 transition hover:bg-teal-400"
+>
+  {isSidebarVisible ? (
+    <X size={18} className="text-current group-hover:text-white" />
+  ) : (
+    <Menu size={18} className="text-green-500 group-hover:text-white" />
+  )}
+</button>
             )}
+            <div className="flex items-center gap-2">
+              <a href="/">
+              <h1 className="titleFont text-2xl font-extrabold text-black tracking-wide">
+                TUTOR<span className="text-primeGreen">ME</span>
+              </h1>
+              </a>
+            </div>
           </div>
 
-          {/* Profile image */}
-          <div className="w-10 h-10">
-            <Image
-              src={user?.image || "/static/landing/course.svg"}
-              width={40}
-              height={40}
-              alt="profile-pic"
-              className="rounded-full object-cover w-full h-full"
-            />
+          <div className="flex justify-end items-center gap-6 ml-auto">
+            {/* Bell + Notification Badge */}
+            <div onClick={handleBellClick} className="relative cursor-pointer">
+              <Bell size={23} />
+              {notifications > 0 && (
+                <div className="bg-green-600 text-white rounded-full w-5 h-5 absolute -top-1 -right-1 border-2 border-white flex items-center justify-center text-[10px] leading-none">
+                  {notifications}
+                </div>
+              )}
+            </div>
+
+            {/* User details */}
+            <div className="flex items-center gap-3">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-semibold text-gray-900">{user?.name || "User"}</p>
+                <p className="text-xs text-gray-500">
+                  {user?.tutorProfile?.jobTitle || user?.role || "Role"}
+                </p>
+              </div>
+              <div className="w-10 h-10">
+                <Image
+                  src={user?.image || "/static/landing/course.svg"}
+                  width={40}
+                  height={40}
+                  alt="profile-pic"
+                  className="rounded-full object-cover w-full h-full"
+                />
+              </div>
+            </div>
           </div>
         </div>
-
-        {isVisible && (
-          <div className="absolute top-12 right-0">
-            <NotificationBar />
-          </div>
-        )}
       </div>
+
+      {/* spacer so page content isn't hidden under the fixed topbar */}
+      <div className="h-16" />
+
+      {/* Notifications: fixed under the topbar */}
+      {isVisible && (
+        <div className="fixed top-5 right-4 z-50">
+          <NotificationBar />
+        </div>
+      )}
     </>
   );
 };

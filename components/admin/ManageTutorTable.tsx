@@ -22,7 +22,8 @@ interface Tutor {
   name: string;
   createdAt: string;
   status: "APPROVED" | "DISAPPROVED" | "BANNED" | "UNDERREVIEW" | "REGISTERED";
-  avatar: string;
+  avatar?: string;
+  image?: string;
   tutorProfile: {
     status:
       | "APPROVED"
@@ -47,23 +48,23 @@ function formatDate(dateString: string) {
 const getStatusBadge = (status: string) => {
   const statusConfig = {
     APPROVED: {
-      label: "Approved",
+      label: "APPROVED",
       className: "bg-green-100 text-green-800 hover:bg-green-100",
     },
     DISAPPROVED: {
-      label: "Disapproved",
+      label: "DISAPPROVED",
       className: "bg-purple-100 text-purple-800 hover:bg-purple-100",
     },
     BANNED: {
-      label: "Banned",
+      label: "BANNED",
       className: "bg-red-100 text-red-800 hover:bg-red-100",
     },
     UNDERREVIEW: {
-      label: "Under Review",
+      label: "UNDER REVIEW",
       className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
     },
     REGISTERED: {
-      label: "Registered",
+      label: "REGISTERED",
       className: "bg-blue-100 text-blue-800 hover:bg-blue-100",
     },
   };
@@ -95,6 +96,8 @@ const getTabStatus = (tab: string) => {
   }
 };
 
+const tabTriggerClasses =
+  "flex min-w-max flex-shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-none px-4 py-2 text-xs font-medium text-gray-400 shadow-none sm:text-sm data-[state=active]:border-0 data-[state=active]:border-b-2 data-[state=active]:border-b-teal-500 data-[state=active]:bg-transparent data-[state=active]:text-black";
 export default function TutorManagement() {
   const [activeTab, setActiveTab] = useState("all");
   const [currentTutor, setCurrentTutor] = useState<any>({});
@@ -328,104 +331,133 @@ export default function TutorManagement() {
 
   return (
     <>
-      <div className="flex justify-between mb-4">
-        <div className="flex gap-2 items-center">
-          <span>Show</span>
-          <select
-            className="border-gray-600 py-1 px-2 rounded border"
-            value={pagination.limit}
-            onChange={(e) => handleLimitChange(Number(e.target.value))}
-          >
-            {[5, 10, 15, 20, 25, 30].map((num) => (
-              <option key={num} value={num}>
-                {num}
-              </option>
-            ))}
-          </select>
-          <span>entries</span>
-        </div>
+      <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+  {/* Left: Select dropdown */}
+  <div className="flex flex-wrap items-center gap-2 text-sm text-gray-700">
+    <span className="text-gray-500">Show</span>
+    <select
+      aria-label="Select number of tutors per page"
+      className="w-15 rounded border border-gray-300 bg-white px-2 py-1 text-sm focus:border-teal-500 focus:outline-none"
+      value={pagination.limit}
+      onChange={(e) => handleLimitChange(Number(e.target.value))}
+    >
+      {[5, 10, 15, 20, 25, 30].map((num) => (
+        <option key={num} value={num}>
+          {num}
+        </option>
+      ))}
+    </select>
+    <span className="text-gray-500">entries</span>
+  </div>
 
-        <div className="flex items-center border rounded-lg bg-[#F5F7F9] p-2 gap-2 justify-center">
-          <Search size={18} />
-          <input
-            className="border-0 min-w-[20rem] outline-0 hover:outline-0 bg-transparent"
-            placeholder="Search tutors..."
-            onChange={(e) => handleSearch(e.target.value)}
-            defaultValue={searchQuery}
-          />
-        </div>
+  {/* Right: Search + Sort */}
+  <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+    {/* Search input */}
+    <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-[#F5F7F9] px-4 py-2 md:max-w-sm lg:flex-1">
+      <Search size={18} className="text-gray-400" />
+      <input
+        aria-label="Search tutors"
+        className="w-full border-0 bg-transparent text-sm outline-none placeholder:text-gray-500"
+        placeholder="Search tutors..."
+        onChange={(e) => handleSearch(e.target.value)}
+        defaultValue={searchQuery}
+      />
+    </div>
 
-        <div
-          onClick={() =>
-            handleSortChange(pagination.sortBy == "asc" ? "desc" : "asc")
-          }
-          className="flex gap-3 items-center"
-        >
-          <span>Sort By (A-Z)</span>
-          <ArrowUpAZ />
-        </div>
-      </div>
+    {/* Sort button */}
+    <Button
+      type="button"
+      variant="outline"
+      onClick={() =>
+        handleSortChange(pagination.sortBy === "asc" ? "desc" : "asc")
+      }
+      className="flex items-center justify-center gap-2 rounded-full border border-gray-200 text-sm font-medium text-gray-700 transition hover:border-teal-500 hover:text-teal-600"
+    >
+      <span>Sort {pagination.sortBy === "asc" ? "(A-Z)" : "(Z-A)"}</span>
+      <ArrowUpAZ className="h-4 w-4" />
+    </Button>
+  </div>
+</div>
 
-      <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-sm">
+      <div className="mx-auto w-full max-w-9xl rounded-lg bg-white shadow-sm">
         <Tabs
           value={activeTab}
           onValueChange={handleTabChange}
-          className="w-full p-0"
+          className="mb-20 w-full p-0 text-gray-400"
         >
-          <TabsList className="grid bg-[#F5F7F9] w-full grid-cols-6 border-b rounded-none h-[3rem] p-0">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 border-b bg-[#F5F7F9] p-0 text-xs sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             <TabsTrigger
               value="all"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+              className={tabTriggerClasses}
             >
-              All Tutors
+              <span className="text-sm">
+                All Tutors
+              </span>
             </TabsTrigger>
             <TabsTrigger
               value="registered"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+              className={tabTriggerClasses}
             >
-              Registered (
-              {totalCount.find((item) => item.status === "REGISTERED")?.count ||
-                0}
-              )
+              <span>Registered</span>
+              <span className="text-[11px] text-gray sm:text-xs">
+                (
+                {totalCount.find((item) => item.status === "REGISTERED")
+                  ?.count || 0}
+                )
+              </span>
             </TabsTrigger>
             <TabsTrigger
               value="kyc-approved"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+              className={tabTriggerClasses}
             >
-              KYC Approved (
-              {totalCount.find((item) => item.status === "APPROVED")?.count ||
-                0}
-              )
+              <span>KYC Approved</span>
+              <span className="text-[11px] text-gray-500 sm:text-xs">
+                (
+                {totalCount.find((item) => item.status === "APPROVED")
+                  ?.count || 0}
+                )
+              </span>
             </TabsTrigger>
             <TabsTrigger
               value="under-review"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+              className={tabTriggerClasses}
             >
-              Under Review (
-              {totalCount.find((item) => item.status === "UNDERREVIEW")
-                ?.count || 0}
-              )
+              <span>Under Review</span>
+              <span className="text-[11px] text-gray-500 sm:text-xs">
+                (
+                {totalCount.find((item) => item.status === "UNDERREVIEW")
+                  ?.count || 0}
+                )
+              </span>
             </TabsTrigger>
             <TabsTrigger
               value="banned"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+              className={tabTriggerClasses}
             >
-              Banned (
-              {totalCount.find((item) => item.status === "BANNED")?.count || 0})
+              <span>Banned</span>
+              <span className="text-[11px] text-gray-500 sm:text-xs">
+                (
+                {totalCount.find((item) => item.status === "BANNED")?.count ||
+                  0}
+                )
+              </span>
             </TabsTrigger>
             <TabsTrigger
               value="disapproved"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-teal-500 data-[state=active]:bg-transparent rounded-none pb-3"
+              className={tabTriggerClasses}
             >
-              Disapproved (
-              {totalCount.find((item) => item.status === "DISAPPROVED")
-                ?.count || 0}
-              )
+              <span>Disapproved</span>
+              <span className="text-[11px] text-gray-500 sm:text-xs">
+                (
+                {totalCount.find((item) => item.status === "DISAPPROVED")
+                  ?.count || 0}
+                )
+              </span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-6">
-            <div className="space-y-4">
+            <div className="space-y-4 sm:pt-0">
               {loading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500 mx-auto"></div>
@@ -439,41 +471,44 @@ export default function TutorManagement() {
                 </div>
               ) : (
                 tutors.map((tutor) => {
-                  const statusConfig = getStatusBadge(tutor.status);
+                  const statusValue = tutor?.tutorProfile?.status || tutor.status;
+                  const statusConfig = getStatusBadge(statusValue);
+                  const avatarSrc =
+                    tutor.image || tutor.avatar || "/placeholder.svg";
                   return (
                     <div
                       key={tutor.id}
-                      className="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                      className="flex flex-col gap-4 border-b border-gray-100 p-4 transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between"
                     >
-                      <div className="flex items-center space-x-4">
+                      <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-left sm:space-x-4">
                         <Avatar className="h-12 w-12">
                           <AvatarImage
-                            src={tutor.avatar || "/placeholder.svg"}
+                            src={avatarSrc}
                             alt={tutor.name}
                           />
                           <AvatarFallback className="bg-gray-800 text-white text-xs">
                             {tutor.name
-                              .split(" ")
+                              ?.split(" ")
                               .map((n) => n[0])
                               .join("")}
                           </AvatarFallback>
                         </Avatar>
-                        <div>
+                        <div className="space-y-1">
                           <h3 className="font-semibold text-gray-900">
                             {tutor.name}
                           </h3>
                           <p className="text-sm text-gray-500">
                             Joined Date: {formatDate(tutor.createdAt)}
                           </p>
-                          <Badge className={`mt-1 ${statusConfig.className}`}>
-                            {tutor?.tutorProfile?.status || "UNKNOWN"}
+                          <Badge className={`mt-1 w-full sm:w-auto ${statusConfig.className}`}>
+                            {statusConfig.label}
                           </Badge>
                         </div>
                       </div>
 
-                      <div className="flex w-fit items-center space-x-2">
+                      <div className="flex w-full flex-wrap items-center justify-center gap-2 sm:w-auto sm:justify-end">
                         {activeTab == "under-review" && (
-                          <div className="flex gap-2 items-center justify-center">
+                          <div className="flex flex-wrap items-center justify-center gap-2">
                             <Button
                               onClick={() =>
                                 updateTutorStatus(
@@ -481,7 +516,7 @@ export default function TutorManagement() {
                                   "APPROVED"
                                 )
                               }
-                              className=" text-white bg-primeGreen rounded-full flex items-center justify-center  "
+                              className="flex w-full items-center justify-center rounded-full bg-primeGreen px-4 py-2 text-white sm:w-auto"
                             >
                               Approve
                             </Button>
@@ -492,7 +527,7 @@ export default function TutorManagement() {
                                   "DISAPPROVED"
                                 )
                               }
-                              className=" text-white bg-gray-500 rounded-full flex items-center justify-center  "
+                              className="flex w-full items-center justify-center rounded-full bg-gray-500 px-4 py-2 text-white sm:w-auto"
                             >
                               Disapprove
                             </Button>
@@ -500,7 +535,7 @@ export default function TutorManagement() {
                         )}
 
                         {activeTab == "banned" && (
-                          <div className="flex gap-2 items-center justify-center">
+                          <div className="flex flex-wrap items-center justify-center gap-2">
                             <Button
                               onClick={() =>
                                 updateTutorStatus(
@@ -508,14 +543,14 @@ export default function TutorManagement() {
                                   "APPROVED"
                                 )
                               }
-                              className=" text-white bg-primeGreen rounded-full flex items-center justify-center  "
+                              className="flex w-full items-center justify-center rounded-full bg-primeGreen px-4 py-2 text-white sm:w-auto"
                             >
                               Unban
                             </Button>
                           </div>
                         )}
                         {activeTab == "kyc-approved" && (
-                          <div className="flex gap-2 items-center justify-center">
+                          <div className="flex flex-wrap items-center justify-center gap-2">
                             <Button
                               onClick={() =>
                                 updateTutorStatus(
@@ -523,7 +558,7 @@ export default function TutorManagement() {
                                   "BANNED"
                                 )
                               }
-                              className=" text-white bg-primeGreen rounded-full flex items-center justify-center  "
+                              className="flex w-full items-center justify-center rounded-full bg-primeGreen px-4 py-2 text-white sm:w-auto"
                             >
                               Ban
                             </Button>
@@ -531,7 +566,7 @@ export default function TutorManagement() {
                         )}
 
                         {activeTab == "disapproved" && (
-                          <div className="flex gap-2 items-center justify-center">
+                          <div className="flex flex-wrap items-center justify-center gap-2">
                             <Button
                               onClick={() =>
                                 updateTutorStatus(
@@ -539,7 +574,7 @@ export default function TutorManagement() {
                                   "APPROVED"
                                 )
                               }
-                              className=" text-white bg-primeGreen rounded-full flex items-center justify-center  "
+                              className="flex w-full items-center justify-center rounded-full bg-primeGreen px-4 py-2 text-white sm:w-auto"
                             >
                               Approve
                             </Button>
@@ -550,7 +585,7 @@ export default function TutorManagement() {
                                   "REVIEW"
                                 )
                               }
-                              className=" text-white bg-gray-500 rounded-full flex items-center justify-center  "
+                              className="flex w-full items-center justify-center rounded-full bg-gray-500 px-4 py-2 text-white sm:w-auto"
                             >
                               Review Again
                             </Button>
@@ -559,7 +594,7 @@ export default function TutorManagement() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                          className="h-9 w-9 shrink-0 text-teal-600 hover:bg-teal-50 hover:text-teal-700"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -570,7 +605,7 @@ export default function TutorManagement() {
                             setIsViewOpen(true);
                           }}
                           size="icon"
-                          className="h-8 w-8 text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                          className="h-9 w-9 shrink-0 text-teal-600 hover:bg-teal-50 hover:text-teal-700"
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -587,8 +622,8 @@ export default function TutorManagement() {
 
             {/* Pagination */}
             {tutors.length > 0 && (
-              <div className="flex p-3 items-center justify-between mt-6 pt-4 border-t border-gray-200">
-                <div className="text-sm text-gray-600">
+              <div className="mt-6 flex flex-col gap-4 border-t border-gray-200 p-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-center text-sm text-gray-600 sm:text-left">
                   Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
                   {Math.min(
                     (pagination.page - 1) * pagination.limit + pagination.limit,
@@ -601,11 +636,11 @@ export default function TutorManagement() {
                     </span>
                   )}
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-teal-600 border-teal-300 hover:bg-teal-50 bg-transparent"
+                    className="border-teal-300 bg-transparent text-teal-600 hover:bg-teal-50"
                     onClick={handlePreviousPage}
                     disabled={pagination.page === 1}
                   >
@@ -614,7 +649,7 @@ export default function TutorManagement() {
                   </Button>
 
                   {/* Page numbers */}
-                  <div className="flex items-center space-x-1">
+                  <div className="flex flex-wrap items-center justify-center gap-1">
                     {/* Show first page if not currently on it and there are more than 3 pages */}
                     {pagination.page > 2 && pagination.totalPages > 3 && (
                       <>
@@ -685,12 +720,12 @@ export default function TutorManagement() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-teal-600 border-teal-300 hover:bg-teal-50 bg-transparent"
+                    className="border-teal-300 bg-transparent text-teal-600 hover:bg-teal-50"
                     onClick={handleNextPage}
                     disabled={pagination.page >= pagination.totalPages}
                   >
                     Next
-                    <ChevronRight className="h-4 w-4 ml-1" />
+                    <ChevronRight className="ml-1 h-4 w-4" />
                   </Button>
                 </div>
               </div>

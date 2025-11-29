@@ -31,7 +31,7 @@ const PerformanceGauge = () => {
   const angle = -135 + (animatedProgress / 100) * 270;
   
   return (
-    <div className="bg-white p-6 rounded-2xl w-[22rem] shadow-sm border border-gray-100 ">
+    <div className="bg-white px-4 py-5 sm:p-6 rounded-2xl w-full max-w-md shadow-sm border border-gray-100">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-gray-900">Performance</h2>
@@ -51,12 +51,12 @@ const PerformanceGauge = () => {
 
       {/* Gauge */}
       <div className="relative flex flex-col items-center mb-6">
-        <div className="relative w-56 h-32">
+        <div className="relative w-full max-w-xs sm:max-w-sm aspect-[7/4]">
           <svg
-            width="220"
-            height="130"
+            width="100%"
+            height="100%"
             viewBox="0 0 220 130"
-            className="absolute inset-0"
+            className="absolute inset-0 h-full w-full"
           >
             {/* Outer light background arc */}
             <path

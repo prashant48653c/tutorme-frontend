@@ -9,9 +9,9 @@ import React from "react";
 const FindTutors = () => {
   const { id } = useParams();
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full bg-white">
       <Navbar />
-      <div className="px-16">
+      <div className="px-4 md:px-10 lg:px-16 py-10 space-y-12">
         <TutorProfile id={id} />
         <CourseProductList />
       </div>

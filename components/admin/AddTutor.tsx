@@ -17,6 +17,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { X, Upload } from "lucide-react";
 import api from "@/hooks/axios";
+import Radio from "@/component/reusable/Radio";
 
 interface TutorState {
   personalDetails: {
@@ -582,41 +583,20 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
             </div>
             <div className="mb-4">
               <Label>Are you currently working?</Label>
-              <div className="flex items-center space-x-4 mt-2">
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    name="currentlyWorking"
-                    checked={
-                      state.qualificationDetails.currentlyWorking === true
-                    }
-                    onChange={() =>
-                      dispatch({
-                        type: "UPDATE_QUALIFICATION",
-                        field: "currentlyWorking",
-                        value: true,
-                      })
-                    }
-                  />
-                  <span>Yes</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    name="currentlyWorking"
-                    checked={
-                      state.qualificationDetails.currentlyWorking === false
-                    }
-                    onChange={() =>
-                      dispatch({
-                        type: "UPDATE_QUALIFICATION",
-                        field: "currentlyWorking",
-                        value: false,
-                      })
-                    }
-                  />
-                  <span>No</span>
-                </label>
+              <div className="mt-2">
+                <Radio
+                  name="currentlyWorking"
+                  value={
+                    state.qualificationDetails.currentlyWorking ? "yes" : "no"
+                  }
+                  onChange={(val) =>
+                    dispatch({
+                      type: "UPDATE_QUALIFICATION",
+                      field: "currentlyWorking",
+                      value: val === "yes",
+                    })
+                  }
+                />
               </div>
             </div>
             {state.qualificationDetails.currentlyWorking && (
@@ -700,7 +680,7 @@ export default function AddTutorPopup({ onClose }: AddTutorPopupProps) {
           {/* Submit Button */}
           <Button
             type="submit"
-            className="w-full bg-teal-500 hover:bg-teal-600"
+            className="w-full bg-teal-500 hover:bg-teal-600 text-white"
             disabled={!state.isInformationCorrect}
           >
             Add Tutor

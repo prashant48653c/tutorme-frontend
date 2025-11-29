@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useReducer, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -14,8 +14,6 @@ import {
   FileImage,
 } from "lucide-react";
 
-import Plyr from "plyr-react";
-
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
@@ -28,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import {
   DragDropContext,
   Draggable,
@@ -47,25 +44,27 @@ import { useRouter } from "next/navigation";
 import api from "@/hooks/axios";
 import toast from "react-hot-toast";
 
-export const CourseContentViewer = () => {
+export const CourseContentViewer = ({ courseId }: { courseId: string }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [course, setCourse] = useState<any>(null);
+  const [currentSection, setCurrentSection] = useState<any>([]);
   const router = useRouter();
   const [selectedItem, setSelectedItem] = useState<
-    | ((Chapter | SubHeading | SubTitle) & {
+    | ((Chapter | SubHeading | SubTitle | any) & {
         type: "chapter" | "subheading" | "subchapter";
         parentId: string;
       })
     | null
   >();
+
   // Get everything from the store
-const fetchCourse = async () => {
-const courseId = 3  ;
-const res = await api.get("/course/" + courseId);
-console.log(res);
-updateCourseDetails(res.data.data);
-console.log(courseDetails,"Updated")
- 
-};
+  const fetchCourse = async () => {
+    const res = await api.get("/course/" + courseId);
+    console.log(res);
+    setCourse(res.data.data);
+    console.log(courseDetails, "Updated");
+  };
+
   const handleSelection = (
     e: any,
     item: Chapter | SubHeading | SubTitle,
@@ -76,6 +75,7 @@ console.log(courseDetails,"Updated")
     setSelectedItem({ ...item, type, parentId });
     console.log(item);
   };
+
   const {
     courseDetails,
     chapters,
@@ -103,43 +103,43 @@ console.log(courseDetails,"Updated")
     saveDraft: saveMyDraft,
   } = useCourseStore();
 
-  // Handle drag and drop
-  const handleDragEnd = (result: DropResult) => {
-    if (!result.destination) return;
-
-    const { source, destination, type } = result;
-
-    setLoading(true);
-
-    if (type === "chapter") {
-      reorderChapters(source.index, destination.index);
-    } else if (type === "subTitle") {
-      reordersubChapters(source.droppableId, source.index, destination.index);
-    } else if (type === "subHeading") {
-      reorderSubHeadings(source.droppableId, source.index, destination.index);
-    }
-
-    setLoading(false);
-  };
-
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [subtitleFile, setSubtitleFile] = useState<File | null>(null);
-  const videoInputRef = useRef<HTMLInputElement>(null);
-  const subtitleInputRef = useRef<HTMLInputElement>(null);
-
-  
-
   const handleSaveDraft = async () => {};
 
   useEffect(() => {
     fetchCourse();
   }, []);
+ 
+  const extractBunnyVideoId = (videoUrl: string) => {
+    if (!videoUrl) return null;
+    
+  
+    const embedMatch = videoUrl.match(/embed\/(\d+)\/([a-f0-9-]+)/i);
+    if (embedMatch) {
+      return { libraryId: embedMatch[1], videoId: embedMatch[2] };
+    }
+     
+    const playMatch = videoUrl.match(/play\/(\d+)\/([a-f0-9-]+)/i);
+    if (playMatch) {
+      return { libraryId: playMatch[1], videoId: playMatch[2] };
+    }
+    
+    return null;
+  };
+
+  console.log("Selected item video:", selectedItem?.video);
+
+  if (!course) {
+    return <div>Loading...</div>;
+  }
+
+  const bunnyVideoInfo = extractBunnyVideoId(selectedItem?.video || "");
+
   return (
-    <div className="flex border relative justify-end  p-1  overflow-hidden   ">
+    <div className="flex border relative justify-end p-1 overflow-hidden">
       <div
         className={`${
           sidebarCollapsed ? "w-0 invisible" : "w-[30%]"
-        } border transition-all duration-300 ease-in-out overflow-x-hidden `}
+        } border transition-all duration-300 ease-in-out overflow-x-hidden`}
       >
         <section className="py-4 overflow-y-auto pb-10 h-[30rem] flex flex-col">
           <div className="flex items-center justify-between mb-4">
@@ -150,8 +150,8 @@ console.log(courseDetails,"Updated")
 
           {/* Drag and Drop Course Structure */}
           <div className="flex flex-col items-start">
-            {chapters?.map((chapter, chapterIndex) => (
-              <div key={chapter.id} className="border p-2 my-2 bg-white">
+            {course.chapters?.map((chapter: Chapter, chapterIndex: number) => (
+              <div key={chapterIndex} className="border p-2 my-2 bg-white">
                 {/* Chapter Header */}
                 <div
                   onClick={(e) =>
@@ -206,7 +206,7 @@ console.log(courseDetails,"Updated")
                   <div className="ml-4">
                     {chapter.subChapters?.map((sub, subIndex) => (
                       <div
-                        key={sub.id}
+                        key={subIndex}
                         className="border p-2 my-2 bg-gray-100 py-4 flex flex-col justify-center rounded"
                       >
                         <div
@@ -276,7 +276,7 @@ console.log(courseDetails,"Updated")
                           <ul className="ml-4 my-3 list-disc">
                             {sub.subHeadings?.map((sh, shIndex) => (
                               <li
-                                key={sh.id}
+                                key={shIndex}
                                 className="py-2 pl-2 my-1 bg-white list-none border-b"
                               >
                                 <div
@@ -347,15 +347,14 @@ console.log(courseDetails,"Updated")
       </div>
 
       <div
-        className={` overflow-auto  h-[90vh] relative flex flex-col  ${
-          sidebarCollapsed ? "w-[100%] " : "w-[70%]"
-        }
-flex flex-col} px-1`}
+        className={`overflow-auto h-[90vh] relative flex flex-col ${
+          sidebarCollapsed ? "w-[100%]" : "w-[70%]"
+        } px-1`}
       >
-        <div className="absolute rounded-lg bg-black  top-[45%]">
+        <div className="absolute rounded-lg bg-black top-[45%]">
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="py-2  px-1   "
+            className="py-2 px-1"
           >
             {sidebarCollapsed ? (
               <ChevronRight color="white" className="w-5 h-5" />
@@ -388,60 +387,62 @@ flex flex-col} px-1`}
 
         {/* Content Editor */}
         <div className="flex-1 p-6 mb-10 overflow-y-auto">
-       <div className="max-w-4xl mx-auto space-y-6">
-  {/* Normal HTML video */}
-  <video
-    className="w-full rounded-lg"
-    controls
-    controlsList="nodownload"
-  >
-    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4" />
-    <track
-      kind="captions"
-      label="English"
-      src="/sub.vtt"
-      srcLang="en"
-      default
-    />
-    Your browser does not support the video tag.
-  </video>
+          <div className="max-w-4xl mx-auto space-y-6">
+            {/* Bunny Video Player - Native iframe embed */}
+            {bunnyVideoInfo ? (
+              <div 
+                key={selectedItem.id} 
+                className="video-container my-6"
+              >
+                <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
+                  <iframe
+                    src={`https://iframe.mediadelivery.net/embed/${bunnyVideoInfo.libraryId}/${bunnyVideoInfo.videoId}?autoplay=false&preload=true`}
+                    loading="lazy"
+                    className="absolute top-0 left-0 w-full h-full border-0 rounded-lg"
+                    allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            ) : selectedItem?.video ? (
+              <div className="my-6 bg-yellow-50 border-2 border-yellow-300 rounded-xl p-6 flex flex-col items-center justify-center">
+                <p className="text-yellow-800 font-medium">Invalid video URL format</p>
+                <p className="text-yellow-600 text-sm mt-2">URL: {selectedItem.video}</p>
+              </div>
+            ) : (
+              <div className="my-6 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl h-96 flex items-center justify-center">
+                <p className="text-gray-500">No video content available</p>
+              </div>
+            )}
 
-  <div className="w-full h-max">
-    <p className="w-full h-full p-2 text-gray-700 border rounded">
-      Lorem ipsum dolor sit amet consectetur adipisicing elit.
-      Pariatur cupiditate quo in repudiandae architecto beatae
-      doloribus reprehenderit aspernatur odio quos ipsa, veritatis,
-      vitae consequatur dicta dolore quia ratione voluptatibus
-      laborum. Aperiam, eum sapiente deleniti dicta itaque porro illo
-      optio blanditiis, delectus possimus pariatur consequuntur ea
-      quia sequi iste animi, iure exercitationem mollitia asperiores!
-      Quidem, id?
-    </p>
-  </div>
+            <div className="w-full h-max">
+              <p className="w-full h-full p-2 text-gray-700 border rounded">
+                {selectedItem?.description}
+              </p>
+            </div>
 
-  {/* Action Buttons */}
-  <div className="border-t grid grid-cols-2 gap-4 pt-4 space-y-3">
-    <Button
-      onClick={(e) => {
-        e.preventDefault();
-        addChapter();
-      }}
-      className="border py-5 bg-transparent text-black hover:bg-green-200 w-full border-green-400"
-      disabled={isLoading}
-    >
-      Previous
-    </Button>
+            {/* Action Buttons */}
+            <div className="border-t grid grid-cols-2 gap-4 pt-4 space-y-3">
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  addChapter();
+                }}
+                className="border py-5 bg-transparent text-black hover:bg-green-200 w-full border-green-400"
+                disabled={isLoading}
+              >
+                Previous
+              </Button>
 
-    <Button
-      onClick={handleSaveDraft}
-      className="w-full py-5 bg-green-600 hover:bg-green-700"
-      disabled={isSaving}
-    >
-      Next
-    </Button>
-  </div>
-</div>
-
+              <Button
+                onClick={handleSaveDraft}
+                className="w-full py-5 bg-green-600 hover:bg-green-700"
+                disabled={isSaving}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
